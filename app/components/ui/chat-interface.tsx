@@ -38,7 +38,7 @@ import { VoiceButton } from "@/app/components/ui/voice-button";
 import { useVoiceInput } from "@/app/hooks/useVoiceInput";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { CopyIcon, RefreshCcwIcon } from "lucide-react";
+import { CopyIcon, RefreshCcwIcon, Loader2 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
 
 export function ChatInterface() {
@@ -52,37 +52,36 @@ export function ChatInterface() {
   const updateTextareaValue = useCallback((value: string) => {
     const textarea = textareaRef.current;
     if (textarea) {
-      // Update the native value
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLTextAreaElement.prototype,
         "value"
       )?.set;
       nativeInputValueSetter?.call(textarea, value);
-
-      // Dispatch input event to trigger React's onChange
       const event = new Event("input", { bubbles: true });
       textarea.dispatchEvent(event);
     }
     setInput(value);
   }, []);
 
-  // Voice input handler
-  const handleVoiceTranscript = useCallback(
-    (text: string) => {
-      updateTextareaValue(text);
-    },
-    [updateTextareaValue]
-  );
-
+  // Voice input with Gemini + native fallback
   const {
     isListening,
+    isProcessing,
     isSupported,
+    mode,
     toggleListening,
     error: voiceError,
   } = useVoiceInput({
-    onTranscript: handleVoiceTranscript,
-    continuous: true,
-    language: "es-ES",
+    onTranscript: (text) => {
+      // Append or replace based on mode
+      if (mode === "gemini") {
+        // Gemini returns full text at once
+        updateTextareaValue(text);
+      } else {
+        // Native returns incrementally
+        updateTextareaValue(text);
+      }
+    },
   });
 
   const handleSubmit = (message: PromptInputMessage) => {
@@ -141,6 +140,7 @@ export function ChatInterface() {
                   {isSupported && (
                     <p className="text-xs mt-2 text-gray-400">
                       🎤 Puedes usar el micrófono para dictar
+                      {mode === "gemini" && " (con IA)"}
                     </p>
                   )}
                 </div>
@@ -188,24 +188,36 @@ export function ChatInterface() {
           <ConversationScrollButton />
         </Conversation>
 
-        {/* Voice Error Message */}
-        {voiceError && (
-          <div className="text-red-500 text-sm text-center py-2">
-            {voiceError}
-          </div>
-        )}
-
-        {/* Listening indicator */}
-        {isListening && (
-          <div className="text-center py-2 text-sm text-red-500 animate-pulse">
-            🎤 Escuchando... habla ahora
-          </div>
-        )}
+        {/* Voice Status Indicators */}
+        <div className="min-h-[28px] flex items-center justify-center text-sm gap-2">
+          {voiceError && (
+            <span className="text-red-500 text-xs">{voiceError}</span>
+          )}
+          {isListening && (
+            <span
+              className={
+                mode === "gemini"
+                  ? "text-blue-500 animate-pulse"
+                  : "text-red-500 animate-pulse"
+              }
+            >
+              {mode === "gemini"
+                ? "🎤 Grabando para IA..."
+                : "🎤 Escuchando (modo local)..."}
+            </span>
+          )}
+          {isProcessing && (
+            <span className="text-blue-600 flex items-center gap-1">
+              <Loader2 className="size-3 animate-spin" />
+              Procesando con IA...
+            </span>
+          )}
+        </div>
 
         {/* Input Area */}
         <PromptInput
           onSubmit={handleSubmit}
-          className="mt-4"
+          className="mt-2"
           globalDrop
           multiple
         >
@@ -235,9 +247,11 @@ export function ChatInterface() {
               {/* Voice Button */}
               <VoiceButton
                 isListening={isListening}
+                isProcessing={isProcessing}
                 isSupported={isSupported}
+                mode={mode}
                 onClick={toggleListening}
-                disabled={status !== "ready"}
+                disabled={status !== "ready" || isProcessing}
               />
 
               <PromptInputSelect
