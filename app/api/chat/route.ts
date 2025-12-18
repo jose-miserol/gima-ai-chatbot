@@ -42,8 +42,6 @@ Contexto: La UNEG está digitalizando su sistema de mantenimiento. Actualmente m
       model: groq(model),
       messages: convertToModelMessages(messages),
       system: systemPrompt,
-      maxTokens: 2048,
-      temperature: 0.7,
     });
 
     return result.toUIMessageStreamResponse({

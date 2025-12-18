@@ -198,7 +198,7 @@ export default function ChatPage() {
               </PromptInputSelect>
             </PromptInputTools>
 
-            <PromptInputSubmit disabled={!input && status !== 'idle'} status={status} />
+            <PromptInputSubmit disabled={!input || status !== 'ready'} status={status} />
           </PromptInputFooter>
         </PromptInput>
       </div>
