@@ -37,6 +37,7 @@ import {
 import { Loader } from '@/components/ai-elements/loader';
 import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 
 // Modelos disponibles en GROQ
@@ -48,18 +49,18 @@ const models = [
   {
     name: 'Llama 3.1 8B',
     value: 'llama-3.1-8b-instant',
-  },
-  {
-    name: 'Mixtral 8x7B',
-    value: 'mixtral-8x7b-32768',
-  },
+  }
 ];
 
 export default function ChatPage() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
 
-  const { messages, sendMessage, status, regenerate } = useChat();
+  const { messages, sendMessage, status, regenerate } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+    }),
+  });
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
