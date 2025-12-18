@@ -21,7 +21,6 @@ import {
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
-  PromptInputButton,
   type PromptInputMessage,
   PromptInputSelect,
   PromptInputSelectContent,
@@ -38,26 +37,11 @@ import { Loader } from "@/app/components/ai-elements/loader";
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { CopyIcon, RefreshCcwIcon } from "lucide-react";
-
-// Modelos disponibles en GROQ
-const models = [
-  {
-    name: "Llama 3.3 70B",
-    value: "llama-3.3-70b-versatile",
-  },
-  {
-    name: "Llama 3.1 8B",
-    value: "llama-3.1-8b-instant",
-  },
-  {
-    name: "Mixtral 8x7B",
-    value: "mixtral-8x7b-32768",
-  },
-];
+import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
 
 export function ChatInterface() {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState<string>(models[0].value);
+  const [model, setModel] = useState<string>(DEFAULT_MODEL);
 
   const { messages, sendMessage, status, regenerate } = useChat();
 
@@ -194,12 +178,9 @@ export function ChatInterface() {
                   <PromptInputSelectValue />
                 </PromptInputSelectTrigger>
                 <PromptInputSelectContent>
-                  {models.map((model) => (
-                    <PromptInputSelectItem
-                      key={model.value}
-                      value={model.value}
-                    >
-                      {model.name}
+                  {AVAILABLE_MODELS.map((m) => (
+                    <PromptInputSelectItem key={m.value} value={m.value}>
+                      {m.name}
                     </PromptInputSelectItem>
                   ))}
                 </PromptInputSelectContent>

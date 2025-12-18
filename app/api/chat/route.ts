@@ -1,8 +1,9 @@
 import { createGroq } from '@ai-sdk/groq';
 import { streamText, UIMessage, convertToModelMessages } from 'ai';
+import { SYSTEM_PROMPT, STREAM_CONFIG, DEFAULT_MODEL } from '@/app/config';
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+export const maxDuration = STREAM_CONFIG.maxDuration;
 
 // Initialize GROQ
 const groq = createGroq({
@@ -13,40 +14,21 @@ export async function POST(req: Request) {
   try {
     const {
       messages,
-      model = 'llama-3.3-70b-versatile',
+      model = DEFAULT_MODEL,
     }: {
       messages: UIMessage[];
       model?: string;
     } = await req.json();
 
-    // System prompt específico para GIMA
-    const systemPrompt = `Eres un asistente experto en gestión de mantenimiento y activos para la Universidad Nacional Experimental de Guayana (UNEG).
-
-Tu objetivo es ayudar a técnicos, ingenieros y personal de mantenimiento con:
-- Consultas sobre equipos y su estado
-- Procedimientos de mantenimiento preventivo y correctivo
-- Interpretación de manuales técnicos
-- Diagnóstico de fallas comunes
-- Recomendaciones de repuestos
-
-Directrices:
-1. Sé preciso y técnico, pero claro
-2. Si no estás seguro, admítelo y sugiere consultar un manual
-3. Prioriza la seguridad en todas las recomendaciones
-4. Usa terminología técnica apropiada
-5. Proporciona pasos claros y numerados cuando sea necesario
-
-Contexto: La UNEG está digitalizando su sistema de mantenimiento. Actualmente muchos procesos son manuales.`;
-
     const result = streamText({
       model: groq(model),
       messages: convertToModelMessages(messages),
-      system: systemPrompt,
+      system: SYSTEM_PROMPT,
     });
 
     return result.toUIMessageStreamResponse({
-      sendSources: false,
-      sendReasoning: false,
+      sendSources: STREAM_CONFIG.sendSources,
+      sendReasoning: STREAM_CONFIG.sendReasoning,
     });
   } catch (error) {
     console.error('Error en API de chat:', error);
