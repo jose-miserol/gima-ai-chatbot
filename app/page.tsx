@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from '@/components/ai-elements/conversation';
+} from "@/app/components/ai-elements/conversation";
 import {
   Message,
   MessageContent,
   MessageResponse,
   MessageActions,
   MessageAction,
-} from '@/components/ai-elements/message';
+} from "@/app/components/ai-elements/message";
 import {
   PromptInput,
   PromptInputActionAddAttachments,
@@ -33,30 +33,30 @@ import {
   PromptInputFooter,
   PromptInputTools,
   PromptInputHeader,
-} from '@/components/ai-elements/prompt-input';
-import { Loader } from '@/components/ai-elements/loader';
-import { useState } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
+} from "@/app/components/ai-elements/prompt-input";
+import { Loader } from "@/app/components/ai-elements/loader";
+import { useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { CopyIcon, RefreshCcwIcon } from "lucide-react";
 
 // Modelos disponibles en GROQ
 const models = [
   {
-    name: 'Llama 3.3 70B',
-    value: 'llama-3.3-70b-versatile',
+    name: "Llama 3.3 70B",
+    value: "llama-3.3-70b-versatile",
   },
   {
-    name: 'Llama 3.1 8B',
-    value: 'llama-3.1-8b-instant',
+    name: "Llama 3.1 8B",
+    value: "llama-3.1-8b-instant",
   },
   {
-    name: 'Mixtral 8x7B',
-    value: 'mixtral-8x7b-32768',
+    name: "Mixtral 8x7B",
+    value: "mixtral-8x7b-32768",
   },
 ];
 
 export default function ChatPage() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(models[0].value);
 
   const { messages, sendMessage, status, regenerate } = useChat();
@@ -71,7 +71,7 @@ export default function ChatPage() {
 
     sendMessage(
       {
-        text: message.text || 'Archivo adjunto',
+        text: message.text || "Archivo adjunto",
         files: message.files,
       },
       {
@@ -81,7 +81,7 @@ export default function ChatPage() {
       }
     );
 
-    setInput('');
+    setInput("");
   };
 
   return (
@@ -116,13 +116,13 @@ export default function ChatPage() {
             {messages.map((message) => (
               <div key={message.id}>
                 {message.parts.map((part, i) => {
-                  if (part.type === 'text') {
+                  if (part.type === "text") {
                     return (
                       <Message key={`${message.id}-${i}`} from={message.role}>
                         <MessageContent>
                           <MessageResponse>{part.text}</MessageResponse>
                         </MessageContent>
-                        {message.role === 'assistant' &&
+                        {message.role === "assistant" &&
                           i === message.parts.length - 1 && (
                             <MessageActions>
                               <MessageAction
@@ -149,13 +149,18 @@ export default function ChatPage() {
               </div>
             ))}
 
-            {status === 'submitted' && <Loader />}
+            {status === "submitted" && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
 
         {/* Input Area */}
-        <PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
+        <PromptInput
+          onSubmit={handleSubmit}
+          className="mt-4"
+          globalDrop
+          multiple
+        >
           <PromptInputHeader>
             <PromptInputAttachments>
               {(attachment) => <PromptInputAttachment data={attachment} />}
@@ -190,7 +195,10 @@ export default function ChatPage() {
                 </PromptInputSelectTrigger>
                 <PromptInputSelectContent>
                   {models.map((model) => (
-                    <PromptInputSelectItem key={model.value} value={model.value}>
+                    <PromptInputSelectItem
+                      key={model.value}
+                      value={model.value}
+                    >
                       {model.name}
                     </PromptInputSelectItem>
                   ))}
@@ -198,7 +206,10 @@ export default function ChatPage() {
               </PromptInputSelect>
             </PromptInputTools>
 
-            <PromptInputSubmit disabled={!input || status !== 'ready'} status={status} />
+            <PromptInputSubmit
+              disabled={!input || status !== "ready"}
+              status={status}
+            />
           </PromptInputFooter>
         </PromptInput>
       </div>
