@@ -3,7 +3,8 @@ import { streamText, UIMessage, convertToModelMessages } from 'ai';
 import { SYSTEM_PROMPT, STREAM_CONFIG, DEFAULT_MODEL } from '@/app/config';
 
 // Allow streaming responses up to 30 seconds
-export const maxDuration = STREAM_CONFIG.maxDuration;
+// Note: Must be a literal value for Next.js static analysis
+export const maxDuration = 30;
 
 // Initialize GROQ
 const groq = createGroq({

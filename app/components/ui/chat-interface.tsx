@@ -34,7 +34,9 @@ import {
   PromptInputHeader,
 } from "@/app/components/ai-elements/prompt-input";
 import { Loader } from "@/app/components/ai-elements/loader";
-import { useState } from "react";
+import { VoiceButton } from "@/app/components/ui/voice-button";
+import { useVoiceInput } from "@/app/hooks/useVoiceInput";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { CopyIcon, RefreshCcwIcon } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
@@ -42,8 +44,46 @@ import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
 export function ChatInterface() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, status, regenerate } = useChat();
+
+  // Update textarea value programmatically
+  const updateTextareaValue = useCallback((value: string) => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // Update the native value
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        "value"
+      )?.set;
+      nativeInputValueSetter?.call(textarea, value);
+
+      // Dispatch input event to trigger React's onChange
+      const event = new Event("input", { bubbles: true });
+      textarea.dispatchEvent(event);
+    }
+    setInput(value);
+  }, []);
+
+  // Voice input handler
+  const handleVoiceTranscript = useCallback(
+    (text: string) => {
+      updateTextareaValue(text);
+    },
+    [updateTextareaValue]
+  );
+
+  const {
+    isListening,
+    isSupported,
+    toggleListening,
+    error: voiceError,
+  } = useVoiceInput({
+    onTranscript: handleVoiceTranscript,
+    continuous: true,
+    language: "es-ES",
+  });
 
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -51,6 +91,11 @@ export function ChatInterface() {
 
     if (!(hasText || hasAttachments)) {
       return;
+    }
+
+    // Stop listening if voice is active
+    if (isListening) {
+      toggleListening();
     }
 
     sendMessage(
@@ -93,6 +138,11 @@ export function ChatInterface() {
                   <p className="text-sm">
                     Pregúntame sobre equipos, procedimientos o solicita ayuda
                   </p>
+                  {isSupported && (
+                    <p className="text-xs mt-2 text-gray-400">
+                      🎤 Puedes usar el micrófono para dictar
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -138,6 +188,20 @@ export function ChatInterface() {
           <ConversationScrollButton />
         </Conversation>
 
+        {/* Voice Error Message */}
+        {voiceError && (
+          <div className="text-red-500 text-sm text-center py-2">
+            {voiceError}
+          </div>
+        )}
+
+        {/* Listening indicator */}
+        {isListening && (
+          <div className="text-center py-2 text-sm text-red-500 animate-pulse">
+            🎤 Escuchando... habla ahora
+          </div>
+        )}
+
         {/* Input Area */}
         <PromptInput
           onSubmit={handleSubmit}
@@ -153,8 +217,8 @@ export function ChatInterface() {
 
           <PromptInputBody>
             <PromptInputTextarea
+              ref={textareaRef}
               onChange={(e) => setInput(e.target.value)}
-              value={input}
               placeholder="Escribe tu pregunta sobre mantenimiento..."
             />
           </PromptInputBody>
@@ -167,6 +231,14 @@ export function ChatInterface() {
                   <PromptInputActionAddAttachments />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
+
+              {/* Voice Button */}
+              <VoiceButton
+                isListening={isListening}
+                isSupported={isSupported}
+                onClick={toggleListening}
+                disabled={status !== "ready"}
+              />
 
               <PromptInputSelect
                 onValueChange={(value) => {
