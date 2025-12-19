@@ -180,9 +180,10 @@ ${result.text}
             }
           ]);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error processing image:', error);
-        const errorMsg = `❌ Error al procesar imagen: ${error.message}`;
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        const errorMsg = `❌ Error al procesar imagen: ${errorMessage}`;
         setMessages(prev => [
           ...prev,
           {

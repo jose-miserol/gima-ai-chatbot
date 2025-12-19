@@ -21,14 +21,55 @@ interface UseVoiceInputReturn {
   error: string | null;
 }
 
-// Get SpeechRecognition constructor
-const getSpeechRecognition = () => {
+// Web Speech API Type Definitions (Local Interfaces to avoid global conflicts)
+interface ISpeechRecognitionEvent extends Event {
+  results: ISpeechRecognitionResultList;
+  resultIndex: number;
+  error: any;
+}
+
+interface ISpeechRecognitionResultList {
+  length: number;
+  item(index: number): ISpeechRecognitionResult;
+  [index: number]: ISpeechRecognitionResult;
+}
+
+interface ISpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: ISpeechRecognitionAlternative;
+}
+
+interface ISpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface ISpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onstart: (event: Event) => void;
+  onresult: (event: ISpeechRecognitionEvent) => void;
+  onerror: (event: ISpeechRecognitionErrorEvent) => void;
+  onend: (event: Event) => void;
+}
+
+interface ISpeechRecognitionConstructor {
+  new (): ISpeechRecognition;
+}
+
+// Get SpeechRecognition constructor safely
+const getSpeechRecognition = (): ISpeechRecognitionConstructor | null => {
   if (typeof window === "undefined") return null;
-  return (
-    (window as any).SpeechRecognition ||
-    (window as any).webkitSpeechRecognition ||
-    null
-  );
+  return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 };
 
 // Simplify technical Gemini errors to user-friendly messages
@@ -84,7 +125,7 @@ export function useVoiceInput({
   const [isSupported, setIsSupported] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -221,7 +262,7 @@ export function useVoiceInput({
     };
 
     // Improved: Rebuild transcript from scratch to avoid duplicates
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: ISpeechRecognitionEvent) => {
       let fullTranscript = "";
       for (let i = 0; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -237,7 +278,7 @@ export function useVoiceInput({
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: ISpeechRecognitionErrorEvent) => {
       // Ignore 'no-speech' which fires randomly
       if (event.error === "no-speech") return;
 

@@ -1,6 +1,7 @@
 import { createGroq } from '@ai-sdk/groq';
 import { streamText, UIMessage, convertToModelMessages } from 'ai';
 import { SYSTEM_PROMPT, STREAM_CONFIG, DEFAULT_MODEL } from '@/app/config';
+import { env } from '@/app/config/env';
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
 import type { RawMessage, SanitizedMessage } from '@/app/types/chat.types';
@@ -11,7 +12,7 @@ export const maxDuration = 30;
 
 // Initialize GROQ
 const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: env.GROQ_API_KEY,
 });
 
 // Zod schema for request validation
