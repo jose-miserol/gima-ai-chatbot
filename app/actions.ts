@@ -2,11 +2,16 @@
 
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { VOICE_PROMPT } from '@/app/config';
+
 
 export async function transcribeAudio(audioDataUrl: string): Promise<{ text: string; success: boolean; error?: string }> {
   try {
-    // 1. LIMPIEZA CRÍTICA: Eliminar el prefijo "data:audio/webm;base64,"
-    const base64Content = audioDataUrl.split(';base64,').pop() || '';
+    const base64Content = audioDataUrl.includes('base64,') 
+      ? audioDataUrl.split('base64,').pop() || ''
+      : audioDataUrl;
+
+    if (!base64Content) throw new Error("Audio vacío");
 
     const result = await generateText({
       model: google('gemini-2.5-flash-lite'), 
@@ -16,11 +21,11 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
           content: [
             { 
               type: 'text', 
-              text: 'Transcribe este audio técnico exactamente.' 
+              text: VOICE_PROMPT 
             },
             {
               type: 'file',
-              data: base64Content, // <--- Enviamos SOLO el base64 limpio
+              data: base64Content, 
               mediaType: 'audio/webm', 
             },
           ],
@@ -28,18 +33,19 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
       ],
     });
 
-    return { text: result.text, success: true };
+    // Limpieza por código: si el modelo manda por error "00:00", esto lo borra.
+    let cleanText = result.text
+      // Eliminar timestamps (00:00, 01:23, etc)
+      .replace(/\d{1,2}:\d{2}/g, '') 
+      // Eliminar saltos de línea excesivos y unirlos con espacios
+      .replace(/\n+/g, ' ')
+      // Quitar espacios dobles que quedan al borrar los tiempos
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return { text: cleanText, success: true };
   } catch (error: any) {
-    console.error('Error transcripción Gemini:', {
-      message: error.message,
-      name: error.name,
-      cause: error.cause,
-      stack: error.stack,
-    });
-    return { 
-      text: '', 
-      success: false, 
-      error: error.message 
-    };
+    console.error('Error transcripción:', error);
+    return { text: '', success: false, error: error.message };
   }
 }
