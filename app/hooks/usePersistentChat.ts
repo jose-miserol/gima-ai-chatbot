@@ -49,6 +49,9 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
 
   const { messages, setMessages } = chat;
 
+  // Loading is immediate since we use initialMessages
+  const isLoaded = true;
+
   // Debounced save to reduce localStorage writes
   const debouncedSave = useDebouncedCallback((key: string, data: string) => {
     try {
@@ -63,7 +66,8 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
     if (messages.length > 0) {
       debouncedSave(storageKey, JSON.stringify(messages));
     }
-  }, [messages, storageKey, debouncedSave]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, storageKey]);
 
   // Save vision response when it changes
   useEffect(() => {
