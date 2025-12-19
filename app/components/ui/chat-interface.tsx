@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
-} from "@/app/components/ai-elements/conversation";
+} from '@/app/components/ai-elements/conversation';
 import {
   Message,
   MessageContent,
   MessageResponse,
   MessageActions,
   MessageAction,
-} from "@/app/components/ai-elements/message";
+} from '@/app/components/ai-elements/message';
 import {
   PromptInput,
   PromptInputActionAddAttachments,
@@ -32,38 +32,42 @@ import {
   PromptInputFooter,
   PromptInputTools,
   PromptInputHeader,
-} from "@/app/components/ai-elements/prompt-input";
-import { Loader } from "@/app/components/ai-elements/loader";
-import { VoiceButton } from "@/app/components/ui/voice-button";
-import { useVoiceInput } from "@/app/hooks/useVoiceInput";
-import { usePersistentChat } from "@/app/hooks/usePersistentChat";
-import { useState, useCallback, useRef } from "react";
-import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from "lucide-react";
-import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
-import { analyzePartImage } from "@/app/actions";
+} from '@/app/components/ai-elements/prompt-input';
+import { Loader } from '@/app/components/ai-elements/loader';
+import { VoiceButton } from '@/app/components/ui/voice-button';
+import { useVoiceInput } from '@/app/hooks/useVoiceInput';
+import { usePersistentChat } from '@/app/hooks/usePersistentChat';
+import { useState, useCallback, useRef } from 'react';
+import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from 'lucide-react';
+import { AVAILABLE_MODELS, DEFAULT_MODEL } from '@/app/config';
+import { analyzePartImage } from '@/app/actions';
+import { useToast } from '@/app/components/ui/toast';
+import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
 
 export function ChatInterfaceV1() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const toast = useToast();
 
   // Use persistent chat with localStorage + error handling
-  const { 
-    messages, 
-    sendMessage, 
-    status, 
-    regenerate, 
+  const {
+    messages,
+    sendMessage,
+    status,
+    regenerate,
     error: chatError,
     isLoaded,
     visionResponse,
     setVisionResponse,
     clearHistory,
-    setMessages
+    setMessages,
   } = usePersistentChat({ storageKey: 'gima-chat-v1' });
-  
+
   // Check if status allows sending (ready, error, or after image analysis)
-  const canSend = status === "ready" || status === "error" || (status !== "streaming" && status !== "submitted");
+  const canSend =
+    status === 'ready' || status === 'error' || (status !== 'streaming' && status !== 'submitted');
 
   // Update textarea value programmatically
   const updateTextareaValue = useCallback((value: string) => {
@@ -71,10 +75,10 @@ export function ChatInterfaceV1() {
     if (textarea) {
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLTextAreaElement.prototype,
-        "value"
+        'value'
       )?.set;
       nativeInputValueSetter?.call(textarea, value);
-      const event = new Event("input", { bubbles: true });
+      const event = new Event('input', { bubbles: true });
       textarea.dispatchEvent(event);
     }
     setInput(value);
@@ -91,7 +95,7 @@ export function ChatInterfaceV1() {
   } = useVoiceInput({
     onTranscript: (text) => {
       // Append or replace based on mode
-      if (mode === "gemini") {
+      if (mode === 'gemini') {
         // Gemini returns full text at once
         updateTextareaValue(text);
       } else {
@@ -100,6 +104,39 @@ export function ChatInterfaceV1() {
       }
     },
   });
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts(
+    [
+      {
+        key: 'Enter',
+        ctrlKey: true,
+        handler: () => {
+          if (input.trim() && canSend) {
+            handleSubmit({ text: input, files: [] });
+          }
+        },
+        description: 'Enviar mensaje',
+      },
+      {
+        key: 'Escape',
+        handler: () => {
+          if (isListening) {
+            toggleListening();
+          }
+        },
+        description: 'Cancelar grabación de voz',
+      },
+      {
+        key: '/',
+        handler: () => {
+          textareaRef.current?.focus();
+        },
+        description: 'Enfocar textarea',
+      },
+    ],
+    !isAnalyzingImage
+  );
 
   const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -115,31 +152,29 @@ export function ChatInterfaceV1() {
     }
 
     // Check if there's an image attachment for auto-inventory analysis
-    const imageFile = message.files?.find(file => 
-      file.mediaType?.startsWith('image/')
-    );
+    const imageFile = message.files?.find((file) => file.mediaType?.startsWith('image/'));
 
     // If image attached with minimal/no text, use Gemini for vision analysis
     if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < 10)) {
       setIsAnalyzingImage(true);
-      
+
       try {
         // Fetch blob URL and convert to base64
         const response = await fetch(imageFile.url);
         const blob = await response.blob();
-        
+
         const base64Promise = new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-        
+
         const imageDataUrl = await base64Promise;
-        
+
         // Call Gemini vision via server action
         const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
-        
+
         if (result.success && result.text) {
           const visionId = `vision-${Date.now()}`;
           // Include clear context that this was from an uploaded image
@@ -151,9 +186,9 @@ ${result.text}
 
 ---
 *Este análisis fue generado automáticamente a partir de la imagen subida.*`;
-          
+
           // Add as actual message to history so GROQ has context
-          setMessages(prev => [
+          setMessages((prev) => [
             ...prev,
             {
               id: visionId,
@@ -161,15 +196,15 @@ ${result.text}
               content: analysisText,
               parts: [{ type: 'text' as const, text: analysisText }],
               createdAt: new Date(),
-            }
+            },
           ]);
-          
-          // Clear visionResponse since we're now using messages
+
           setVisionResponse(null);
+          toast.success('Imagen analizada', 'El análisis se ha agregado al chat');
         } else {
           // If vision fails, show error
           const errorMsg = `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`;
-          setMessages(prev => [
+          setMessages((prev) => [
             ...prev,
             {
               id: `vision-error-${Date.now()}`,
@@ -177,14 +212,15 @@ ${result.text}
               content: errorMsg,
               parts: [{ type: 'text' as const, text: errorMsg }],
               createdAt: new Date(),
-            }
+            },
           ]);
+          toast.error('Error de visión', result.error || 'No se pudo analizar la imagen');
         }
       } catch (error: unknown) {
         console.error('Error processing image:', error);
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
         const errorMsg = `❌ Error al procesar imagen: ${errorMessage}`;
-        setMessages(prev => [
+        setMessages((prev) => [
           ...prev,
           {
             id: `vision-error-${Date.now()}`,
@@ -192,20 +228,21 @@ ${result.text}
             content: errorMsg,
             parts: [{ type: 'text' as const, text: errorMsg }],
             createdAt: new Date(),
-          }
+          },
         ]);
+        toast.error('Error al procesar imagen', errorMessage);
       } finally {
         setIsAnalyzingImage(false);
       }
-      
-      setInput("");
+
+      setInput('');
       return;
     }
 
     // Normal text message - use GROQ
     sendMessage(
       {
-        text: message.text || "Archivo adjunto",
+        text: message.text || 'Archivo adjunto',
         files: message.files,
       },
       {
@@ -215,7 +252,7 @@ ${result.text}
       }
     );
 
-    setInput("");
+    setInput('');
   };
 
   // Show loading state while history is being restored
@@ -232,13 +269,11 @@ ${result.text}
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="mb-4 text-center relative">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            GIMA Chatbot
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">GIMA Chatbot</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Asistente Inteligente de Mantenimiento - UNEG
           </p>
-          
+
           {/* Clear History Button */}
           {(messages.length > 0 || visionResponse) && (
             <button
@@ -262,16 +297,14 @@ ${result.text}
             {messages.length === 0 && !visionResponse && (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
-                  <p className="text-lg mb-2">
-                    👋 ¡Hola! Soy tu asistente de mantenimiento
-                  </p>
+                  <p className="text-lg mb-2">👋 ¡Hola! Soy tu asistente de mantenimiento</p>
                   <p className="text-sm">
                     Pregúntame sobre equipos, procedimientos o solicita ayuda
                   </p>
                   {isSupported && (
                     <p className="text-xs mt-2 text-gray-400">
                       🎤 Puedes usar el micrófono para dictar
-                      {mode === "gemini" && " (con IA)"}
+                      {mode === 'gemini' && ' (con IA)'}
                     </p>
                   )}
                 </div>
@@ -281,31 +314,28 @@ ${result.text}
             {messages.map((message) => (
               <div key={message.id}>
                 {message.parts.map((part, i) => {
-                  if (part.type === "text") {
+                  if (part.type === 'text') {
                     return (
                       <Message key={`${message.id}-${i}`} from={message.role}>
                         <MessageContent>
                           <MessageResponse>{part.text}</MessageResponse>
                         </MessageContent>
-                        {message.role === "assistant" &&
-                          i === message.parts.length - 1 && (
-                            <MessageActions>
-                              <MessageAction
-                                onClick={() => regenerate()}
-                                label="Reintentar"
-                              >
-                                <RefreshCcwIcon className="size-3" />
-                              </MessageAction>
-                              <MessageAction
-                                onClick={() =>
-                                  navigator.clipboard.writeText(part.text)
-                                }
-                                label="Copiar"
-                              >
-                                <CopyIcon className="size-3" />
-                              </MessageAction>
-                            </MessageActions>
-                          )}
+                        {message.role === 'assistant' && i === message.parts.length - 1 && (
+                          <MessageActions>
+                            <MessageAction onClick={() => regenerate()} label="Reintentar">
+                              <RefreshCcwIcon className="size-3" />
+                            </MessageAction>
+                            <MessageAction
+                              onClick={() => {
+                                navigator.clipboard.writeText(part.text);
+                                toast.success('Copiado', 'Mensaje copiado al portapapeles');
+                              }}
+                              label="Copiar"
+                            >
+                              <CopyIcon className="size-3" />
+                            </MessageAction>
+                          </MessageActions>
+                        )}
                       </Message>
                     );
                   }
@@ -314,7 +344,7 @@ ${result.text}
               </div>
             ))}
 
-            {status === "submitted" && <Loader />}
+            {status === 'submitted' && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>
@@ -329,18 +359,20 @@ ${result.text}
           {isListening && !voiceError && (
             <div
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs ${
-                mode === "gemini"
-                  ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
-                  : "bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                mode === 'gemini'
+                  ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                  : 'bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
               }`}
             >
               <span className="relative flex size-2">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${mode === "gemini" ? "bg-blue-400" : "bg-gray-400"}`}></span>
-                <span className={`relative inline-flex rounded-full size-2 ${mode === "gemini" ? "bg-blue-500" : "bg-gray-500"}`}></span>
+                <span
+                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${mode === 'gemini' ? 'bg-blue-400' : 'bg-gray-400'}`}
+                ></span>
+                <span
+                  className={`relative inline-flex rounded-full size-2 ${mode === 'gemini' ? 'bg-blue-500' : 'bg-gray-500'}`}
+                ></span>
               </span>
-              {mode === "gemini"
-                ? "Grabando para IA..."
-                : "Escuchando..."}
+              {mode === 'gemini' ? 'Grabando para IA...' : 'Escuchando...'}
             </div>
           )}
           {isProcessing && (
@@ -363,12 +395,7 @@ ${result.text}
         </div>
 
         {/* Input Area */}
-        <PromptInput
-          onSubmit={handleSubmit}
-          className="mt-2"
-          globalDrop
-          multiple
-        >
+        <PromptInput onSubmit={handleSubmit} className="mt-2" globalDrop multiple>
           <PromptInputHeader>
             <PromptInputAttachments>
               {(attachment) => <PromptInputAttachment data={attachment} />}
@@ -421,10 +448,7 @@ ${result.text}
               </PromptInputSelect>
             </PromptInputTools>
 
-            <PromptInputSubmit
-              disabled={!input || !canSend}
-              status={status}
-            />
+            <PromptInputSubmit disabled={!input || !canSend} status={status} />
           </PromptInputFooter>
         </PromptInput>
       </div>
