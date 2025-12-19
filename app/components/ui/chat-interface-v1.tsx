@@ -40,10 +40,13 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { CopyIcon, RefreshCcwIcon, Loader2 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
+import { analyzePartImage } from "@/app/actions";
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [visionResponse, setVisionResponse] = useState<{id: string; text: string} | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { messages, sendMessage, status, regenerate } = useChat();
@@ -84,7 +87,7 @@ export function ChatInterfaceV1() {
     },
   });
 
-  const handleSubmit = (message: PromptInputMessage) => {
+  const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
 
@@ -97,6 +100,60 @@ export function ChatInterfaceV1() {
       toggleListening();
     }
 
+    // Check if there's an image attachment for auto-inventory analysis
+    const imageFile = message.files?.find(file => 
+      file.mediaType?.startsWith('image/')
+    );
+
+    // If image attached with minimal/no text, use Gemini for vision analysis
+    if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < 10)) {
+      setIsAnalyzingImage(true);
+      
+      try {
+        // Fetch blob URL and convert to base64
+        const response = await fetch(imageFile.url);
+        const blob = await response.blob();
+        
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        
+        const imageDataUrl = await base64Promise;
+        
+        // Call Gemini vision via server action
+        const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
+        
+        if (result.success && result.text) {
+          // Store vision result to display as assistant message
+          setVisionResponse({
+            id: `vision-${Date.now()}`,
+            text: result.text
+          });
+        } else {
+          // If vision fails, show error as vision response
+          setVisionResponse({
+            id: `vision-error-${Date.now()}`,
+            text: `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`
+          });
+        }
+      } catch (error: any) {
+        console.error('Error processing image:', error);
+        setVisionResponse({
+          id: `vision-error-${Date.now()}`,
+          text: `❌ Error al procesar imagen: ${error.message}`
+        });
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+      
+      setInput("");
+      return;
+    }
+
+    // Normal text message - use GROQ
     sendMessage(
       {
         text: message.text || "Archivo adjunto",
@@ -183,6 +240,29 @@ export function ChatInterfaceV1() {
               </div>
             ))}
 
+            {/* Vision Analysis Response - displayed as assistant message */}
+            {visionResponse && (
+              <Message from="assistant">
+                <MessageContent>
+                  <MessageResponse>{`📷 **Análisis de Inventario**\n\n${visionResponse.text}`}</MessageResponse>
+                </MessageContent>
+                <MessageActions>
+                  <MessageAction
+                    onClick={() => navigator.clipboard.writeText(visionResponse.text)}
+                    label="Copiar"
+                  >
+                    <CopyIcon className="size-3" />
+                  </MessageAction>
+                  <MessageAction
+                    onClick={() => setVisionResponse(null)}
+                    label="Cerrar"
+                  >
+                    ✕
+                  </MessageAction>
+                </MessageActions>
+              </Message>
+            )}
+
             {status === "submitted" && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
@@ -215,7 +295,13 @@ export function ChatInterfaceV1() {
           {isProcessing && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs">
               <Loader2 className="size-3 animate-spin" />
-              Procesando con IA...
+              Procesando voz con IA...
+            </div>
+          )}
+          {isAnalyzingImage && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
+              <Loader2 className="size-3 animate-spin" />
+              📷 Analizando imagen con IA...
             </div>
           )}
         </div>

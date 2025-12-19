@@ -2,7 +2,7 @@
 
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { VOICE_PROMPT } from '@/app/config';
+import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
 
 
 export async function transcribeAudio(audioDataUrl: string): Promise<{ text: string; success: boolean; error?: string }> {
@@ -47,6 +47,46 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
     return { text: cleanText, success: true };
   } catch (error: any) {
     console.error('Error transcripción:', error);
+    return { text: '', success: false, error: error.message };
+  }
+}
+
+// Analyze industrial part image for inventory
+export async function analyzePartImage(
+  imageDataUrl: string,
+  mediaType: string = 'image/jpeg'
+): Promise<{ text: string; success: boolean; error?: string }> {
+  try {
+    const base64Content = imageDataUrl.includes('base64,')
+      ? imageDataUrl.split('base64,').pop() || ''
+      : imageDataUrl;
+
+    if (!base64Content) throw new Error("Imagen vacía");
+
+    const result = await generateText({
+      model: google('gemini-2.5-flash'),
+      temperature: 0.2, // Un poco más de creatividad para descripciones
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: INVENTORY_PROMPT,
+            },
+            {
+              type: 'file',
+              data: base64Content,
+              mediaType: mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+            },
+          ],
+        },
+      ],
+    });
+
+    return { text: result.text, success: true };
+  } catch (error: any) {
+    console.error('Error análisis de imagen:', error);
     return { text: '', success: false, error: error.message };
   }
 }
