@@ -43,6 +43,7 @@ import { AVAILABLE_MODELS, DEFAULT_MODEL } from '@/app/config';
 import { analyzePartImage } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
+import { ThemeToggle } from '@/app/components/ui/theme-toggle';
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState('');
@@ -274,21 +275,24 @@ ${result.text}
             Asistente Inteligente de Mantenimiento - UNEG
           </p>
 
-          {/* Clear History Button */}
-          {(messages.length > 0 || visionResponse) && (
-            <button
-              onClick={() => {
-                if (confirm('¿Borrar todo el historial de conversación?')) {
-                  clearHistory();
-                  setInput('');
-                }
-              }}
-              title="Borrar historial"
-              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
-            >
-              <Trash2 className="size-5" />
-            </button>
-          )}
+          {/* Theme Toggle & Clear History */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <ThemeToggle />
+            {(messages.length > 0 || visionResponse) && (
+              <button
+                onClick={() => {
+                  if (confirm('¿Borrar todo el historial de conversación?')) {
+                    clearHistory();
+                    setInput('');
+                  }
+                }}
+                title="Borrar historial"
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+              >
+                <Trash2 className="size-5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Conversation Area */}
