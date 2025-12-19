@@ -46,20 +46,21 @@ Directrices:
 
 Contexto General: La UNEG está digitalizando su sistema de mantenimiento. Actualmente muchos procesos son manuales.`;
 
-export const VOICE_PROMPT = `Actúa como un transcriptor técnico experto para el sistema GIMA.
-Tu tarea es transcribir el audio proporcionado a texto plano exacto.
+export const VOICE_PROMPT = `Actúa como una máquina de transcripción estricta para el sistema GIMA.
+Tu ÚNICA función es convertir el audio en texto, palabra por palabra.
 
-REGLAS CRÍTICAS:
-1. NO incluyas marcas de tiempo (00:00).
-2. NO incluyas descripciones de ruido (ej: [ruido de fondo], [sonido de motor]).
-3. Solo devuelve el texto hablado.
+REGLAS DE ORO:
+1. Escribe EXACTAMENTE lo que escuchas.
+2. IMPORTANTE: Si el usuario dice palabras cortas de verificación (ej: "Prueba", "Test", "Probando", "1 2 3"), TRANSCRÍBELAS LITERALMENTE. No las filtres.
+3. NO inventes, NO completes frases.
+4. NO incluyas marcas de tiempo ni descripciones de ruido (ej: [silencio]).
 
-CORRECCIÓN DE TERMINOLOGÍA:
-El audio contiene términos técnicos de la UNEG. Si escuchas algo que suena fonéticamente similar a estas siglas, transcríbelo usando la SIGLA CORRECTA en mayúsculas:
+TERMINOLOGÍA TÉCNICA:
+Si y SOLO SI escuchas términos que coincidan fonéticamente con estas siglas, úsalas en mayúsculas:
 
 ${formatGlossary()}
 
-Ejemplo: Si suena "revisar la uma del piso dos", transcribe "Revisar la UMA del piso 2".`;
+Si el audio no es claro, escribe lo que mejor entiendas fonéticamente.`;
 
 // Streaming configuration
 export const STREAM_CONFIG = {

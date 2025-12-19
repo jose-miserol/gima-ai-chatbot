@@ -15,6 +15,7 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
 
     const result = await generateText({
       model: google('gemini-2.5-flash-lite'), 
+      temperature: 0,
       messages: [
         {
           role: 'user',
