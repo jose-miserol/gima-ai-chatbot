@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GIMA AI Chatbot
 
-## Getting Started
+Asistente inteligente para la gestión de mantenimiento y activos de la Universidad Nacional Experimental de Guayana (UNEG).
 
-First, run the development server:
+## 🚀 Características
+
+- **Chat multimodal**: Texto, voz e imágenes
+- **Análisis automático de piezas** con IA (Gemini Vision)
+- **Transcripción de voz** inteligente con Gemini API + fallback nativo Web Speech API
+- **Múltiples modelos de IA**: GROQ (Llama, Mixtral) + Google Gemini
+- **Persistencia de historial** en navegador (localStorage)
+- **Interfaz responsiva** con React 19 y Tailwind CSS 4
+
+## 📋 Requisitos
+
+- Node.js 20+ y npm
+- API Keys:
+  - [GROQ API](https://console.groq.com/)
+  - [Google Gemini](https://makersuite.google.com/app/apikey)
+
+## ⚙️ Instalación y Setup
 
 ```bash
+# Clonar repositorio
+git clone <repo-url>
+cd gima-ai-chatbot
+
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus API keys
+
+# Ejecutar en modo desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔑 Variables de Entorno
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Crear archivo `.env.local` con:
 
-## Learn More
+```env
+GROQ_API_KEY=gsk_...
+GOOGLE_GENERATIVE_AI_API_KEY=AIza...
+NODE_ENV=development
+```
 
-To learn more about Next.js, take a look at the following resources:
+Ver `.env.example` para referencia completa.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Scripts Disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev          # Servidor de desarrollo
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run lint         # Ejecutar ESLint
+npm run lint:fix     # Corregir errores de ESLint
+npm run format       # Formatear código con Prettier
+npm run type-check   # Verificar tipos TypeScript
+```
 
-## Deploy on Vercel
+## 🏗️ Tecnologías
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework**: Next.js 16.0 (App Router)
+- **UI**: React 19, Tailwind CSS 4, Radix UI
+- **IA**: Vercel AI SDK v5, GROQ, Google Gemini
+- **Lenguaje**: TypeScript 5 (strict mode)
+- **Validación**: Zod
+- **Iconos**: Lucide React
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 Estructura del Proyecto
+
+```
+gima-ai-chatbot/
+├── app/
+│   ├── api/chat/          # API route para chat
+│   ├── components/
+│   │   ├── ai-elements/   # Componentes de IA
+│   │   └── ui/            # Componentes UI
+│   ├── config/            # Configuración y prompts
+│   ├── hooks/             # React hooks personalizados
+│   ├── types/             # Tipos TypeScript
+│   └── actions.ts         # Server Actions (Gemini)
+├── public/                # Archivos estáticos
+└── .env.example           # Plantilla de variables
+```
+
+## 🤖 Modelos Disponibles
+
+- **LLaMA 3.3 70B** (predeterminado): Rápido y eficiente
+- **Mixtral 8x7B**: Excelente razonamiento
+- **LLaMA 3.1 8B**: Ultrarrápido
+
+## 🔒 Seguridad
+
+- Validación de entrada con Zod
+- Headers de seguridad HTTP configurados
+- Validación estricta de variables de entorno
+- TypeScript strict mode activado
+
+## 📝 Licencia
+
+Proyecto académico - UNEG
+
+---
+
+**Desarrollado con IA para GIMA - Sistema de Gestión Integral de Mantenimiento y Activos**
