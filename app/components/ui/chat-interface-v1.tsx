@@ -36,9 +36,9 @@ import {
 import { Loader } from "@/app/components/ai-elements/loader";
 import { VoiceButton } from "@/app/components/ui/voice-button";
 import { useVoiceInput } from "@/app/hooks/useVoiceInput";
-import { useState, useCallback, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
-import { CopyIcon, RefreshCcwIcon, Loader2 } from "lucide-react";
+import { usePersistentChat } from "@/app/hooks/usePersistentChat";
+import { useState, useCallback, useRef } from "react";
+import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
 import { analyzePartImage } from "@/app/actions";
 
@@ -46,10 +46,24 @@ export function ChatInterfaceV1() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
-  const [visionResponse, setVisionResponse] = useState<{id: string; text: string} | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, sendMessage, status, regenerate } = useChat();
+  // Use persistent chat with localStorage + error handling
+  const { 
+    messages, 
+    sendMessage, 
+    status, 
+    regenerate, 
+    error: chatError,
+    isLoaded,
+    visionResponse,
+    setVisionResponse,
+    clearHistory,
+    setMessages
+  } = usePersistentChat({ storageKey: 'gima-chat-v1' });
+  
+  // Check if status allows sending (ready, error, or after image analysis)
+  const canSend = status === "ready" || status === "error" || (status !== "streaming" && status !== "submitted");
 
   // Update textarea value programmatically
   const updateTextareaValue = useCallback((value: string) => {
@@ -127,24 +141,58 @@ export function ChatInterfaceV1() {
         const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
         
         if (result.success && result.text) {
-          // Store vision result to display as assistant message
-          setVisionResponse({
-            id: `vision-${Date.now()}`,
-            text: result.text
-          });
+          const visionId = `vision-${Date.now()}`;
+          // Include clear context that this was from an uploaded image
+          const analysisText = `📷 **Análisis de Imagen Subida por el Usuario**
+
+He analizado la imagen que el usuario acaba de subir. Este es el resultado del análisis visual:
+
+${result.text}
+
+---
+*Este análisis fue generado automáticamente a partir de la imagen subida.*`;
+          
+          // Add as actual message to history so GROQ has context
+          setMessages(prev => [
+            ...prev,
+            {
+              id: visionId,
+              role: 'assistant' as const,
+              content: analysisText,
+              parts: [{ type: 'text' as const, text: analysisText }],
+              createdAt: new Date(),
+            }
+          ]);
+          
+          // Clear visionResponse since we're now using messages
+          setVisionResponse(null);
         } else {
-          // If vision fails, show error as vision response
-          setVisionResponse({
-            id: `vision-error-${Date.now()}`,
-            text: `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`
-          });
+          // If vision fails, show error
+          const errorMsg = `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`;
+          setMessages(prev => [
+            ...prev,
+            {
+              id: `vision-error-${Date.now()}`,
+              role: 'assistant' as const,
+              content: errorMsg,
+              parts: [{ type: 'text' as const, text: errorMsg }],
+              createdAt: new Date(),
+            }
+          ]);
         }
       } catch (error: any) {
         console.error('Error processing image:', error);
-        setVisionResponse({
-          id: `vision-error-${Date.now()}`,
-          text: `❌ Error al procesar imagen: ${error.message}`
-        });
+        const errorMsg = `❌ Error al procesar imagen: ${error.message}`;
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `vision-error-${Date.now()}`,
+            role: 'assistant' as const,
+            content: errorMsg,
+            parts: [{ type: 'text' as const, text: errorMsg }],
+            createdAt: new Date(),
+          }
+        ]);
       } finally {
         setIsAnalyzingImage(false);
       }
@@ -169,23 +217,48 @@ export function ChatInterfaceV1() {
     setInput("");
   };
 
+  // Show loading state while history is being restored
+  if (!isLoaded) {
+    return (
+      <div className="max-w-4xl mx-auto p-6 flex items-center justify-center h-screen">
+        <Loader2 className="size-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="mb-4 text-center">
+        <div className="mb-4 text-center relative">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             GIMA Chatbot
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Asistente Inteligente de Mantenimiento - UNEG
           </p>
+          
+          {/* Clear History Button */}
+          {(messages.length > 0 || visionResponse) && (
+            <button
+              onClick={() => {
+                if (confirm('¿Borrar todo el historial de conversación?')) {
+                  clearHistory();
+                  setInput('');
+                }
+              }}
+              title="Borrar historial"
+              className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+            >
+              <Trash2 className="size-5" />
+            </button>
+          )}
         </div>
 
         {/* Conversation Area */}
         <Conversation className="h-full">
           <ConversationContent>
-            {messages.length === 0 && (
+            {messages.length === 0 && !visionResponse && (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
                   <p className="text-lg mb-2">
@@ -240,29 +313,6 @@ export function ChatInterfaceV1() {
               </div>
             ))}
 
-            {/* Vision Analysis Response - displayed as assistant message */}
-            {visionResponse && (
-              <Message from="assistant">
-                <MessageContent>
-                  <MessageResponse>{`📷 **Análisis de Inventario**\n\n${visionResponse.text}`}</MessageResponse>
-                </MessageContent>
-                <MessageActions>
-                  <MessageAction
-                    onClick={() => navigator.clipboard.writeText(visionResponse.text)}
-                    label="Copiar"
-                  >
-                    <CopyIcon className="size-3" />
-                  </MessageAction>
-                  <MessageAction
-                    onClick={() => setVisionResponse(null)}
-                    label="Cerrar"
-                  >
-                    ✕
-                  </MessageAction>
-                </MessageActions>
-              </Message>
-            )}
-
             {status === "submitted" && <Loader />}
           </ConversationContent>
           <ConversationScrollButton />
@@ -304,6 +354,11 @@ export function ChatInterfaceV1() {
               📷 Analizando imagen con IA...
             </div>
           )}
+          {chatError && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs">
+              <span>❌ Error de conexión - Intenta de nuevo</span>
+            </div>
+          )}
         </div>
 
         {/* Input Area */}
@@ -343,7 +398,7 @@ export function ChatInterfaceV1() {
                 isSupported={isSupported}
                 mode={mode}
                 onClick={toggleListening}
-                disabled={status !== "ready" || isProcessing}
+                disabled={!canSend || isProcessing}
               />
 
               <PromptInputSelect
@@ -366,7 +421,7 @@ export function ChatInterfaceV1() {
             </PromptInputTools>
 
             <PromptInputSubmit
-              disabled={!input || status !== "ready"}
+              disabled={!input || !canSend}
               status={status}
             />
           </PromptInputFooter>

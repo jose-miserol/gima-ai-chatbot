@@ -21,9 +21,26 @@ export async function POST(req: Request) {
       model?: string;
     } = await req.json();
 
+    // Sanitize messages to ensure content is always a string
+    // This handles cases where vision analysis messages might have incorrect format
+    const sanitizedMessages = messages.map((msg: any) => {
+      let content = msg.content;
+      
+      // If content is missing or not a string, try to extract from parts
+      if (typeof content !== 'string') {
+        const textPart = msg.parts?.find((p: any) => p.type === 'text' && p.text);
+        content = textPart?.text || '';
+      }
+      
+      return {
+        ...msg,
+        content: String(content || ''),
+      };
+    }) as UIMessage[];
+
     const result = streamText({
       model: groq(model),
-      messages: convertToModelMessages(messages),
+      messages: convertToModelMessages(sanitizedMessages),
       system: SYSTEM_PROMPT,
     });
 

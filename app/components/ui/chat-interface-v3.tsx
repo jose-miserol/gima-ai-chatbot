@@ -33,8 +33,8 @@ import {
 import { Loader } from "@/app/components/ai-elements/loader";
 import { VoiceButton } from "@/app/components/ui/voice-button";
 import { useVoiceInput } from "@/app/hooks/useVoiceInput";
-import { useState, useCallback, useRef } from "react";
-import { useChat } from "@ai-sdk/react";
+import { usePersistentChat } from "@/app/hooks/usePersistentChat";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { 
   CopyIcon, 
   Loader2, 
@@ -42,8 +42,10 @@ import {
   MoreVertical,
   Bolt,
   QrCode,
+  Trash2,
 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
+import { analyzePartImage } from "@/app/actions";
 
 // --- STARTER PROMPTS ---
 const STARTER_PROMPTS = [
@@ -62,9 +64,35 @@ const STARTER_PROMPTS = [
 export function ChatInterfaceV3() {
   const [input, setInput] = useState("");
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [showError, setShowError] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, sendMessage, status } = useChat();
+  // Use persistent chat with localStorage + error handling
+  const { 
+    messages, 
+    sendMessage, 
+    status, 
+    error: chatError,
+    isLoaded,
+    visionResponse,
+    setVisionResponse,
+    clearHistory,
+    setMessages
+  } = usePersistentChat({ storageKey: 'gima-chat-v3' });
+  
+  // Show error when chatError occurs, auto-hide after 5 seconds
+  useEffect(() => {
+    if (chatError) {
+      setShowError(true);
+      const timer = setTimeout(() => setShowError(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [chatError]);
+  
+  // Check if status allows sending (ready, error, or after image analysis)
+  // Also allow when status is stuck due to image analysis completing
+  const canSend = status === "ready" || status === "error" || (status !== "streaming" && status !== "submitted");
 
   const updateTextareaValue = useCallback((value: string) => {
     const textarea = textareaRef.current;
@@ -91,19 +119,110 @@ export function ChatInterfaceV3() {
     onTranscript: (text) => updateTextareaValue(text),
   });
 
-  const handleSubmit = (message: PromptInputMessage) => {
+  const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
 
     if (!(hasText || hasAttachments)) return;
     if (isListening) toggleListening();
 
+    // Check if there's an image attachment for vision analysis
+    const imageFile = message.files?.find(file => 
+      file.mediaType?.startsWith('image/')
+    );
+
+    // If image attached and no/minimal text, use Gemini vision
+    if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < 10)) {
+      setIsAnalyzingImage(true);
+      
+      try {
+        const response = await fetch(imageFile.url);
+        const blob = await response.blob();
+        
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        
+        const imageDataUrl = await base64Promise;
+        
+        const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
+        
+        if (result.success && result.text) {
+          const visionId = `vision-${Date.now()}`;
+          const analysisText = `📷 **Análisis de Imagen Subida por el Usuario**
+
+He analizado la imagen que el usuario acaba de subir. Este es el resultado del análisis visual:
+
+${result.text}
+
+---
+*Este análisis fue generado automáticamente a partir de la imagen subida.*`;
+          
+          setMessages(prev => [
+            ...prev,
+            {
+              id: visionId,
+              role: 'assistant' as const,
+              content: analysisText,
+              parts: [{ type: 'text' as const, text: analysisText }],
+              createdAt: new Date(),
+            }
+          ]);
+          
+          setVisionResponse(null);
+        } else {
+          const errorMsg = `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`;
+          setMessages(prev => [
+            ...prev,
+            {
+              id: `vision-error-${Date.now()}`,
+              role: 'assistant' as const,
+              content: errorMsg,
+              parts: [{ type: 'text' as const, text: errorMsg }],
+              createdAt: new Date(),
+            }
+          ]);
+        }
+      } catch (error: any) {
+        console.error('Error processing image:', error);
+        const errorMsg = `❌ Error al procesar imagen: ${error.message}`;
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `vision-error-${Date.now()}`,
+            role: 'assistant' as const,
+            content: errorMsg,
+            parts: [{ type: 'text' as const, text: errorMsg }],
+            createdAt: new Date(),
+          }
+        ]);
+      } finally {
+        setIsAnalyzingImage(false);
+      }
+      
+      setInput("");
+      return;
+    }
+
+    // Normal text message - use GROQ
     sendMessage(
       { text: message.text || "Archivo adjunto", files: message.files },
       { body: { model: model } }
     );
     setInput("");
   };
+
+  // Show loading state while history is being restored
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col h-screen w-full bg-white items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full bg-white text-slate-900 font-sans">
@@ -130,6 +249,20 @@ export function ChatInterfaceV3() {
             <span className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
               <Loader2 className="size-3 animate-spin" />
             </span>
+          )}
+          {messages.length > 0 && (
+            <button 
+              onClick={() => {
+                if (confirm('¿Borrar todo el historial?')) {
+                  clearHistory();
+                  setInput('');
+                }
+              }}
+              title="Borrar historial"
+              className="size-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <Trash2 className="size-5" />
+            </button>
           )}
           <button className="size-10 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 transition-colors">
             <MoreVertical className="size-5" />
@@ -259,6 +392,17 @@ export function ChatInterfaceV3() {
             Procesando con IA...
           </div>
         )}
+        {isAnalyzingImage && (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
+            <Loader2 className="size-3 animate-spin" />
+            📷 Analizando imagen...
+          </div>
+        )}
+        {showError && (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+            ❌ Error de conexión - Intenta de nuevo
+          </div>
+        )}
       </div>
 
       {/* --- INPUT AREA (V1 Style Footer) --- */}
@@ -299,7 +443,7 @@ export function ChatInterfaceV3() {
                 isSupported={isSupported}
                 mode={mode}
                 onClick={toggleListening}
-                disabled={status !== "ready" || isProcessing}
+                disabled={!canSend || isProcessing}
               />
 
               <PromptInputSelect
@@ -320,7 +464,7 @@ export function ChatInterfaceV3() {
             </PromptInputTools>
 
             <PromptInputSubmit
-              disabled={!input || status !== "ready"}
+              disabled={!input || !canSend}
               status={status}
             />
           </PromptInputFooter>

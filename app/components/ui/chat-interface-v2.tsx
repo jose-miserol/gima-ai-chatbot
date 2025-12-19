@@ -44,7 +44,8 @@ import {
   Camera,
   Mic,
   MicOff,
-  Square
+  Square,
+  Trash2
 } from "lucide-react";
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from "@/app/config";
 
@@ -67,7 +68,13 @@ export function ChatInterfaceV2() {
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { messages, sendMessage, status } = useChat();
+  // Use regular useChat (no persistence)
+  const { messages, sendMessage, status, setMessages } = useChat();
+  const isLoaded = true;
+  
+  const clearHistory = useCallback(() => {
+    setMessages([]);
+  }, [setMessages]);
 
   const updateTextareaValue = useCallback((value: string) => {
     const textarea = textareaRef.current;
@@ -108,6 +115,15 @@ export function ChatInterfaceV2() {
     setInput("");
   };
 
+  // Show loading state while history is being restored
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col h-screen w-full bg-white items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-slate-400" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen w-full bg-white text-slate-900 font-sans">
       
@@ -133,6 +149,20 @@ export function ChatInterfaceV2() {
             <span className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
               <Loader2 className="size-3 animate-spin" />
             </span>
+          )}
+          {messages.length > 0 && (
+            <button 
+              onClick={() => {
+                if (confirm('¿Borrar todo el historial?')) {
+                  clearHistory();
+                  setInput('');
+                }
+              }}
+              title="Borrar historial"
+              className="size-10 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <Trash2 className="size-5" />
+            </button>
           )}
           <button className="size-10 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 transition-colors">
             <MoreVertical className="size-5" />
