@@ -4,30 +4,38 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
 
-
-export async function transcribeAudio(audioDataUrl: string): Promise<{ text: string; success: boolean; error?: string }> {
+/**
+ * Transcribe un archivo de audio usando el modelo Gemini Flash Lite.
+ * Utiliza prompting específico para limpiar timestamps y muletillas.
+ *
+ * @param audioDataUrl - String codificado en base64 del audio (data:audio/...)
+ * @returns Objeto con el texto transcrito y estado de éxito
+ */
+export async function transcribeAudio(
+  audioDataUrl: string
+): Promise<{ text: string; success: boolean; error?: string }> {
   try {
-    const base64Content = audioDataUrl.includes('base64,') 
+    const base64Content = audioDataUrl.includes('base64,')
       ? audioDataUrl.split('base64,').pop() || ''
       : audioDataUrl;
 
-    if (!base64Content) throw new Error("Audio vacío");
+    if (!base64Content) throw new Error('Audio vacío');
 
     const result = await generateText({
-      model: google('gemini-2.5-flash-lite'), 
+      model: google('gemini-2.5-flash-lite'),
       temperature: 0,
       messages: [
         {
           role: 'user',
           content: [
-            { 
-              type: 'text', 
-              text: VOICE_PROMPT 
+            {
+              type: 'text',
+              text: VOICE_PROMPT,
             },
             {
               type: 'file',
-              data: base64Content, 
-              mediaType: 'audio/webm', 
+              data: base64Content,
+              mediaType: 'audio/webm',
             },
           ],
         },
@@ -35,9 +43,9 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
     });
 
     // Limpieza por código: si el modelo manda por error "00:00", esto lo borra.
-    let cleanText = result.text
+    const cleanText = result.text
       // Eliminar timestamps (00:00, 01:23, etc)
-      .replace(/\d{1,2}:\d{2}/g, '') 
+      .replace(/\d{1,2}:\d{2}/g, '')
       // Eliminar saltos de línea excesivos y unirlos con espacios
       .replace(/\n+/g, ' ')
       // Quitar espacios dobles que quedan al borrar los tiempos
@@ -45,13 +53,23 @@ export async function transcribeAudio(audioDataUrl: string): Promise<{ text: str
       .trim();
 
     return { text: cleanText, success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error transcripción:', error);
-    return { text: '', success: false, error: error.message };
+    const errorMessage =
+      error instanceof Error ? error.message : 'Error desconocido al transcribir';
+    return { text: '', success: false, error: errorMessage };
   }
 }
 
 // Analyze industrial part image for inventory
+/**
+ * Analiza una imagen de una pieza industrial para inventario.
+ * Utiliza Gemini Vision para identificar, describir y evaluar el estado de la pieza.
+ *
+ * @param imageDataUrl - String codificado en base64 de la imagen
+ * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
+ * @returns Descripción detallada generada por la IA
+ */
 export async function analyzePartImage(
   imageDataUrl: string,
   mediaType: string = 'image/jpeg'
@@ -61,7 +79,7 @@ export async function analyzePartImage(
       ? imageDataUrl.split('base64,').pop() || ''
       : imageDataUrl;
 
-    if (!base64Content) throw new Error("Imagen vacía");
+    if (!base64Content) throw new Error('Imagen vacía');
 
     const result = await generateText({
       model: google('gemini-2.5-flash'),
@@ -85,8 +103,9 @@ export async function analyzePartImage(
     });
 
     return { text: result.text, success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error análisis de imagen:', error);
-    return { text: '', success: false, error: error.message };
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido de visión';
+    return { text: '', success: false, error: errorMessage };
   }
 }
