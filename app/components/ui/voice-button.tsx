@@ -1,6 +1,6 @@
 "use client";
 
-import { Mic, Square, Loader2, Sparkles } from "lucide-react";
+import { Mic, Square, Loader2 } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import { AudioWaveform } from "./audio-waveform";
 
