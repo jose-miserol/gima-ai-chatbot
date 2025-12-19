@@ -17,6 +17,23 @@ export const metadata: Metadata = {
   title: 'GIMA Chatbot - Sistema de Gestión de Mantenimiento',
   description: 'Asistente inteligente para la gestión de mantenimiento y activos de la UNEG',
   keywords: 'mantenimiento, GIMA, UNEG, chatbot, IA',
+  manifest: '/manifest.json',
+  themeColor: '#1e40af',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'GIMA Chatbot',
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/icon-192.png',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
