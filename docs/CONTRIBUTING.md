@@ -6,11 +6,9 @@
 
 - **Node.js**: v20 o superior
 - **Gestor de paquetes**: npm (usamos `package-lock.json`)
-- **Editor**: VS Code (recomendado con extensiones de ESLint y Prettier)
+- **Editor**: VS Code con extensiones ESLint y Prettier
 
-## 📋 Flujo de Trabajo
-
-### 1. Preparación del Entorno
+## 📋 Setup Inicial
 
 ```bash
 npm install
@@ -18,49 +16,101 @@ cp .env.example .env.local
 # Configura tus API Keys en .env.local
 ```
 
-### 2. Comandos Clave
+## 🔧 Comandos Disponibles
 
-- `npm run dev`: Inicia servidor de desarrollo
-- `npm run lint`: Verifica estilo de código
-- `npm run type-check`: Verifica tipos de TypeScript
-- `npm run format`: Formatea todo el código con Prettier
+| Comando              | Descripción                              |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Servidor de desarrollo                   |
+| `npm run build`      | Build de producción                      |
+| `npm run lint`       | Verificar estilo de código               |
+| `npm run lint:fix`   | Corregir errores de lint automáticamente |
+| `npm run format`     | Formatear código con Prettier            |
+| `npm run type-check` | Verificar tipos de TypeScript            |
 
-### 3. Git Hooks (Husky)
+## 🪝 Git Hooks (Husky)
 
-Este proyecto utiliza Husky para verificar el código antes de cada commit.
-Al hacer `git commit`, se ejecutará automáticamente `lint-staged` para:
+Este proyecto usa **Husky** para automatizar verificaciones de calidad:
 
-- Corregir estilo (ESLint --fix)
-- Formatear código (Prettier)
+| Hook         | Acción                                    | Cuándo                        |
+| ------------ | ----------------------------------------- | ----------------------------- |
+| `pre-commit` | Ejecuta `lint-staged` (ESLint + Prettier) | Antes de cada commit          |
+| `commit-msg` | Valida formato con `commitlint`           | Al escribir mensaje de commit |
+| `pre-push`   | Ejecuta `type-check`                      | Antes de push al remoto       |
+
+## 📝 Conventional Commits
+
+Los mensajes de commit **deben** seguir el formato:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Tipos Permitidos
+
+| Tipo       | Descripción                             |
+| ---------- | --------------------------------------- |
+| `feat`     | ✨ Nueva funcionalidad                  |
+| `fix`      | 🐛 Corrección de bugs                   |
+| `docs`     | 📚 Documentación                        |
+| `style`    | 💄 Formato (espacios, comas, etc.)      |
+| `refactor` | ♻️ Refactorización sin cambio de lógica |
+| `perf`     | ⚡ Mejoras de performance               |
+| `test`     | 🧪 Tests                                |
+| `build`    | 📦 Sistema de build o dependencias      |
+| `ci`       | 🔧 CI/CD                                |
+| `chore`    | 🔨 Tareas de mantenimiento              |
+| `revert`   | ⏪ Revertir commits                     |
+
+### Ejemplos
+
+```bash
+# ✅ Correcto
+git commit -m "feat(chat): add voice input support"
+git commit -m "fix(api): handle empty message error"
+git commit -m "docs: update README with setup instructions"
+
+# ❌ Incorrecto (serán rechazados)
+git commit -m "Added new feature"      # Sin tipo
+git commit -m "Feat: something"        # Mayúscula
+git commit -m "fix: Something."        # Termina con punto
+```
 
 ## 📐 Estándares de Código
 
 ### TypeScript
 
-- **Strict Mode**: Activado. No usar `any`.
-- **Interfaces**: Prefiere `interface` sobre `type` para definiciones de objetos.
+- **Strict Mode**: Activado. Evitar `any` cuando sea posible.
+- **Interfaces**: Prefiere `interface` sobre `type` para objetos.
 - **Imports**: Usar alias `@/` para rutas absolutas.
 
-### Componentes React
+### React
 
-- Usar componentes funcionales y Hooks.
-- Colocar componentes UI reutilizables en `app/components/ui`.
-- Usar Server Components por defecto, agregar `'use client'` solo cuando sea necesario.
+- Componentes funcionales con Hooks.
+- Server Components por defecto, usar `'use client'` solo cuando sea necesario.
+- Componentes UI reutilizables en `app/components/ui`.
 
-### Commits
+### Estructura de Archivos
 
-Seguimos la convención **Conventional Commits**:
+```
+app/
+├── api/              # API Routes
+├── components/       # Componentes React
+│   ├── ui/           # Componentes UI base
+│   └── ai-elements/  # Componentes específicos de AI
+├── config/           # Configuración (env, constants)
+├── hooks/            # Custom React Hooks
+├── types/            # TypeScript types/interfaces
+└── actions.ts        # Server Actions
+```
 
-- `feat:` Nueva funcionalidad
-- `fix:` Corrección de bugs
-- `docs:` Cambios en documentación
-- `style:` Cambios de formato (espacios, comas, etc)
-- `refactor:` Refactorización de código sin cambio de lógica
-- `test:` Agregar o corregir tests
-- `chore:` Tareas de mantenimiento (build, deps)
+## 🧪 Testing (Próximamente)
 
-Ejemplo: `feat(chat): add voice input support`
+Aunque la fase de testing está pospuesta, escribe código testable:
 
-## 🧪 Testing (Próximamente/Pospuesto)
-
-Aunque la fase de testing está pospuesta, se recomienda escribir código testable (funciones puras, dependencias inyectables).
+- Funciones puras
+- Dependencias inyectables
+- Separación de lógica y UI

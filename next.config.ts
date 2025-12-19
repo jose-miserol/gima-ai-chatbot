@@ -1,9 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb', // Increased from 1MB to support larger images
+      bodySizeLimit: '3mb',
     },
   },
   // Security headers
