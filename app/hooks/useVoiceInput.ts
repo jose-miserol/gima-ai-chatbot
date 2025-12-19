@@ -31,6 +31,45 @@ const getSpeechRecognition = () => {
   );
 };
 
+// Simplify technical Gemini errors to user-friendly messages
+const simplifyGeminiError = (error?: string): string => {
+  if (!error) return "🎤 Modo local activo";
+  const lowerError = error.toLowerCase();
+  console.log(lowerError);
+  
+  // Quota/Rate limit errors
+  if (lowerError.includes("quota") || lowerError.includes("exceeded") || lowerError.includes("rate limit")) {
+    return "⚡ Cuota agotada · Modo local activo";
+  }
+  // API key errors
+  if (lowerError.includes("api key") || lowerError.includes("api_key") || lowerError.includes("invalid key")) {
+    return "🔑 API sin configurar · Modo local activo";
+  }
+  // Network errors
+  if (lowerError.includes("network") || lowerError.includes("fetch") || lowerError.includes("connection")) {
+    return "📡 Sin conexión · Modo local activo";
+  }
+  // Timeout errors
+  if (lowerError.includes("timeout")) {
+    return "⏱️ Tiempo agotado · Modo local activo";
+  }
+  // Audio/media errors
+  if (lowerError.includes("audio") || lowerError.includes("media") || lowerError.includes("format")) {
+    return "🔊 Error de audio · Modo local activo";
+  }
+  // Generic server errors
+  if (lowerError.includes("500") || lowerError.includes("server error") || lowerError.includes("internal")) {
+    return "⚠️ Error de servidor · Modo local activo";
+  }
+  if (lowerError.includes("models/") && (lowerError.includes("not found") || lowerError.includes("is not"))) {
+    return "🤖 Modelo no disponible · Modo local activo";
+  }
+  
+  // Show partial error for debugging (first 30 chars)
+  const shortError = error.length > 30 ? error.substring(0, 30) + "..." : error;
+  return `⚠️ ${shortError} · Modo local activo`;
+};
+
 export function useVoiceInput({
   onTranscript,
   onError,
@@ -57,8 +96,8 @@ export function useVoiceInput({
 
     setIsSupported(hasMediaRecorder || hasSpeechRecognition);
 
-    // Prefer Gemini (MediaRecorder) if available
-    if (hasMediaRecorder) {
+    // Prefer Gemini if available AND online
+    if (hasMediaRecorder && navigator.onLine) {
       setMode("gemini");
     } else if (hasSpeechRecognition) {
       setMode("native");
@@ -71,12 +110,11 @@ export function useVoiceInput({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      // Determine best mime type
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
         ? "audio/webm"
-        : MediaRecorder.isTypeSupported("audio/mp4")
-        ? "audio/mp4"
-        : "audio/ogg";
+        : "audio/mp4";
 
       const recorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = recorder;
@@ -91,44 +129,39 @@ export function useVoiceInput({
         setIsProcessing(true);
         onStateChange?.("processing");
 
-        // Convert audio to base64
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const reader = new FileReader();
 
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
-          console.log("[Voice] Audio base64 length:", base64Audio.length);
-          console.log("[Voice] Audio prefix:", base64Audio.substring(0, 50));
-          
+
           try {
-            console.log("[Voice] Calling transcribeAudio...");
             const result = await transcribeAudio(base64Audio);
-            console.log("[Voice] transcribeAudio result:", result);
 
             if (result.success && result.text) {
               setTranscript(result.text);
               onTranscript?.(result.text);
               setError(null);
             } else {
-              // FALLBACK: If Gemini fails, switch to native
-              const errorMsg = result.error || "Error con Gemini. Cambiando a modo local...";
-              console.error("[Voice] Gemini error:", errorMsg);
-              setError(errorMsg);
-              onError?.(errorMsg);
-              setMode("native");
+              throw new Error(result.error || "Error desconocido");
             }
           } catch (err: any) {
-            console.error("[Voice] Exception calling transcribeAudio:", err);
-            const errorMsg = err?.message || "Error inesperado con Gemini";
-            setError(errorMsg);
-            onError?.(errorMsg);
-            setMode("native");
+            const hasSpeechRecognition = !!getSpeechRecognition();
+
+            if (hasSpeechRecognition) {
+              const userFriendlyError = simplifyGeminiError(err?.message);
+              setError(userFriendlyError);
+              onError?.(userFriendlyError);
+              setMode("native");
+            } else {
+              const errorMsg = "🌐 Navegador sin soporte de voz · Usa Chrome o Edge";
+              setError(errorMsg);
+              onError?.(errorMsg);
+            }
           }
 
           setIsProcessing(false);
           onStateChange?.("idle");
-
-          // Stop stream tracks
           streamRef.current?.getTracks().forEach((track) => track.stop());
           streamRef.current = null;
         };
@@ -141,31 +174,26 @@ export function useVoiceInput({
       onStateChange?.("listening");
       setError(null);
     } catch (err) {
-      console.error("Error starting Gemini recording:", err);
-      setError("No se pudo grabar. Cambiando a modo básico.");
-      onError?.("No se pudo grabar. Cambiando a modo básico.");
       setMode("native");
-      // Try native immediately
       startNativeListening();
     }
   }, [onTranscript, onError, onStateChange]);
 
   const stopGeminiRecording = useCallback(() => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
     }
   }, []);
 
   // --- NATIVE Logic (Web Speech API) ---
   const startNativeListening = useCallback(() => {
+    setError(null);
     const SpeechRecognition = getSpeechRecognition();
 
     if (!SpeechRecognition) {
-      setError("Reconocimiento de voz no soportado en este navegador.");
-      onError?.("Reconocimiento de voz no soportado en este navegador.");
+      const errorMsg = "🌐 Navegador sin soporte de voz · Usa Chrome o Edge";
+      setError(errorMsg);
+      onError?.(errorMsg);
       return;
     }
 
@@ -177,6 +205,8 @@ export function useVoiceInput({
       }
     }
 
+    let didStart = false;
+
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -184,39 +214,56 @@ export function useVoiceInput({
     recognitionRef.current = recognition;
 
     recognition.onstart = () => {
+      didStart = true;
       setIsListening(true);
       onStateChange?.("listening");
       setError(null);
     };
 
+    // Improved: Rebuild transcript from scratch to avoid duplicates
     recognition.onresult = (event: any) => {
-      let currentTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          currentTranscript += result[0].transcript;
+      let fullTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          fullTranscript += event.results[i][0].transcript;
+        } else {
+          // Include interim for real-time feel
+          fullTranscript += event.results[i][0].transcript;
         }
       }
-      if (currentTranscript) {
-        setTranscript((prev) => {
-          const newText = prev ? prev + " " + currentTranscript : currentTranscript;
-          onTranscript?.(newText);
-          return newText;
-        });
+      if (fullTranscript) {
+        setTranscript(fullTranscript);
+        onTranscript?.(fullTranscript);
       }
     };
 
     recognition.onerror = (event: any) => {
-      console.warn("Native speech error:", event.error);
-      if (event.error !== "aborted") {
-        setError(`Error de voz: ${event.error}`);
-        onError?.(`Error de voz: ${event.error}`);
+      // Ignore 'no-speech' which fires randomly
+      if (event.error === "no-speech") return;
+
+      if (event.error === "not-allowed") {
+        setError("🎤 Permiso de micrófono denegado");
+        onError?.("🎤 Permiso de micrófono denegado");
+      } else if (event.error !== "aborted") {
+        if (!didStart) {
+          const errorMsg = "🌐 Navegador sin soporte de voz · Usa Chrome o Edge";
+          setError(errorMsg);
+          onError?.(errorMsg);
+        } else {
+          setError(`⚠️ Error de voz: ${event.error}`);
+          onError?.(`⚠️ Error de voz: ${event.error}`);
+        }
       }
       setIsListening(false);
       onStateChange?.("idle");
     };
 
     recognition.onend = () => {
+      if (!didStart) {
+        const errorMsg = "🌐 Navegador sin soporte de voz · Usa Chrome o Edge";
+        setError(errorMsg);
+        onError?.(errorMsg);
+      }
       setIsListening(false);
       onStateChange?.("idle");
     };
@@ -224,9 +271,9 @@ export function useVoiceInput({
     try {
       recognition.start();
     } catch (e) {
-      console.error("Error starting native recognition:", e);
-      setError("Error al iniciar reconocimiento de voz.");
-      onError?.("Error al iniciar reconocimiento de voz.");
+      const errorMsg = "🌐 Navegador sin soporte de voz · Usa Chrome o Edge";
+      setError(errorMsg);
+      onError?.(errorMsg);
     }
   }, [language, onTranscript, onError, onStateChange]);
 
@@ -242,7 +289,7 @@ export function useVoiceInput({
 
   // --- Master Control ---
   const toggleListening = useCallback(() => {
-    if (isProcessing) return; // Don't toggle while processing
+    if (isProcessing) return;
 
     if (isListening) {
       if (mode === "gemini") {
@@ -251,7 +298,7 @@ export function useVoiceInput({
         stopNativeListening();
       }
     } else {
-      setTranscript(""); // Reset transcript on new recording
+      setTranscript("");
       if (mode === "gemini") {
         startGeminiRecording();
       } else {

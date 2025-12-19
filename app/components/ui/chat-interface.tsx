@@ -189,28 +189,34 @@ export function ChatInterface() {
         </Conversation>
 
         {/* Voice Status Indicators */}
-        <div className="min-h-[28px] flex items-center justify-center text-sm gap-2">
+        <div className="min-h-[36px] flex items-center justify-center">
           {voiceError && (
-            <span className="text-red-500 text-xs">{voiceError}</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs">
+              <span>{voiceError}</span>
+            </div>
           )}
-          {isListening && (
-            <span
-              className={
+          {isListening && !voiceError && (
+            <div
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs ${
                 mode === "gemini"
-                  ? "text-blue-500 animate-pulse"
-                  : "text-red-500 animate-pulse"
-              }
+                  ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                  : "bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+              }`}
             >
+              <span className="relative flex size-2">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${mode === "gemini" ? "bg-blue-400" : "bg-gray-400"}`}></span>
+                <span className={`relative inline-flex rounded-full size-2 ${mode === "gemini" ? "bg-blue-500" : "bg-gray-500"}`}></span>
+              </span>
               {mode === "gemini"
-                ? "🎤 Grabando para IA..."
-                : "🎤 Escuchando (modo local)..."}
-            </span>
+                ? "Grabando para IA..."
+                : "Escuchando..."}
+            </div>
           )}
           {isProcessing && (
-            <span className="text-blue-600 flex items-center gap-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs">
               <Loader2 className="size-3 animate-spin" />
               Procesando con IA...
-            </span>
+            </div>
           )}
         </div>
 
