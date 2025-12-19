@@ -1,7 +1,8 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 
 export type UsePersistentChatOptions = {
   storageKey?: string;
@@ -13,56 +14,56 @@ export type UsePersistentChatOptions = {
  */
 export function usePersistentChat(options: UsePersistentChatOptions = {}) {
   const { storageKey = 'gima-chat-history' } = options;
-  
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [visionResponse, setVisionResponse] = useState<{id: string; text: string} | null>(null);
-  const hasLoadedRef = useRef(false);
 
-  const chat = useChat();
+  // Lazy initialization to avoid setState in useEffect
+  const [visionResponse, setVisionResponse] = useState<{ id: string; text: string } | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const savedVision = localStorage.getItem(`${storageKey}-vision`);
+      return savedVision ? JSON.parse(savedVision) : null;
+    } catch (e) {
+      console.error('Error loading vision response:', e);
+      return null;
+    }
+  });
+
+  // Load initial messages from localStorage
+  const initialMessages = useMemo(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const savedMessages = localStorage.getItem(storageKey);
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch (e) {
+      console.error('Error loading chat history:', e);
+      localStorage.removeItem(storageKey);
+    }
+    return [];
+  }, [storageKey]);
+
+  const chat = useChat({
+    initialMessages,
+  });
+
   const { messages, setMessages } = chat;
 
-  // Load history on mount (only once)
-  useEffect(() => {
-    if (hasLoadedRef.current) return;
-    hasLoadedRef.current = true;
+  // Debounced save to reduce localStorage writes
+  const debouncedSave = useDebouncedCallback((key: string, data: string) => {
+    try {
+      localStorage.setItem(key, data);
+    } catch (e) {
+      console.error('Error saving to localStorage:', e);
+    }
+  }, 500);
 
-    const savedMessages = localStorage.getItem(storageKey);
-    const savedVision = localStorage.getItem(`${storageKey}-vision`);
-    
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
-        }
-      } catch (e) {
-        console.error('Error loading chat history:', e);
-        localStorage.removeItem(storageKey);
-      }
-    }
-    
-    if (savedVision) {
-      try {
-        setVisionResponse(JSON.parse(savedVision));
-      } catch (e) {
-        console.error('Error loading vision response:', e);
-        localStorage.removeItem(`${storageKey}-vision`);
-      }
-    }
-    
-    setIsLoaded(true);
-  }, [storageKey, setMessages]);
-
-  // Save messages when they change (after initial load)
+  // Save messages when they change (debounced)
   useEffect(() => {
-    if (isLoaded && messages.length > 0) {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(messages));
-      } catch (e) {
-        console.warn('Could not save chat history:', e);
-      }
+    if (messages.length > 0) {
+      debouncedSave(storageKey, JSON.stringify(messages));
     }
-  }, [messages, isLoaded, storageKey]);
+  }, [messages, storageKey, debouncedSave]);
 
   // Save vision response when it changes
   useEffect(() => {
@@ -95,4 +96,3 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
     clearHistory,
   };
 }
-
