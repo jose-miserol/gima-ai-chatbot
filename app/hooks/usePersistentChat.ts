@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { compress, decompress } from 'lz-string';
 import type { UIMessage } from 'ai';
+import { logger } from '@/app/lib/logger';
 
 // Límite de mensajes para prevenir crecimiento indefinido
 const MAX_MESSAGES = 100;
@@ -29,7 +30,10 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
       const savedVision = localStorage.getItem(`${storageKey}-vision`);
       return savedVision ? JSON.parse(savedVision) : null;
     } catch (e) {
-      console.error('Error loading vision response:', e);
+      logger.error('Error loading vision response', e instanceof Error ? e : new Error(String(e)), {
+        component: 'usePersistentChat',
+        action: 'loadVisionResponse',
+      });
       return null;
     }
   });
@@ -77,7 +81,10 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
         }
       }
     } catch (e) {
-      console.error('Error loading chat history:', e);
+      logger.error('Error loading chat history', e instanceof Error ? e : new Error(String(e)), {
+        component: 'usePersistentChat',
+        action: 'loadChatHistory',
+      });
       localStorage.removeItem(storageKey);
     }
 
@@ -92,16 +99,26 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
       const compressed = compress(JSON.stringify(recentMessages));
       localStorage.setItem(key, compressed);
     } catch (e) {
-      console.error('Error saving to localStorage:', e);
+      logger.error('Error saving to localStorage', e instanceof Error ? e : new Error(String(e)), {
+        component: 'usePersistentChat',
+        action: 'saveMessages',
+      });
       // If quota exceeded, try with fewer messages
       if (e instanceof Error && e.name === 'QuotaExceededError') {
         try {
           const halfMessages = messagesToSave.slice(-Math.floor(MAX_MESSAGES / 2));
           const compressed = compress(JSON.stringify(halfMessages));
           localStorage.setItem(key, compressed);
-          console.warn(`Reduced chat history to ${halfMessages.length} messages due to quota`);
+          logger.warn(`Reduced chat history to ${halfMessages.length} messages due to quota`, {
+            component: 'usePersistentChat',
+            action: 'retryReducedSave',
+          });
         } catch (retryError) {
-          console.error('Failed to save even reduced history:', retryError);
+          logger.error(
+            'Failed to save even reduced history',
+            retryError instanceof Error ? retryError : new Error(String(retryError)),
+            { component: 'usePersistentChat', action: 'retryReducedSave' }
+          );
         }
       }
     }
@@ -122,7 +139,11 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
         try {
           localStorage.setItem(`${storageKey}-vision`, JSON.stringify(visionResponse));
         } catch (e) {
-          console.warn('Could not save vision response:', e);
+          logger.warn('Could not save vision response', {
+            component: 'usePersistentChat',
+            action: 'saveVisionResponse',
+            error: String(e),
+          });
         }
       } else {
         localStorage.removeItem(`${storageKey}-vision`);

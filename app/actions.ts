@@ -3,6 +3,7 @@
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
+import { logger } from '@/app/lib/logger';
 
 // Límites de tamaño para prevenir ataques DoS
 const MAX_AUDIO_SIZE_MB = 5; // 5MB
@@ -78,7 +79,10 @@ export async function transcribeAudio(
 
     return { text: cleanText, success: true };
   } catch (error: unknown) {
-    console.error('Error transcripción:', error);
+    logger.error('Error transcripción', error instanceof Error ? error : new Error(String(error)), {
+      component: 'actions',
+      action: 'transcribeAudio',
+    });
     const errorMessage =
       error instanceof Error ? error.message : 'Error desconocido al transcribir';
     return { text: '', success: false, error: errorMessage };
@@ -138,7 +142,11 @@ export async function analyzePartImage(
 
     return { text: result.text, success: true };
   } catch (error: unknown) {
-    console.error('Error análisis de imagen:', error);
+    logger.error(
+      'Error análisis de imagen',
+      error instanceof Error ? error : new Error(String(error)),
+      { component: 'actions', action: 'analyzePartImage' }
+    );
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido de visión';
     return { text: '', success: false, error: errorMessage };
   }
