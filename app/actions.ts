@@ -4,6 +4,20 @@ import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
 
+// Límites de tamaño para prevenir ataques DoS
+const MAX_AUDIO_SIZE_MB = 5; // 5MB
+const MAX_IMAGE_SIZE_MB = 5; // 5MB
+
+/**
+ * Calcula el tamaño aproximado de un string base64 en bytes
+ */
+function getBase64Size(base64: string): number {
+  // Remover data URL prefix si existe
+  const cleanBase64 = base64.split('base64,').pop() || base64;
+  // Cada carácter base64 representa 6 bits, pero con padding, ~75% del tamaño string
+  return (cleanBase64.length * 3) / 4;
+}
+
 /**
  * Transcribe un archivo de audio usando el modelo Gemini Flash Lite.
  * Utiliza prompting específico para limpiar timestamps y muletillas.
@@ -20,6 +34,16 @@ export async function transcribeAudio(
       : audioDataUrl;
 
     if (!base64Content) throw new Error('Audio vacío');
+
+    // Validar tamaño del audio
+    const sizeInBytes = getBase64Size(base64Content);
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+
+    if (sizeInMB > MAX_AUDIO_SIZE_MB) {
+      throw new Error(
+        `Audio demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_AUDIO_SIZE_MB}MB`
+      );
+    }
 
     const result = await generateText({
       model: google('gemini-2.5-flash-lite'),
@@ -80,6 +104,16 @@ export async function analyzePartImage(
       : imageDataUrl;
 
     if (!base64Content) throw new Error('Imagen vacía');
+
+    // Validar tamaño de la imagen
+    const sizeInBytes = getBase64Size(base64Content);
+    const sizeInMB = sizeInBytes / (1024 * 1024);
+
+    if (sizeInMB > MAX_IMAGE_SIZE_MB) {
+      throw new Error(
+        `Imagen demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_IMAGE_SIZE_MB}MB`
+      );
+    }
 
     const result = await generateText({
       model: google('gemini-2.5-flash'),
