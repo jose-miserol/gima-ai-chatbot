@@ -3,7 +3,11 @@
 import { useChat } from '@ai-sdk/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { compress, decompress } from 'lz-string';
 import type { UIMessage } from 'ai';
+
+// Límite de mensajes para prevenir crecimiento indefinido
+const MAX_MESSAGES = 100;
 
 export type UsePersistentChatOptions = {
   storageKey?: string;
@@ -48,9 +52,18 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
     }
 
     try {
-      const savedMessages = localStorage.getItem(storageKey);
-      if (savedMessages) {
-        const parsed = JSON.parse(savedMessages);
+      const compressed = localStorage.getItem(storageKey);
+      if (compressed) {
+        // Try decompression first (new format)
+        let parsed;
+        try {
+          const decompressed = decompress(compressed);
+          parsed = decompressed ? JSON.parse(decompressed) : null;
+        } catch {
+          // Fallback to non-compressed format (backward compatibility)
+          parsed = JSON.parse(compressed);
+        }
+
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Transform old format to new UIMessage format if needed
           const transformedMessages: UIMessage[] = parsed.map((msg) => ({
@@ -72,18 +85,32 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
   }, [storageKey, setMessages]);
 
   // Debounced save to reduce localStorage writes
-  const debouncedSave = useDebouncedCallback((key: string, data: string) => {
+  const debouncedSave = useDebouncedCallback((key: string, messagesToSave: UIMessage[]) => {
     try {
-      localStorage.setItem(key, data);
+      // Keep only the most recent MAX_MESSAGES
+      const recentMessages = messagesToSave.slice(-MAX_MESSAGES);
+      const compressed = compress(JSON.stringify(recentMessages));
+      localStorage.setItem(key, compressed);
     } catch (e) {
       console.error('Error saving to localStorage:', e);
+      // If quota exceeded, try with fewer messages
+      if (e instanceof Error && e.name === 'QuotaExceededError') {
+        try {
+          const halfMessages = messagesToSave.slice(-Math.floor(MAX_MESSAGES / 2));
+          const compressed = compress(JSON.stringify(halfMessages));
+          localStorage.setItem(key, compressed);
+          console.warn(`Reduced chat history to ${halfMessages.length} messages due to quota`);
+        } catch (retryError) {
+          console.error('Failed to save even reduced history:', retryError);
+        }
+      }
     }
   }, 500);
 
   // Save messages when they change (debounced)
   useEffect(() => {
     if (isLoaded && messages.length > 0) {
-      debouncedSave(storageKey, JSON.stringify(messages));
+      debouncedSave(storageKey, messages);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, storageKey, isLoaded]);
