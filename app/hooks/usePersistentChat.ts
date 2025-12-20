@@ -20,9 +20,59 @@ export type UsePersistentChatOptions = {
 };
 
 /**
- * A wrapper around useChat that adds localStorage persistence.
- * Automatically saves and restores conversation history.
- * Compatible with AI SDK v5 (uses setMessages instead of initialMessages)
+ * Custom React hook that wraps `useChat` from AI SDK with localStorage persistence.
+ *
+ * Features:
+ * - Automatic save/restore of conversation history
+ * - Configurable debounce delay for write optimization
+ * - LZ-string compression to maximize storage space
+ * - Automatic cleanup when quota is exceeded
+ * - Message limit (100 most recent) to prevent unbounded growth
+ * - Support for vision response persistence
+ * - Backward compatibility with non-compressed format
+ *
+ * @param options - Configuration options
+ * @param options.storageKey - LocalStorage key prefix (default: 'gima-chat-history')
+ * @param options.debounceMs - Debounce delay in ms for writes (default: 500)
+ *
+ * @returns Extended chat state and methods from AI SDK
+ * @returns.isLoaded - Whether initial load from localStorage is complete
+ * @returns.visionResponse - Currently stored vision analysis response
+ * @returns.setVisionResponse - Function to update vision response
+ * @returns.clearHistory - Function to clear all chat history and vision data
+ * @returns...rest - All properties from AI SDK's useChat hook
+ *
+ * @example
+ * ```tsx
+ * function ChatComponent() {
+ *   const {
+ *     messages,
+ *     input,
+ *     handleSubmit,
+ *     handleInputChange,
+ *     isLoaded,
+ *     clearHistory
+ *   } = usePersistentChat({
+ *     storageKey: 'my-chat',
+ *     debounceMs: 1000 // Save every 1 second
+ *   });
+ *
+ *   if (!isLoaded) return <LoadingSpinner />;
+ *
+ *   return (
+ *     <div>
+ *       <MessageList messages={messages} />
+ *       <form onSubmit={handleSubmit}>
+ *         <input value={input} onChange={handleInputChange} />
+ *         <button type="submit">Send</button>
+ *       </form>
+ *       <button onClick={clearHistory}>Clear History</button>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat | AI SDK useChat}
  */
 export function usePersistentChat(options: UsePersistentChatOptions = {}) {
   const { storageKey = 'gima-chat-history', debounceMs = 500 } = options;

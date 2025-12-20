@@ -140,12 +140,65 @@ const simplifyGeminiError = (error?: string): string => {
 };
 
 /**
- * Hook para manejar entrada de voz multimodal.
- * Prioriza el uso de la API de Gemini (Server-side) para mayor precisión,
- * pero hace fallback automático a Web Speech API (Nativo) si falla o no hay internet.
+ * Custom React hook for multimodal voice input with automatic fallback.
  *
- * @param options - Opciones de callbacks y configuración
- * @returns Estado y controles del reconocimiento de voz
+ * Features:
+ * - Primary mode: Gemini API for high-accuracy server-side transcription
+ * - Fallback mode: Native Web Speech API when Gemini is unavailable
+ * - Automatic mode switching based on errors and network status
+ * - User-friendly error messages with emoji indicators
+ *
+ * @param options - Configuration options for voice input
+ * @param options.onTranscript - Callback invoked when transcription is complete
+ * @param options.onError - Callback invoked when an error occurs
+ * @param options.onStateChange - Callback invoked when the listening state changes
+ * @param options.language - BCP 47 language code for recognition (default: 'es-ES')
+ *
+ * @returns Voice input state and control methods
+ * @returns.isListening - Whether voice recording is currently active
+ * @returns.isProcessing - Whether audio is being processed/transcribed
+ * @returns.transcript - Current transcript text
+ * @returns.isSupported - Whether voice input is supported in this browser
+ * @returns.mode - Current recognition mode ('gemini' | 'native')
+ * @returns.toggleListening - Function to start/stop voice recording
+ * @returns.resetTranscript - Function to clear the current transcript
+ * @returns.error - Current error message, if any
+ *
+ * @example
+ * ```tsx
+ * function VoiceInputComponent() {
+ *   const {
+ *     isListening,
+ *     isProcessing,
+ *     transcript,
+ *     toggleListening,
+ *     mode,
+ *     error
+ *   } = useVoiceInput({
+ *     onTranscript: (text) => {
+ *       console.log('Transcribed:', text);
+ *       setInputValue(text);
+ *     },
+ *     onError: (error) => {
+ *       console.error('Voice error:', error);
+ *     },
+ *     language: 'es-ES'
+ *   });
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={toggleListening} disabled={isProcessing}>
+ *         {isListening ? 'Stop' : 'Start'} ({mode})
+ *       </button>
+ *       {error && <p>{error}</p>}
+ *       <p>{transcript}</p>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API | Web Speech API}
+ * @see {@link https://ai.google.dev/gemini-api/docs | Gemini API}
  */
 export function useVoiceInput({
   onTranscript,
