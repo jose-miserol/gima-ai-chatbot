@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { transcribeAudio } from '@/app/actions';
+import { logger } from '@/app/lib/logger';
 
 interface UseVoiceInputOptions {
   onTranscript?: (text: string) => void;
@@ -76,7 +77,8 @@ const getSpeechRecognition = (): ISpeechRecognitionConstructor | null => {
 const simplifyGeminiError = (error?: string): string => {
   if (!error) return '🎤 Modo local activo';
   const lowerError = error.toLowerCase();
-  console.log(lowerError);
+
+  logger.debug('Gemini transcription error', { error: lowerError, component: 'useVoiceInput' });
 
   // Quota/Rate limit errors
   if (
@@ -159,6 +161,7 @@ export function useVoiceInput({
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Detect capabilities on mount
   useEffect(() => {
@@ -207,7 +210,16 @@ export function useVoiceInput({
           const base64Audio = reader.result as string;
 
           try {
+            // Create new AbortController for this request
+            abortControllerRef.current = new AbortController();
+
             const result = await transcribeAudio(base64Audio);
+
+            // Check if aborted
+            if (abortControllerRef.current?.signal.aborted) {
+              logger.debug('Transcription cancelled by user', { component: 'useVoiceInput' });
+              return;
+            }
 
             if (result.success && result.text) {
               setTranscript(result.text);
@@ -251,6 +263,12 @@ export function useVoiceInput({
   }, [onTranscript, onError, onStateChange]);
 
   const stopGeminiRecording = useCallback(() => {
+    // Cancel any pending transcription
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
