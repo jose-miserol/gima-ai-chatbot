@@ -12,6 +12,11 @@ const MAX_MESSAGES = 100;
 
 export type UsePersistentChatOptions = {
   storageKey?: string;
+  /**
+   * Debounce delay in milliseconds for localStorage writes
+   * @default 500
+   */
+  debounceMs?: number;
 };
 
 /**
@@ -20,7 +25,7 @@ export type UsePersistentChatOptions = {
  * Compatible with AI SDK v5 (uses setMessages instead of initialMessages)
  */
 export function usePersistentChat(options: UsePersistentChatOptions = {}) {
-  const { storageKey = 'gima-chat-history' } = options;
+  const { storageKey = 'gima-chat-history', debounceMs = 500 } = options;
   const hasLoadedRef = useRef(false);
 
   // Lazy initialization for vision response
@@ -122,7 +127,7 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
         }
       }
     }
-  }, 500);
+  }, debounceMs);
 
   // Save messages when they change (debounced)
   useEffect(() => {
