@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { transcribeAudio } from '@/app/actions';
 import { logger } from '@/app/lib/logger';
+import { VOICE_MESSAGES, MAX_ERROR_MESSAGE_LENGTH } from '@/app/constants/messages';
 
 interface UseVoiceInputOptions {
   onTranscript?: (text: string) => void;
@@ -26,7 +27,6 @@ interface UseVoiceInputReturn {
 interface ISpeechRecognitionEvent extends Event {
   results: ISpeechRecognitionResultList;
   resultIndex: number;
-  error: any;
 }
 
 interface ISpeechRecognitionResultList {
@@ -75,7 +75,7 @@ const getSpeechRecognition = (): ISpeechRecognitionConstructor | null => {
 
 // Simplify technical Gemini errors to user-friendly messages
 const simplifyGeminiError = (error?: string): string => {
-  if (!error) return '🎤 Modo local activo';
+  if (!error) return VOICE_MESSAGES.LOCAL_MODE;
   const lowerError = error.toLowerCase();
 
   logger.debug('Gemini transcription error', { error: lowerError, component: 'useVoiceInput' });
@@ -86,7 +86,7 @@ const simplifyGeminiError = (error?: string): string => {
     lowerError.includes('exceeded') ||
     lowerError.includes('rate limit')
   ) {
-    return '⚡ Cuota agotada · Modo local activo';
+    return VOICE_MESSAGES.QUOTA_EXCEEDED;
   }
   // API key errors
   if (
@@ -94,7 +94,7 @@ const simplifyGeminiError = (error?: string): string => {
     lowerError.includes('api_key') ||
     lowerError.includes('invalid key')
   ) {
-    return '🔑 API sin configurar · Modo local activo';
+    return VOICE_MESSAGES.API_NOT_CONFIGURED;
   }
   // Network errors
   if (
@@ -102,11 +102,11 @@ const simplifyGeminiError = (error?: string): string => {
     lowerError.includes('fetch') ||
     lowerError.includes('connection')
   ) {
-    return '📡 Sin conexión · Modo local activo';
+    return VOICE_MESSAGES.NO_CONNECTION;
   }
   // Timeout errors
   if (lowerError.includes('timeout')) {
-    return '⏱️ Tiempo agotado · Modo local activo';
+    return VOICE_MESSAGES.TIMEOUT;
   }
   // Audio/media errors
   if (
@@ -114,7 +114,7 @@ const simplifyGeminiError = (error?: string): string => {
     lowerError.includes('media') ||
     lowerError.includes('format')
   ) {
-    return '🔊 Error de audio · Modo local activo';
+    return VOICE_MESSAGES.AUDIO_ERROR;
   }
   // Generic server errors
   if (
@@ -122,17 +122,20 @@ const simplifyGeminiError = (error?: string): string => {
     lowerError.includes('server error') ||
     lowerError.includes('internal')
   ) {
-    return '⚠️ Error de servidor · Modo local activo';
+    return VOICE_MESSAGES.SERVER_ERROR;
   }
   if (
     lowerError.includes('models/') &&
     (lowerError.includes('not found') || lowerError.includes('is not'))
   ) {
-    return '🤖 Modelo no disponible · Modo local activo';
+    return VOICE_MESSAGES.MODEL_NOT_AVAILABLE;
   }
 
-  // Show partial error for debugging (first 30 chars)
-  const shortError = error.length > 30 ? error.substring(0, 30) + '...' : error;
+  // Show partial error for debugging
+  const shortError =
+    error.length > MAX_ERROR_MESSAGE_LENGTH
+      ? error.substring(0, MAX_ERROR_MESSAGE_LENGTH) + '...'
+      : error;
   return `⚠️ ${shortError} · Modo local activo`;
 };
 
@@ -228,16 +231,17 @@ export function useVoiceInput({
             } else {
               throw new Error(result.error || 'Error desconocido');
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             const hasSpeechRecognition = !!getSpeechRecognition();
 
             if (hasSpeechRecognition) {
-              const userFriendlyError = simplifyGeminiError(err?.message);
+              const errorMessage = err instanceof Error ? err.message : String(err);
+              const userFriendlyError = simplifyGeminiError(errorMessage);
               setError(userFriendlyError);
               onError?.(userFriendlyError);
               setMode('native');
             } else {
-              const errorMsg = '🌐 Navegador sin soporte de voz · Usa Chrome o Edge';
+              const errorMsg = VOICE_MESSAGES.BROWSER_NOT_SUPPORTED;
               setError(errorMsg);
               onError?.(errorMsg);
             }
@@ -280,7 +284,7 @@ export function useVoiceInput({
     const SpeechRecognition = getSpeechRecognition();
 
     if (!SpeechRecognition) {
-      const errorMsg = '🌐 Navegador sin soporte de voz · Usa Chrome o Edge';
+      const errorMsg = VOICE_MESSAGES.BROWSER_NOT_SUPPORTED;
       setError(errorMsg);
       onError?.(errorMsg);
       return;
@@ -331,16 +335,16 @@ export function useVoiceInput({
       if (event.error === 'no-speech') return;
 
       if (event.error === 'not-allowed') {
-        setError('🎤 Permiso de micrófono denegado');
-        onError?.('🎤 Permiso de micrófono denegado');
+        setError(VOICE_MESSAGES.PERMISSION_DENIED);
+        onError?.(VOICE_MESSAGES.PERMISSION_DENIED);
       } else if (event.error !== 'aborted') {
         if (!didStart) {
-          const errorMsg = '🌐 Navegador sin soporte de voz · Usa Chrome o Edge';
+          const errorMsg = VOICE_MESSAGES.BROWSER_NOT_SUPPORTED;
           setError(errorMsg);
           onError?.(errorMsg);
         } else {
-          setError(`⚠️ Error de voz: ${event.error}`);
-          onError?.(`⚠️ Error de voz: ${event.error}`);
+          setError(`${VOICE_MESSAGES.VOICE_ERROR_PREFIX} ${event.error}`);
+          onError?.(`${VOICE_MESSAGES.VOICE_ERROR_PREFIX} ${event.error}`);
         }
       }
       setIsListening(false);
@@ -349,7 +353,7 @@ export function useVoiceInput({
 
     recognition.onend = () => {
       if (!didStart) {
-        const errorMsg = '🌐 Navegador sin soporte de voz · Usa Chrome o Edge';
+        const errorMsg = VOICE_MESSAGES.BROWSER_NOT_SUPPORTED;
         setError(errorMsg);
         onError?.(errorMsg);
       }
@@ -360,7 +364,7 @@ export function useVoiceInput({
     try {
       recognition.start();
     } catch (e) {
-      const errorMsg = '🌐 Navegador sin soporte de voz · Usa Chrome o Edge';
+      const errorMsg = VOICE_MESSAGES.BROWSER_NOT_SUPPORTED;
       setError(errorMsg);
       onError?.(errorMsg);
     }

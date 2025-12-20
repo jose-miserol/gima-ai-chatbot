@@ -1,9 +1,17 @@
 // Tipos compartidos para el sistema de chat
 
+/**
+ * Represents different types of content parts in a message
+ */
+export type MessagePart =
+  | { type: 'text'; text: string }
+  | { type: 'image'; imageUrl: string; mimeType: string }
+  | { type: 'file'; data: string; mediaType: string };
+
 export interface SanitizedMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
-  parts?: Array<{ type: string; text?: string }>;
+  parts?: MessagePart[];
   id?: string;
   createdAt?: Date;
 }
@@ -16,14 +24,17 @@ export interface ChatAPIRequest {
 export interface ChatAPIResponse {
   success: boolean;
   error?: string;
-  data?: any;
+  data?: {
+    text?: string;
+    parts?: MessagePart[];
+  };
 }
 
 // Tipos para mensajes raw que pueden venir malformados
 export interface RawMessage {
   role: 'user' | 'assistant' | 'system';
-  content: string | { parts?: Array<{ type: string; text?: string }> };
-  parts?: Array<{ type: string; text?: string }>;
+  content: string | { parts?: MessagePart[] };
+  parts?: MessagePart[];
   id?: string;
   createdAt?: Date | string;
 }

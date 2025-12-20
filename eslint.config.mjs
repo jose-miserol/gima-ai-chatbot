@@ -12,7 +12,11 @@ const eslintConfig = defineConfig([
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "warn",
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Disallow console in production, allow console.warn and console.error in development
+      "no-console": 
+        process.env.NODE_ENV === "production" 
+          ? "error" 
+          : ["warn", { allow: ["warn", "error"] }],
     },
   },
   // Override default ignores of eslint-config-next.

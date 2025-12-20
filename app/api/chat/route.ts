@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { NextResponse } from 'next/server';
 import type { RawMessage, SanitizedMessage } from '@/app/types/chat.types';
 import { chatRateLimiter } from '@/app/lib/rate-limiter';
+import { logger } from '@/app/lib/logger';
+import { ERROR_MESSAGES } from '@/app/constants/messages';
 
 // Allow streaming responses up to 30 seconds
 // Note: Must be a literal value for Next.js static analysis
@@ -16,6 +18,24 @@ const groq = createGroq({
   apiKey: env.GROQ_API_KEY,
 });
 
+// Zod schema for MessagePart
+const messagePartSchema = z.union([
+  z.object({
+    type: z.literal('text'),
+    text: z.string(),
+  }),
+  z.object({
+    type: z.literal('image'),
+    imageUrl: z.string().url(),
+    mimeType: z.string(),
+  }),
+  z.object({
+    type: z.literal('file'),
+    data: z.string(),
+    mediaType: z.string(),
+  }),
+]);
+
 // Zod schema for request validation
 const requestSchema = z.object({
   messages: z.array(
@@ -25,7 +45,7 @@ const requestSchema = z.object({
         .union([z.string(), z.any()]) // Permitir objetos para sanitizar
         .transform((val) => (typeof val === 'string' ? val : JSON.stringify(val)))
         .pipe(z.string().max(10000, 'Mensaje demasiado largo (max 10KB)')),
-      parts: z.array(z.any()).optional(),
+      parts: z.array(messagePartSchema).optional(),
       id: z.string().optional(),
       createdAt: z
         .union([z.date(), z.string()])
@@ -45,8 +65,8 @@ export async function POST(req: Request) {
       const retryAfter = Math.ceil(chatRateLimiter.getRetryAfter(ip) / 1000);
       return NextResponse.json(
         {
-          error: 'Too Many Requests',
-          message: 'Has excedido el límite de solicitudes. Intenta nuevamente en unos segundos.',
+          error: ERROR_MESSAGES.RATE_LIMIT,
+          message: ERROR_MESSAGES.QUOTA_EXCEEDED_DESCRIPTION,
           retryAfter,
         },
         {
@@ -66,7 +86,7 @@ export async function POST(req: Request) {
     if (!parseResult.success) {
       return NextResponse.json(
         {
-          error: 'Invalid request format',
+          error: ERROR_MESSAGES.INVALID_REQUEST,
           details: parseResult.error.issues,
         },
         { status: 400 }
@@ -83,8 +103,7 @@ export async function POST(req: Request) {
       // If content is missing or not a string, try to extract from parts
       if (typeof content !== 'string') {
         const textPart = msg.parts?.find(
-          (p): p is { type: string; text: string } =>
-            p.type === 'text' && typeof p.text === 'string'
+          (p): p is Extract<typeof p, { type: 'text' }> => p.type === 'text'
         );
         content = textPart?.text || '';
       }
@@ -107,20 +126,27 @@ export async function POST(req: Request) {
       sendReasoning: STREAM_CONFIG.sendReasoning,
     });
   } catch (error) {
-    console.error('Error en API de chat:', error);
+    logger.error(
+      'Error en API de chat',
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        component: 'ChatAPIRoute',
+        action: 'POST',
+      }
+    );
 
     // Better error handling
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
+        { error: ERROR_MESSAGES.VALIDATION_ERROR, details: error.issues },
         { status: 400 }
       );
     }
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN;
 
     return NextResponse.json(
-      { error: 'Error al procesar la solicitud', details: errorMessage },
+      { error: ERROR_MESSAGES.PROCESSING_ERROR, details: errorMessage },
       { status: 500 }
     );
   }
