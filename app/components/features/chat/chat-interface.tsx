@@ -34,16 +34,16 @@ import {
   PromptInputHeader,
 } from '@/app/components/ai-elements/prompt-input';
 import { Loader } from '@/app/components/ai-elements/loader';
-import { VoiceButton } from '@/app/components/ui/voice-button';
+import { VoiceButton } from '@/features/voice';
 import { useVoiceInput } from '@/app/hooks/useVoiceInput';
 import { usePersistentChat } from '@/app/hooks/usePersistentChat';
 import { useState, useCallback, useRef } from 'react';
 import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from 'lucide-react';
 import { AVAILABLE_MODELS, DEFAULT_MODEL } from '@/app/config';
 import { analyzePartImage } from '@/app/actions';
-import { useToast } from '@/app/components/ui/toast';
+import { useToast } from '@/ui/toast';
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
-import { ThemeToggle } from '@/app/components/ui/theme-toggle';
+import { ThemeToggle } from '@/features/theme';
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState('');

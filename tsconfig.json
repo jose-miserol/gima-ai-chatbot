@@ -24,7 +24,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/ui/*": ["./app/components/ui/*"],
+      "@/features/*": ["./app/components/features/*"],
+      "@/ai-elements/*": ["./app/components/ai-elements/*"]
     }
   },
   "include": [
