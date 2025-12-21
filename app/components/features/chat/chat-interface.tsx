@@ -44,6 +44,7 @@ import { analyzePartImage } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
 import { ThemeToggle } from '@/app/components/features/theme';
+import { CHAT_CONFIG, CHAT_MESSAGES } from '@/app/config/chat';
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState('');
@@ -156,7 +157,7 @@ export function ChatInterfaceV1() {
     const imageFile = message.files?.find((file) => file.mediaType?.startsWith('image/'));
 
     // If image attached with minimal/no text, use Gemini for vision analysis
-    if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < 10)) {
+    if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < CHAT_CONFIG.MIN_TEXT_LENGTH_FOR_IMAGE)) {
       setIsAnalyzingImage(true);
 
       try {
@@ -281,7 +282,7 @@ ${result.text}
             {(messages.length > 0 || visionResponse) && (
               <button
                 onClick={() => {
-                  if (confirm('¿Borrar todo el historial de conversación?')) {
+                  if (confirm(CHAT_MESSAGES.CONFIRM_CLEAR_HISTORY)) {
                     clearHistory();
                     setInput('');
                   }
