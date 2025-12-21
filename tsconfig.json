@@ -25,9 +25,9 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/ui/*": ["./app/components/ui/*"],
-      "@/features/*": ["./app/components/features/*"],
-      "@/ai-elements/*": ["./app/components/ai-elements/*"]
+      "@components/ui/*": ["./app/components/ui/*"],
+      "@components/features/*": ["./app/components/features/*"],
+      "@components/ai-elements/*": ["./app/components/ai-elements/*"]
     }
   },
   "include": [
