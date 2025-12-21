@@ -45,11 +45,13 @@ import { useToast } from '@/app/components/ui/toast';
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
 import { ThemeToggle } from '@/app/components/features/theme';
 import { CHAT_CONFIG, CHAT_MESSAGES } from '@/app/config/chat';
+import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(DEFAULT_MODEL);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
 
@@ -281,14 +283,10 @@ ${result.text}
             <ThemeToggle />
             {(messages.length > 0 || visionResponse) && (
               <button
-                onClick={() => {
-                  if (confirm(CHAT_MESSAGES.CONFIRM_CLEAR_HISTORY)) {
-                    clearHistory();
-                    setInput('');
-                  }
-                }}
+                onClick={() => setShowClearDialog(true)}
                 title="Borrar historial"
                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                aria-label="Borrar historial de conversación"
               >
                 <Trash2 className="size-5" />
               </button>
@@ -457,6 +455,21 @@ ${result.text}
           </PromptInputFooter>
         </PromptInput>
       </div>
+
+      {/* Accessible Confirm Dialog */}
+      <ConfirmDialog
+        open={showClearDialog}
+        onOpenChange={setShowClearDialog}
+        title="Borrar historial"
+        description={CHAT_MESSAGES.CONFIRM_CLEAR_HISTORY}
+        confirmLabel="Borrar"
+        cancelLabel="Cancelar"
+        variant="destructive"
+        onConfirm={() => {
+          clearHistory();
+          setInput('');
+        }}
+      />
     </div>
   );
 }

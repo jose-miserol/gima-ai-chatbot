@@ -8,27 +8,30 @@ interface MessageSkeletonProps {
 }
 
 export function MessageSkeleton({ role = 'assistant', className }: MessageSkeletonProps) {
-  const isUser = role === 'user';
-
   return (
     <div
       className={cn(
-        'flex w-full animate-pulse',
-        isUser ? 'justify-end' : 'justify-start',
+        'flex gap-3 p-4 rounded-lg animate-pulse',
+        role === 'user'
+          ? 'bg-blue-50 dark:bg-blue-950/20'
+          : 'bg-gray-50 dark:bg-gray-800/50',
         className
       )}
+      role="status"
+      aria-busy="true"
+      aria-label="Cargando mensaje"
     >
-      <div
-        className={cn(
-          'max-w-[80%] rounded-2xl px-4 py-3 space-y-2',
-          isUser ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-zinc-100 dark:bg-zinc-800'
-        )}
-      >
-        {/* Simulated text lines */}
-        <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-48" />
-        <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-36" />
-        {!isUser && <div className="h-4 bg-zinc-300 dark:bg-zinc-600 rounded w-52" />}
+      {/* Avatar skeleton */}
+      <div className="size-8 rounded-full bg-gray-300 dark:bg-gray-700 shrink-0" />
+
+      {/* Content skeleton */}
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-3/4" />
+        <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2" />
       </div>
+
+      {/* Screen reader only text */}
+      <span className="sr-only">Cargando mensaje...</span>
     </div>
   );
 }
