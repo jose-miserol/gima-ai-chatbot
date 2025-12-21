@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useCallback, useSyncExternalStore } from 'react';
+import { useState, useCallback, useSyncExternalStore, useLayoutEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 
 type Theme = 'light' | 'dark';
 
-// External store for theme - avoids setState in useEffect
+/**
+ * Get the current theme from localStorage or system preferences
+ * Returns 'light' as default for SSR compatibility
+ */
 function getThemeSnapshot(): Theme {
   if (typeof window === 'undefined') return 'light';
   const saved = localStorage.getItem('theme') as Theme | null;
@@ -14,12 +17,17 @@ function getThemeSnapshot(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+/**
+ * Server-side snapshot always returns 'light' to prevent hydration mismatch
+ */
 function getServerSnapshot(): Theme {
   return 'light';
 }
 
+/**
+ * Subscribe to storage events for cross-tab synchronization
+ */
 function subscribe(callback: () => void): () => void {
-  // Listen for storage changes from other tabs
   window.addEventListener('storage', callback);
   return () => window.removeEventListener('storage', callback);
 }
@@ -29,12 +37,12 @@ export function ThemeToggle({ className }: { className?: string }) {
   const storedTheme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerSnapshot);
   const [theme, setTheme] = useState<Theme>(storedTheme);
 
-  // Track mount state
-  if (typeof window !== 'undefined' && !mounted) {
+  // useLayoutEffect runs synchronously before browser paint
+  // This prevents theme flash and avoids cascading renders
+  useLayoutEffect(() => {
     setMounted(true);
-    // Apply initial theme
     document.documentElement.classList.toggle('dark', storedTheme === 'dark');
-  }
+  }, [storedTheme]);
 
   const toggleTheme = useCallback(() => {
     const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
