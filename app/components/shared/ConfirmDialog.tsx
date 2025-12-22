@@ -25,14 +25,14 @@ interface ConfirmDialogProps {
 
 /**
  * Accessible confirmation dialog component
- * 
+ *
  * Replaces native window.confirm() with a proper accessible dialog
  * that supports keyboard navigation and screen readers.
- * 
+ *
  * @example
  * ```tsx
  * const [open, setOpen] = useState(false);
- * 
+ *
  * <ConfirmDialog
  *   open={open}
  *   onOpenChange={setOpen}
@@ -66,15 +66,10 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:max-w-[425px]"
-        aria-describedby="confirm-dialog-description"
-      >
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription id="confirm-dialog-description">
-            {description}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="gap-2 sm:gap-0">
@@ -124,13 +119,13 @@ export function ConfirmDialog({
 
 /**
  * Hook for managing ConfirmDialog state
- * 
+ *
  * @example
  * ```tsx
  * const confirmDelete = useConfirmDialog();
- * 
+ *
  * <button onClick={() => confirmDelete.open()}>Delete</button>
- * 
+ *
  * <ConfirmDialog
  *   {...confirmDelete.props}
  *   title="Delete item"
