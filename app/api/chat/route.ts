@@ -1,120 +1,146 @@
 import { createGroq } from '@ai-sdk/groq';
-import { streamText, UIMessage, convertToModelMessages } from 'ai';
-import { SYSTEM_PROMPT, STREAM_CONFIG, DEFAULT_MODEL } from '@/app/config';
-import { env } from '@/app/config/env';
-import { z } from 'zod';
+import { streamText, convertToModelMessages } from 'ai';
 import { NextResponse } from 'next/server';
-import type { RawMessage, SanitizedMessage } from '@/app/types/chat.types';
+import { SYSTEM_PROMPT, STREAM_CONFIG } from '@/app/config';
+import { env } from '@/app/config/env';
 import { chatRateLimiter } from '@/app/lib/rate-limiter';
 import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
+import { chatRequestSchema } from '@/app/lib/schemas';
+import { sanitizeMessages } from '@/app/lib/chat-utils';
 
-// Allow streaming responses up to 30 seconds
-// Note: Must be a literal value for Next.js static analysis
+// ===========================================
+// Constants
+// ===========================================
+
+/**
+ * Tiempo máximo permitido para respuestas streaming (segundos)
+ * @see https://vercel.com/docs/functions/runtimes#max-duration
+ */
 export const maxDuration = 30;
 
-// Initialize GROQ
+// ===========================================
+// Module Initialization
+// ===========================================
+
+/**
+ * Cliente GROQ inicializado con API key del entorno
+ */
 const groq = createGroq({
   apiKey: env.GROQ_API_KEY,
 });
 
-// Zod schema for MessagePart
-const messagePartSchema = z.union([
-  z.object({
-    type: z.literal('text'),
-    text: z.string(),
-  }),
-  z.object({
-    type: z.literal('image'),
-    imageUrl: z.string().url(),
-    mimeType: z.string(),
-  }),
-  z.object({
-    type: z.literal('file'),
-    data: z.string(),
-    mediaType: z.string(),
-  }),
-]);
+// ===========================================
+// Helper Functions
+// ===========================================
 
-// Zod schema for request validation
-const requestSchema = z.object({
-  messages: z.array(
-    z.object({
-      role: z.enum(['user', 'assistant', 'system']),
-      content: z
-        .union([z.string(), z.any()]) // Permitir objetos para sanitizar
-        .transform((val) => (typeof val === 'string' ? val : JSON.stringify(val)))
-        .pipe(z.string().max(10000, 'Mensaje demasiado largo (max 10KB)')),
-      parts: z.array(messagePartSchema).optional(),
-      id: z.string().optional(),
-      createdAt: z
-        .union([z.date(), z.string()])
-        .optional()
-        .transform((val) => (typeof val === 'string' ? new Date(val) : val)),
-    })
-  ),
-  model: z.string().optional(),
-});
+/**
+ * Extrae la IP del cliente del request
+ *
+ * @param req - Request HTTP entrante
+ * @returns IP del cliente o 'unknown' si no se puede determinar
+ */
+function extractClientIP(req: Request): string {
+  const forwardedFor = req.headers.get('x-forwarded-for');
 
-export async function POST(req: Request) {
+  // x-forwarded-for puede tener múltiples IPs separadas por coma
+  if (forwardedFor) {
+    const firstIP = forwardedFor.split(',')[0].trim();
+    return firstIP || 'unknown';
+  }
+
+  return req.headers.get('x-real-ip') || 'unknown';
+}
+
+/**
+ * Crea respuesta de rate limit excedido
+ *
+ * @param retryAfterSeconds - Segundos hasta que se pueda reintentar
+ * @returns NextResponse con status 429
+ */
+function createRateLimitResponse(retryAfterSeconds: number): NextResponse {
+  return NextResponse.json(
+    {
+      error: ERROR_MESSAGES.RATE_LIMIT,
+      message: ERROR_MESSAGES.QUOTA_EXCEEDED_DESCRIPTION,
+      retryAfter: retryAfterSeconds,
+    },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': retryAfterSeconds.toString(),
+        'X-RateLimit-Remaining': '0',
+      },
+    }
+  );
+}
+
+/**
+ * Crea respuesta de error de validación
+ *
+ * @param details - Detalles del error (issues de Zod)
+ * @returns NextResponse con status 400
+ */
+function createValidationErrorResponse(details: unknown): NextResponse {
+  return NextResponse.json(
+    {
+      error: ERROR_MESSAGES.INVALID_REQUEST,
+      details,
+    },
+    { status: 400 }
+  );
+}
+
+// ===========================================
+// Route Handler
+// ===========================================
+
+/**
+ * Procesa mensajes de chat y retorna respuesta streamed de IA
+ *
+ * @param req - Request HTTP con body JSON conteniendo messages y model opcional
+ * @returns Stream de respuesta de IA o error JSON
+ *
+ * @throws {Error} Si hay error de procesamiento interno
+ *
+ * @example
+ * ```bash
+ * curl -X POST /api/chat \
+ *   -H "Content-Type: application/json" \
+ *   -d '{"messages": [{"role": "user", "content": "Hola"}]}'
+ * ```
+ */
+export async function POST(req: Request): Promise<NextResponse | Response> {
   try {
-    // Check rate limit
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    // 1. Rate limiting
+    const clientIP = extractClientIP(req);
 
-    if (!chatRateLimiter.checkLimit(ip)) {
-      const retryAfter = Math.ceil(chatRateLimiter.getRetryAfter(ip) / 1000);
-      return NextResponse.json(
-        {
-          error: ERROR_MESSAGES.RATE_LIMIT,
-          message: ERROR_MESSAGES.QUOTA_EXCEEDED_DESCRIPTION,
-          retryAfter,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Remaining': '0',
-          },
-        }
-      );
+    if (!chatRateLimiter.checkLimit(clientIP)) {
+      const retryAfter = Math.ceil(chatRateLimiter.getRetryAfter(clientIP) / 1000);
+      return createRateLimitResponse(retryAfter);
     }
 
-    // Parse and validate request body
-    const rawBody = await req.json();
-    const parseResult = requestSchema.safeParse(rawBody);
+    // 2. Parse JSON body
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
+
+    // 3. Validate request with Zod schema
+    const parseResult = chatRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
-      return NextResponse.json(
-        {
-          error: ERROR_MESSAGES.INVALID_REQUEST,
-          details: parseResult.error.issues,
-        },
-        { status: 400 }
-      );
+      return createValidationErrorResponse(parseResult.error.issues);
     }
 
-    const { messages: rawMessages, model = DEFAULT_MODEL } = parseResult.data;
+    const { messages: rawMessages, model } = parseResult.data;
 
-    // Sanitize messages to ensure content is always a string
-    // This handles cases where vision analysis messages might have incorrect format
-    const sanitizedMessages = rawMessages.map((msg: RawMessage): SanitizedMessage => {
-      let content = msg.content;
+    // 4. Sanitize messages for AI processing
+    const sanitizedMessages = sanitizeMessages(rawMessages);
 
-      // If content is missing or not a string, try to extract from parts
-      if (typeof content !== 'string') {
-        const textPart = msg.parts?.find(
-          (p): p is Extract<typeof p, { type: 'text' }> => p.type === 'text'
-        );
-        content = textPart?.text || '';
-      }
-
-      return {
-        ...msg,
-        content: String(content || ''),
-        createdAt: msg.createdAt instanceof Date ? msg.createdAt : undefined,
-      };
-    }) as UIMessage[];
-
+    // 5. Stream AI response
     const result = streamText({
       model: groq(model),
       messages: convertToModelMessages(sanitizedMessages),
@@ -126,6 +152,7 @@ export async function POST(req: Request) {
       sendReasoning: STREAM_CONFIG.sendReasoning,
     });
   } catch (error) {
+    // Log error with context
     logger.error(
       'Error en API de chat',
       error instanceof Error ? error : new Error(String(error)),
@@ -134,14 +161,6 @@ export async function POST(req: Request) {
         action: 'POST',
       }
     );
-
-    // Better error handling
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: ERROR_MESSAGES.VALIDATION_ERROR, details: error.issues },
-        { status: 400 }
-      );
-    }
 
     const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN;
 

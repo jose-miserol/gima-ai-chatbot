@@ -33,7 +33,7 @@ export interface ChatAPIResponse {
 // Tipos para mensajes raw que pueden venir malformados
 export interface RawMessage {
   role: 'user' | 'assistant' | 'system';
-  content: string | { parts?: MessagePart[] };
+  content: string | { parts?: MessagePart[]; text?: string };
   parts?: MessagePart[];
   id?: string;
   createdAt?: Date | string;
