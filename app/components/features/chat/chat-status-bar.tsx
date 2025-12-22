@@ -11,12 +11,32 @@ interface ChatStatusIndicatorsProps {
 }
 
 /**
- * Chat status indicators component
+ * ChatStatusIndicators - Barra de indicadores visuales de estado del chat
  *
- * Displays visual feedback for various chat states:
- * - Voice recording status (listening, processing)
- * - Image analysis progress
- * - Chat errors
+ * Muestra feedback visual en tiempo real para diferentes estados del sistema:
+ * - Grabación de voz: Indicador animado durante grabación (Gemini/Native)
+ * - Procesamiento de voz: Spinner mientras la IA transcribe
+ * - Análisis de imagen: Spinner mientras Gemini analiza imagen
+ * - Errores: Mensajes de error de voz o conexión
+ *
+ * Solo un indicador se muestra a la vez (prioridad: error > procesando > analizando > escuchando).
+ *
+ * @param voiceError - Mensaje de error del sistema de voz (si existe)
+ * @param isListening - Si está grabando voz activamente
+ * @param isProcessing - Si está procesando/transcribiendo audio con IA
+ * @param isAnalyzingImage - Si está analizando una imagen con Gemini Vision
+ * @param chatError - Error de conexión o API del chat
+ * @param mode - Modo de reconocimiento de voz ('gemini' para IA, 'native' para Web Speech API)
+ *
+ * @example
+ * ```tsx
+ * <ChatStatusIndicators
+ *   isListening={isListening}
+ *   isProcessing={isProcessing}
+ *   isAnalyzingImage={false}
+ *   mode="gemini"
+ * />
+ * ```
  */
 export function ChatStatusIndicators({
   voiceError,

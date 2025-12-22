@@ -19,15 +19,43 @@ interface UseChatSubmitParams {
 }
 
 /**
- * Custom hook for handling chat message submission
+ * useChatSubmit - Hook para gestión de envío de mensajes del chat
  *
- * Manages the complete flow of submitting messages:
- * - Input validation
- * - Voice control
- * - Image detection and analysis delegation
- * - Normal text message sending
+ * Maneja la lógica completa de envío de mensajes incluyendo:
+ * - Validación: Verifica que haya texto o archivos antes de enviar
+ * - Control de voz: Detiene grabación si está activa al enviar
+ * - Detección de imágenes: Identifica imágenes adjuntas automáticamente
+ * - Análisis automático: Si imagen con menos de 10 caracteres de texto, delega a Gemini Vision
+ * - Envío normal: Mensajes de texto van directamente a GROQ
  *
- * @returns handleSubmit function
+ * Flujo de Decisión:
+ * 1. Hay imagen con poco texto (menos de 10 chars)? -> Analizar con Gemini Vision
+ * 2. Solo texto o imagen con contexto? -> Enviar a GROQ
+ *
+ * @param sendMessage - Función para enviar mensaje a la API de chat
+ * @param isListening - Estado de grabación de voz (se detiene automáticamente al enviar)
+ * @param toggleListening - Función para toggle de grabación de voz
+ * @param model - Modelo de AI a usar (GROQ)
+ * @param setInput - Setter para limpiar el input después de enviar
+ * @param analyzeImage - Función async para analizar imagen con Gemini Vision
+ * @param setIsAnalyzingImage - Setter para estado de análisis de imagen
+ *
+ * @returns Objeto con función handleSubmit para manejar envío
+ *
+ * @example
+ * ```tsx
+ * const { handleSubmit } = useChatSubmit({
+ *   sendMessage,
+ *   isListening,
+ *   toggleListening,
+ *   model: DEFAULT_MODEL,
+ *   setInput,
+ *   analyzeImage,
+ *  setIsAnalyzingImage
+ * });
+ *
+ * <PromptInput onSubmit={handleSubmit} />
+ * ```
  */
 export function useChatSubmit({
   sendMessage,

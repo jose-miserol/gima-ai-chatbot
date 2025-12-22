@@ -42,6 +42,42 @@ import { ThemeToggle } from '@/app/components/features/theme';
 import { CHAT_CONFIG, CHAT_MESSAGES } from './constants';
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 
+/**
+ * Chat - Componente principal del sistema de chat inteligente de GIMA
+ *
+ * Orquesta la interfaz completa de chat con capacidades multi-modales:
+ * - Mensajería de texto: Conversación con AI usando GROQ
+ * - Input de voz: Transcripción usando Gemini AI o Web Speech API nativa
+ * - Análisis de imágenes: Detección automática y análisis con Gemini Vision
+ * - Historial persistente: Almacenamiento local de conversaciones
+ * - Keyboard shortcuts: Atajos para mejorar productividad
+ *
+ * Características Principales:
+ * - Detección automática de imágenes con análisis de visión si no hay texto suficiente
+ * - Integración dual de reconocimiento de voz (Gemini AI + fallback nativo)
+ * - Gestión de estado de conversación con persistencia en localStorage
+ * - Indicadores visuales de estado (grabando, procesando, analizando)
+ * - Tema claro/oscuro con ThemeToggle
+ * - Confirmación antes de borrar historial
+ *
+ * Flujo de Análisis de Imagen:
+ * 1. Usuario adjunta imagen con menos de 10 caracteres de texto
+ * 2. Automáticamente se analiza con Gemini Vision
+ * 3. Resultado se agrega como mensaje del asistente
+ * 4. Usuario puede continuar conversación con contexto de la imagen
+ *
+ * Integraciones:
+ * - usePersistentChat: Gestión de mensajes y persistencia
+ * - useVoiceInput: Transcripción de voz (Gemini/Native)
+ * - useKeyboardShortcuts: Atajos de teclado
+ * - analyzePartImage: Server action para análisis de visión
+ *
+ * @example
+ * ```tsx
+ * // Uso en page.tsx
+ * <Chat />
+ * ```
+ */
 export function Chat() {
   const [input, setInput] = useState('');
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);

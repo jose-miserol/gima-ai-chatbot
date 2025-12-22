@@ -7,11 +7,24 @@ interface ChatHeaderProps {
 }
 
 /**
- * Chat header component with title and controls
+ * ChatHeader - Cabecera del chat con controles principales
  *
- * Displays the chat title and provides controls for:
- * - Theme toggling
- * - Clearing conversation history
+ * Muestra el título de la aplicación y proporciona acceso a:
+ * - ThemeToggle: Cambiar entre tema claro/oscuro
+ * - Botón de limpieza: Borrar todo el historial de conversación
+ *
+ * El botón para limpiar historial solo aparece cuando hay mensajes.
+ *
+ * @param hasMessages - Indica si hay mensajes en la conversación (muestra botón de clear)
+ * @param onClearHistory - Callback ejecutado al solicitar limpiar historial (abre confirmación)
+ *
+ * @example
+ * ```tsx
+ * <ChatHeader
+ *   hasMessages={messages.length > 0}
+ *   onClearHistory={() => setShowClearDialog(true)}
+ * />
+ * ```
  */
 export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
   return (

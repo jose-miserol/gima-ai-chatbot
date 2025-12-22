@@ -26,17 +26,49 @@ interface UseImageAnalysisParams {
 }
 
 /**
- * Custom hook for handling Gemini Vision image analysis
+ * useImageAnalysis - Hook para análisis de imágenes con Gemini Vision
  *
- * Manages the complete flow of analyzing images with Gemini:
- * - Blob URL to base64 conversion
- * - Server action call
- * - Success/error handling
- * - Message creation with analysis results
+ * Gestiona el flujo completo de análisis de imágenes usando Gemini Vision API:
+ * - Conversión: Blob URL a Base64 para envío a API
+ * - Análisis: Llamada a Gemini Vision vía server action
+ * - Resultado exitoso: Agrega análisis como mensaje del asistente en el chat
+ * - Manejo de errores: Agrega mensaje de error al chat y muestra toast
  *
- * @param setMessages - Function to update chat messages
- * @param toast - Toast notification system
- * @returns analyzeImage function
+ * Flujo de Procesamiento:
+ * 1. Fetch blob URL de la imagen
+ * 2. Convertir blob a base64 usando FileReader
+ * 3. Llamar server action analyzePartImage
+ * 4. Si éxito: Agregar análisis formateado como mensaje del asistente
+ * 5. Si falla: Agregar mensaje de error al chat
+ *
+ * Formato del Mensaje de Análisis:
+ * ```
+ * Análisis de Imagen Subida por el Usuario
+ *
+ * [Análisis detallado de Gemini]
+ *
+ * Este análisis fue generado automáticamente...
+ * ```
+ *
+ * @param setMessages - Función para actualizar array de mensajes del chat
+ * @param toast - Sistema de notificaciones toast (success/error)
+ *
+ * @returns Objeto con función analyzeImage que retorna Promise<boolean>
+ *   - true: Análisis exitoso
+ *   - false: Error en análisis
+ *
+ * @example
+ * ```tsx
+ * const { analyzeImage } = useImageAnalysis({
+ *   setMessages,
+ *   toast
+ * });
+ *
+ * const success = await analyzeImage(imageFile);
+ * if (success) {
+ *   // Análisis agregado al chat
+ * }
+ * ```
  */
 export function useImageAnalysis({ setMessages, toast }: UseImageAnalysisParams) {
   const analyzeImage = useCallback(

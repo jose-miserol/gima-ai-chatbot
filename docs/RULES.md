@@ -253,8 +253,217 @@ app/components/features/chat/
 - 🎨 **Componentes React:** PascalCase en código (`export function ChatHeader`)
 - 🪝 **Hooks:** camelCase en código con prefijo `use` (`export function useChatData`) - **Obligatorio por React**
 - 🔧 **Clases:** PascalCase en código (`export class ChatService`)
-- 📦 **Funciones:** camelCase en código (`export function formatMessage`)
-- 📋 **Tipos/Interfaces:** PascalCase en código (`interface Message`)
+- 🔧 **Funciones y métodos:** camelCase (`function processData`)
+- 📦 **Clases e Interfaces:** PascalCase (`class UserService`, `interface ChatMessage`)
+- 🔐 **Constantes:** UPPER_SNAKE_CASE solo para valores verdaderamente inmutables y globales
+- 📊 **Variables:** camelCase (`const userName = 'John'`)
+
+---
+
+## 📝 Estándares de Documentación (JSDoc)
+
+### Filosofía de Documentación
+
+**Tono:** Semi-profesional - Claro, conciso, sin emojis en comentarios de código.
+
+**Criterio de aplicación:**
+
+- **Componentes exportados:** OBLIGATORIO
+- **Hooks personalizados:** OBLIGATORIO
+- **Funciones utilitarias públicas:** OBLIGATORIO
+- **Tipos/interfaces complejas:** RECOMENDADO
+- **Funciones privadas/helpers:** OPCIONAL (solo si lógica compleja)
+
+### Estructura Estándar de JSDoc
+
+````typescript
+/**
+ * NombreComponente - Descripción breve en una línea
+ *
+ * Descripción extendida del propósito y responsabilidades del componente.
+ * Usar viñetas sin markdown bold para listar características:
+ * - Característica 1: Descripción
+ * - Característica 2: Descripción
+ *
+ * Secciones adicionales (si aplica):
+ * Flujo de Operación:
+ * 1. Paso uno
+ * 2. Paso dos
+ *
+ * Integraciones:
+ * - hookName: Propósito
+ * - serviceName: Propósito
+ *
+ * @param paramName - Descripción del parámetro
+ * @returns Descripción de lo que retorna
+ *
+ * @example
+ * ```tsx
+ * // Ejemplo de uso
+ * <Component prop={value} />
+ * ```
+ */
+````
+
+### Reglas de Estilo
+
+**OBLIGATORIO:**
+
+- ✅ Primera línea: `NombreExportado - Descripción breve`
+- ✅ Línea en blanco después del título
+- ✅ Viñetas simples sin markdown bold (`-` no `- **Bold:**`)
+- ✅ Parámetros documentados con `@param`
+- ✅ Valor de retorno documentado con `@returns`
+- ✅ Ejemplo de uso con `@example` (componentes y hooks)
+
+**PROHIBIDO:**
+
+- ❌ Emojis en comentarios JSDoc
+- ❌ Markdown bold (`**text**`) en viñetas
+- ❌ Headers markdown (`###`) dentro del JSDoc
+- ❌ Símbolos decorativos (→, ✨, 🎯)
+
+### Ejemplos por Tipo
+
+#### Componente React
+
+````typescript
+/**
+ * ChatHeader - Cabecera del chat con controles principales
+ *
+ * Muestra el título de la aplicación y proporciona acceso a:
+ * - ThemeToggle: Cambiar entre tema claro/oscuro
+ * - Botón de limpieza: Borrar todo el historial de conversación
+ *
+ * El botón para limpiar historial solo aparece cuando hay mensajes.
+ *
+ * @param hasMessages - Indica si hay mensajes en la conversación
+ * @param onClearHistory - Callback ejecutado al solicitar limpiar historial
+ *
+ * @example
+ * ```tsx
+ * <ChatHeader
+ *   hasMessages={messages.length > 0}
+ *   onClearHistory={() => setShowClearDialog(true)}
+ * />
+ * ```
+ */
+export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
+  // ...
+}
+````
+
+#### Hook Personalizado
+
+````typescript
+/**
+ * useChatSubmit - Hook para gestión de envío de mensajes del chat
+ *
+ * Maneja la lógica completa de envío de mensajes incluyendo:
+ * - Validación: Verifica que haya texto o archivos antes de enviar
+ * - Control de voz: Detiene grabación si está activa al enviar
+ * - Detección de imágenes: Identifica imágenes adjuntas automáticamente
+ *
+ * Flujo de Decisión:
+ * 1. Hay imagen con poco texto? -> Analizar con Gemini Vision
+ * 2. Solo texto o imagen con contexto? -> Enviar a GROQ
+ *
+ * @param sendMessage - Función para enviar mensaje a la API de chat
+ * @param isListening - Estado de grabación de voz
+ * @param model - Modelo de AI a usar
+ *
+ * @returns Objeto con función handleSubmit para manejar envío
+ *
+ * @example
+ * ```tsx
+ * const { handleSubmit } = useChatSubmit({
+ *   sendMessage,
+ *   isListening,
+ *   model: DEFAULT_MODEL
+ * });
+ * ```
+ */
+export function useChatSubmit(params: UseChatSubmitParams) {
+  // ...
+}
+````
+
+#### Función Utilitaria
+
+````typescript
+/**
+ * sanitizeMessages - Limpia y valida mensajes antes de enviar a la API
+ *
+ * Realiza las siguientes operaciones:
+ * - Valida estructura de cada mensaje contra schema Zod
+ * - Filtra mensajes vacíos o con contenido inválido
+ * - Normaliza formato de parts (text/image)
+ *
+ * @param messages - Array de mensajes a sanitizar
+ * @returns Array de mensajes validados y limpios
+ * @throws ZodError si algún mensaje tiene formato inválido crítico
+ *
+ * @example
+ * ```typescript
+ * const cleaned = sanitizeMessages(rawMessages);
+ * ```
+ */
+export function sanitizeMessages(messages: Message[]): SanitizedMessage[] {
+  // ...
+}
+````
+
+#### Interface/Type Complejo
+
+```typescript
+/**
+ * ChatMessage - Representa un mensaje individual en la conversación
+ *
+ * Estructura compatible con formato de Vercel AI SDK.
+ * Soporta contenido multi-modal (texto e imágenes).
+ *
+ * @property id - Identificador único del mensaje
+ * @property role - Rol del emisor ('user' o 'assistant')
+ * @property content - Texto completo del mensaje
+ * @property parts - Partes individuales del mensaje (texto o imágenes)
+ * @property createdAt - Timestamp de creación
+ */
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  parts: MessagePart[];
+  createdAt: Date;
+}
+```
+
+### Longitud Recomendada
+
+| Tipo                | Líneas JSDoc Recomendadas |
+| ------------------- | ------------------------- |
+| Componente simple   | 10-15 líneas              |
+| Componente complejo | 20-40 líneas              |
+| Hook personalizado  | 15-30 líneas              |
+| Función utilitaria  | 8-15 líneas               |
+| Interface/Type      | 5-10 líneas               |
+
+### Cuándo NO Documentar
+
+❌ **No usar JSDoc en:**
+
+- Funciones helper privadas simples (< 5 líneas)
+- Getters/setters triviales
+- Tipos simples (`type ID = string`)
+- Re-exports (`export { Component } from './component'`)
+
+✅ **SÍ documentar si:**
+
+- Función tiene lógica no obvia
+- Componente tiene comportamiento complejo
+- Hook gestiona estado o side effects
+- API pública del feature
+
+---
 
 ### Arquitectura en Capas (SaaS)
 
