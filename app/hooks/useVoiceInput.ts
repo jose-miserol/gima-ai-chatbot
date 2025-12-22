@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { transcribeAudio } from '@/app/actions';
+import { getSupportedAudioMimeType } from '@/app/utils/media-types';
 import { logger } from '@/app/lib/logger';
 import { VOICE_MESSAGES, MAX_ERROR_MESSAGE_LENGTH } from '@/app/constants/messages';
 
@@ -240,11 +241,26 @@ export function useVoiceInput({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-          ? 'audio/webm'
-          : 'audio/mp4';
+      // ✅ Detección dinámica de MIME type soportado
+      let mimeType: string;
+      try {
+        mimeType = getSupportedAudioMimeType();
+        logger.debug('Using audio MIME type', {
+          mimeType,
+          userAgent: navigator.userAgent,
+          component: 'useVoiceInput',
+        });
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        logger.error('Failed to get supported MIME type', new Error(errorMsg), {
+          component: 'useVoiceInput',
+          userAgent: navigator.userAgent,
+        });
+        // Fallback a modo nativo si MediaRecorder falla completamente
+        setMode('native');
+        startNativeListening();
+        return;
+      }
 
       const recorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = recorder;
@@ -269,7 +285,7 @@ export function useVoiceInput({
             // Create new AbortController for this request
             abortControllerRef.current = new AbortController();
 
-            const result = await transcribeAudio(base64Audio);
+            const result = await transcribeAudio(base64Audio, mimeType);
 
             // Check if aborted
             if (abortControllerRef.current?.signal.aborted) {
