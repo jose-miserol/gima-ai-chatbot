@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
-import { CHAT_CONFIG } from '@/app/config/chat';
+import { CHAT_CONFIG } from '../constants';
 
 interface FileAttachment {
   url?: string;

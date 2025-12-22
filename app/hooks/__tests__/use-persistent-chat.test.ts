@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { usePersistentChat } from '../usePersistentChat';
+import { usePersistentChat } from '../use-persistent-chat';
 
 // Mock localStorage
 const mockLocalStorage = {
