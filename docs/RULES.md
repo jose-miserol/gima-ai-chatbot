@@ -92,6 +92,46 @@ app/components/features/chat/
 - ✅ Claro cuál es el componente principal vs subcomponentes
 - ✅ Usado por equipos grandes (Vercel, Shopify, Airbnb)
 
+### Criterios de Escalabilidad (Cuándo Usar Carpetas)
+
+**Regla por Defecto:** Usar archivos únicos (`types.ts`, `constants.ts`, `utils.ts`) en raíz del feature.
+
+**Transición a Carpetas:** Cuando un archivo excede estos umbrales:
+
+| Archivo        | Umbral de Líneas | Umbral Alternativo        | Acción                |
+| -------------- | ---------------- | ------------------------- | --------------------- |
+| `types.ts`     | > 150 líneas     | > 10 interfaces distintas | Migrar a `types/`     |
+| `constants.ts` | > 100 líneas     | > 3 categorías de config  | Migrar a `constants/` |
+| `utils.ts`     | > 200 líneas     | > 8 funciones utilitarias | Migrar a `utils/`     |
+
+**Ejemplo de Migración:**
+
+```
+# Feature Pequeño (< 150 líneas en types.ts)
+chat/
+└── types.ts              # ✅ Archivo único
+
+# Feature Grande (> 150 líneas)
+chat/
+└── types/
+    ├── message.types.ts  # Tipos de mensajes
+    ├── api.types.ts      # Tipos de API
+    ├── ui.types.ts       # Props de componentes
+    └── index.ts          # export * from './message.types'
+```
+
+**Importante:** Siempre usar `index.ts` para barrel exports. Los imports externos deben seguir siendo:
+
+```typescript
+import { ChatMessage } from './types'; // ✅ Funciona en ambos casos
+```
+
+**Criterio de Decisión:**
+
+- ¿El archivo es difícil de navegar? → Migra a carpeta
+- ¿Hay dominios conceptuales claros? → Migra a carpeta
+- ¿Aún es fácil encontrar lo que buscas? → Mantén archivo único
+
 ### Reglas de Importación Estrictas
 
 ```typescript
