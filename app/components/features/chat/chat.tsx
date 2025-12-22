@@ -42,7 +42,7 @@ import { ThemeToggle } from '@/app/components/features/theme';
 import { CHAT_CONFIG, CHAT_MESSAGES } from './constants';
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 
-export function ChatInterfaceV1() {
+export function Chat() {
   const [input, setInput] = useState('');
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);

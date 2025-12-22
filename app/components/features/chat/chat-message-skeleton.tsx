@@ -7,14 +7,12 @@ interface MessageSkeletonProps {
   className?: string;
 }
 
-export function MessageSkeleton({ role = 'assistant', className }: MessageSkeletonProps) {
+export function ChatMessageSkeleton({ role = 'assistant', className }: MessageSkeletonProps) {
   return (
     <div
       className={cn(
         'flex gap-3 p-4 rounded-lg animate-pulse',
-        role === 'user'
-          ? 'bg-blue-50 dark:bg-blue-950/20'
-          : 'bg-gray-50 dark:bg-gray-800/50',
+        role === 'user' ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-gray-50 dark:bg-gray-800/50',
         className
       )}
       role="status"
@@ -40,7 +38,7 @@ export function ChatSkeleton({ messageCount = 3 }: { messageCount?: number }) {
   return (
     <div className="flex flex-col gap-4 p-4">
       {Array.from({ length: messageCount }).map((_, i) => (
-        <MessageSkeleton key={i} role={i % 2 === 0 ? 'user' : 'assistant'} />
+        <ChatMessageSkeleton key={i} role={i % 2 === 0 ? 'user' : 'assistant'} />
       ))}
     </div>
   );

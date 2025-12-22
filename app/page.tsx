@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
-const ChatInterfaceV1 = dynamic(
-  () => import('@components/features/chat').then((mod) => ({ default: mod.ChatInterfaceV1 })),
+const Chat = dynamic(
+  () => import('@components/features/chat').then((mod) => ({ default: mod.Chat })),
   {
     ssr: false,
     loading: () => <div className="flex items-center justify-center h-screen">Cargando...</div>,
@@ -11,5 +11,5 @@ const ChatInterfaceV1 = dynamic(
 );
 
 export default function ChatPage() {
-  return <ChatInterfaceV1 />;
+  return <Chat />;
 }
