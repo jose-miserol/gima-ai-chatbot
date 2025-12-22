@@ -30,16 +30,16 @@ import {
 } from '@/app/components/ai-elements/prompt-input';
 import { Loader } from '@/app/components/ai-elements/loader';
 import { VoiceButton } from '@/app/components/features/voice';
-import { useVoiceInput } from '@/app/hooks/useVoiceInput';
-import { usePersistentChat } from '@/app/hooks/usePersistentChat';
+import { useVoiceInput } from '@/app/hooks/use-voice-input';
+import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useState, useCallback, useRef } from 'react';
 import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from 'lucide-react';
 import { DEFAULT_MODEL } from '@/app/config';
 import { analyzePartImage } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
-import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
+import { useKeyboardShortcuts } from '@/app/hooks/use-keyboard-shortcuts';
 import { ThemeToggle } from '@/app/components/features/theme';
-import { CHAT_CONFIG, CHAT_MESSAGES } from '@/app/config/chat';
+import { CHAT_CONFIG, CHAT_MESSAGES } from './constants';
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 
 export function ChatInterfaceV1() {
