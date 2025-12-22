@@ -7,7 +7,7 @@ import { chatRateLimiter } from '@/app/lib/rate-limiter';
 import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
 import { chatRequestSchema } from '@/app/lib/schemas';
-import { sanitizeMessages } from '@/app/lib/chat-utils';
+import { sanitizeMessages } from '@/app/components/features/chat/utils';
 import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
 
 // ===========================================
