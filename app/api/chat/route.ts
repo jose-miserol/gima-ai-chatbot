@@ -8,6 +8,7 @@ import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
 import { chatRequestSchema } from '@/app/lib/schemas';
 import { sanitizeMessages } from '@/app/lib/chat-utils';
+import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
 
 // ===========================================
 // Constants
@@ -33,24 +34,6 @@ const groq = createGroq({
 // ===========================================
 // Helper Functions
 // ===========================================
-
-/**
- * Extrae la IP del cliente del request
- *
- * @param req - Request HTTP entrante
- * @returns IP del cliente o 'unknown' si no se puede determinar
- */
-function extractClientIP(req: Request): string {
-  const forwardedFor = req.headers.get('x-forwarded-for');
-
-  // x-forwarded-for puede tener múltiples IPs separadas por coma
-  if (forwardedFor) {
-    const firstIP = forwardedFor.split(',')[0].trim();
-    return firstIP || 'unknown';
-  }
-
-  return req.headers.get('x-real-ip') || 'unknown';
-}
 
 /**
  * Crea respuesta de rate limit excedido
@@ -112,8 +95,15 @@ function createValidationErrorResponse(details: unknown): NextResponse {
  */
 export async function POST(req: Request): Promise<NextResponse | Response> {
   try {
-    // 1. Rate limiting
-    const clientIP = extractClientIP(req);
+    // 1. Validate client IP and apply rate limiting
+    const clientIP = extractClientIP(req, {
+      allowLocalhost: env.NODE_ENV === 'development',
+    });
+
+    // En producción, rechazar requests sin IP válida
+    if (!clientIP) {
+      return createInvalidIPResponse();
+    }
 
     if (!chatRateLimiter.checkLimit(clientIP)) {
       const retryAfter = Math.ceil(chatRateLimiter.getRetryAfter(clientIP) / 1000);
