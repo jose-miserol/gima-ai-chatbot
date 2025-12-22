@@ -76,10 +76,11 @@ const messageContentSchema = z.union([
 
 /**
  * Schema para un mensaje individual
+ * content es opcional - si no está presente, se usa string vacío
  */
 export const messageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
-  content: messageContentSchema,
+  content: messageContentSchema.optional().default(''),
   parts: z.array(messagePartSchema).optional(),
   id: z.string().optional(),
   createdAt: z.preprocess((val) => {
