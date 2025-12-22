@@ -22,11 +22,6 @@ import {
   PromptInputAttachments,
   PromptInputBody,
   type PromptInputMessage,
-  PromptInputSelect,
-  PromptInputSelectContent,
-  PromptInputSelectItem,
-  PromptInputSelectTrigger,
-  PromptInputSelectValue,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputFooter,
@@ -39,7 +34,7 @@ import { useVoiceInput } from '@/app/hooks/useVoiceInput';
 import { usePersistentChat } from '@/app/hooks/usePersistentChat';
 import { useState, useCallback, useRef } from 'react';
 import { CopyIcon, RefreshCcwIcon, Loader2, Trash2 } from 'lucide-react';
-import { AVAILABLE_MODELS, DEFAULT_MODEL } from '@/app/config';
+import { DEFAULT_MODEL } from '@/app/config';
 import { analyzePartImage } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts';
@@ -49,20 +44,17 @@ import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 
 export function ChatInterfaceV1() {
   const [input, setInput] = useState('');
-  const [model, setModel] = useState<string>(DEFAULT_MODEL);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
 
-  // Use persistent chat with localStorage + error handling
   const {
     messages,
     sendMessage,
     status,
     regenerate,
     error: chatError,
-    isLoaded,
     visionResponse,
     setVisionResponse,
     clearHistory,
@@ -159,7 +151,11 @@ export function ChatInterfaceV1() {
     const imageFile = message.files?.find((file) => file.mediaType?.startsWith('image/'));
 
     // If image attached with minimal/no text, use Gemini for vision analysis
-    if (imageFile && imageFile.url && (!hasText || (message.text?.trim().length || 0) < CHAT_CONFIG.MIN_TEXT_LENGTH_FOR_IMAGE)) {
+    if (
+      imageFile &&
+      imageFile.url &&
+      (!hasText || (message.text?.trim().length || 0) < CHAT_CONFIG.MIN_TEXT_LENGTH_FOR_IMAGE)
+    ) {
       setIsAnalyzingImage(true);
 
       try {
@@ -251,22 +247,13 @@ ${result.text}
       },
       {
         body: {
-          model: model,
+          model: DEFAULT_MODEL, // Always use default model
         },
       }
     );
 
     setInput('');
   };
-
-  // Show loading state while history is being restored
-  if (!isLoaded) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 flex items-center justify-center h-screen">
-        <Loader2 className="size-8 animate-spin text-gray-400" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
@@ -431,24 +418,6 @@ ${result.text}
                 onClick={toggleListening}
                 disabled={!canSend || isProcessing}
               />
-
-              <PromptInputSelect
-                onValueChange={(value) => {
-                  setModel(value);
-                }}
-                value={model}
-              >
-                <PromptInputSelectTrigger>
-                  <PromptInputSelectValue />
-                </PromptInputSelectTrigger>
-                <PromptInputSelectContent>
-                  {AVAILABLE_MODELS.map((m) => (
-                    <PromptInputSelectItem key={m.value} value={m.value}>
-                      {m.name}
-                    </PromptInputSelectItem>
-                  ))}
-                </PromptInputSelectContent>
-              </PromptInputSelect>
             </PromptInputTools>
 
             <PromptInputSubmit disabled={!input || !canSend} status={status} />
