@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   description: 'Asistente inteligente para la gestión de mantenimiento y activos de la UNEG',
   keywords: 'mantenimiento, GIMA, UNEG, chatbot, IA',
   manifest: '/manifest.json',
-  themeColor: '#1e40af',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -29,12 +28,14 @@ export const metadata: Metadata = {
     icon: '/icon-192.png',
     apple: '/icon-192.png',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1e40af',
 };
 
 export default function RootLayout({
