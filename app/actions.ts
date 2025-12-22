@@ -3,11 +3,8 @@
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
+import { MAX_AUDIO_SIZE_MB, MAX_IMAGE_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-
-// Límites de tamaño para prevenir ataques DoS
-const MAX_AUDIO_SIZE_MB = 5; // 5MB
-const MAX_IMAGE_SIZE_MB = 5; // 5MB
 
 /**
  * Calcula el tamaño aproximado de un string base64 en bytes
@@ -24,10 +21,12 @@ function getBase64Size(base64: string): number {
  * Utiliza prompting específico para limpiar timestamps y muletillas.
  *
  * @param audioDataUrl - String codificado en base64 del audio (data:audio/...)
+ * @param mimeType - Tipo MIME del audio (default: 'audio/webm' para backward compatibility)
  * @returns Objeto con el texto transcrito y estado de éxito
  */
 export async function transcribeAudio(
-  audioDataUrl: string
+  audioDataUrl: string,
+  mimeType: string = 'audio/webm'
 ): Promise<{ text: string; success: boolean; error?: string }> {
   try {
     const base64Content = audioDataUrl.includes('base64,')
@@ -38,7 +37,7 @@ export async function transcribeAudio(
 
     // Validar tamaño del audio
     const sizeInBytes = getBase64Size(base64Content);
-    const sizeInMB = sizeInBytes / (1024 * 1024);
+    const sizeInMB = bytesToMB(sizeInBytes);
 
     if (sizeInMB > MAX_AUDIO_SIZE_MB) {
       throw new Error(
@@ -60,7 +59,7 @@ export async function transcribeAudio(
             {
               type: 'file',
               data: base64Content,
-              mediaType: 'audio/webm',
+              mediaType: mimeType,
             },
           ],
         },
@@ -111,7 +110,7 @@ export async function analyzePartImage(
 
     // Validar tamaño de la imagen
     const sizeInBytes = getBase64Size(base64Content);
-    const sizeInMB = sizeInBytes / (1024 * 1024);
+    const sizeInMB = bytesToMB(sizeInBytes);
 
     if (sizeInMB > MAX_IMAGE_SIZE_MB) {
       throw new Error(
