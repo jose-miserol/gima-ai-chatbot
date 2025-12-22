@@ -80,7 +80,7 @@ export function sanitizeMessages(rawMessages: Message[]): UIMessage[] {
       role: msg.role,
       content: textContent,
       parts: msg.parts,
-      createdAt: msg.createdAt instanceof Date ? msg.createdAt : undefined,
+      createdAt: msg.createdAt,
     } as UIMessage;
   });
 }
