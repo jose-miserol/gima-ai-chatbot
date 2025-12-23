@@ -1,8 +1,8 @@
 /**
- * Rate Limiter Implementation
+ * Implementación de Rate Limiter
  *
- * Simple in-memory rate limiter using sliding window algorithm.
- * Limits requests per IP address to prevent abuse.
+ * Rate limiter simple en memoria usando algoritmo de ventana deslizante.
+ * Limita las solicitudes por dirección IP para prevenir abusos.
  */
 
 interface RateLimitConfig {
@@ -30,9 +30,9 @@ export class RateLimiter {
   }
 
   /**
-   * Check if the given identifier has exceeded the rate limit
-   * @param identifier - Usually an IP address
-   * @returns true if within limit, false if exceeded
+   * Verifica si el identificador dado ha excedido el límite de tasa
+   * @param identifier - Usualmente una dirección IP
+   * @returns true si está dentro del límite, false si excedió
    */
   checkLimit(identifier: string): boolean {
     const now = Date.now();
@@ -56,7 +56,7 @@ export class RateLimiter {
   }
 
   /**
-   * Get remaining requests for an identifier
+   * Obtiene las solicitudes restantes para un identificador
    */
   getRemaining(identifier: string): number {
     const now = Date.now();
@@ -74,7 +74,7 @@ export class RateLimiter {
   }
 
   /**
-   * Get time until next request is allowed (in ms)
+   * Obtiene el tiempo hasta que se permita la siguiente solicitud (en ms)
    */
   getRetryAfter(identifier: string): number {
     const record = this.requests.get(identifier);
@@ -90,7 +90,7 @@ export class RateLimiter {
   }
 
   /**
-   * Cleanup expired entries from memory
+   * Limpia entradas expiradas de la memoria
    */
   private cleanup(): void {
     const now = Date.now();
@@ -108,7 +108,7 @@ export class RateLimiter {
   }
 
   /**
-   * Destroy the limiter and cleanup resources
+   * Destruye el limiter y limpia recursos
    */
   destroy(): void {
     clearInterval(this.cleanupInterval);

@@ -1,10 +1,10 @@
 /**
- * Custom error classes for type-safe error handling across the application
+ * Clases de error personalizadas para manejo de errores con tipo seguro en la aplicación
  */
 
 /**
- * Base error class for API-related errors
- * Use this for errors from external API calls (GROQ, Gemini, etc.)
+ * Clase base para errores relacionados con la API
+ * Úsala para errores de llamadas a APIs externas (GROQ, Gemini, etc.)
  */
 export class APIError extends Error {
   constructor(
@@ -19,14 +19,14 @@ export class APIError extends Error {
   }
 
   /**
-   * Check if error is retryable based on status code
+   * Verifica si el error es reintentable basado en el código de estado
    */
   get isRetryable(): boolean {
     return this.statusCode === 429 || this.statusCode >= 500;
   }
 
   /**
-   * Get user-friendly error message
+   * Obtiene un mensaje de error amigable para el usuario
    */
   get userMessage(): string {
     if (this.statusCode === 429) {
@@ -40,7 +40,7 @@ export class APIError extends Error {
 }
 
 /**
- * Error for validation failures (Zod, input validation, etc.)
+ * Error para fallos de validación (Zod, validación de inputs, etc.)
  */
 export class ValidationError extends Error {
   constructor(
@@ -62,7 +62,7 @@ export class ValidationError extends Error {
 }
 
 /**
- * Error for rate limiting
+ * Error para límite de tasa (rate limiting)
  */
 export class RateLimitError extends Error {
   constructor(
@@ -84,7 +84,7 @@ export class RateLimitError extends Error {
 }
 
 /**
- * Error for storage quota issues (localStorage, etc.)
+ * Error para problemas de cuota de almacenamiento (localStorage, etc.)
  */
 export class StorageQuotaError extends Error {
   constructor(
@@ -102,35 +102,35 @@ export class StorageQuotaError extends Error {
 }
 
 /**
- * Type guard to check if error is an APIError
+ * Guarda de tipo para verificar si el error es un APIError
  */
 export function isAPIError(error: unknown): error is APIError {
   return error instanceof APIError;
 }
 
 /**
- * Type guard to check if error is a ValidationError
+ * Guarda de tipo para verificar si el error es un ValidationError
  */
 export function isValidationError(error: unknown): error is ValidationError {
   return error instanceof ValidationError;
 }
 
 /**
- * Type guard to check if error is a RateLimitError
+ * Guarda de tipo para verificar si el error es un RateLimitError
  */
 export function isRateLimitError(error: unknown): error is RateLimitError {
   return error instanceof RateLimitError;
 }
 
 /**
- * Type guard to check if error is a StorageQuotaError
+ * Guarda de tipo para verificar si el error es un StorageQuotaError
  */
 export function isStorageQuotaError(error: unknown): error is StorageQuotaError {
   return error instanceof StorageQuotaError;
 }
 
 /**
- * Convert unknown error to a known error type
+ * Convierte un error desconocido a un tipo de error conocido
  */
 export function normalizeError(error: unknown): Error {
   if (error instanceof Error) {
@@ -143,8 +143,8 @@ export function normalizeError(error: unknown): Error {
 }
 
 /**
- * Error for voice command processing failures
- * Use this for errors specific to voice-activated requests
+ * Error para fallos en el procesamiento de comandos de voz
+ * Úsala para errores específicos de solicitudes activadas por voz
  */
 export class VoiceCommandError extends Error {
   static readonly CODES = {
@@ -182,8 +182,8 @@ export class VoiceCommandError extends Error {
 }
 
 /**
- * Error for PDF processing failures
- * Use this for errors specific to PDF upload and analysis
+ * Error para fallos en el procesamiento de PDF
+ * Úsala para errores específicos de subida y análisis de PDF
  */
 export class PDFError extends Error {
   static readonly CODES = {
@@ -224,21 +224,21 @@ export class PDFError extends Error {
 }
 
 /**
- * Type guard to check if error is a VoiceCommandError
+ * Guarda de tipo para verificar si el error es un VoiceCommandError
  */
 export function isVoiceCommandError(error: unknown): error is VoiceCommandError {
   return error instanceof VoiceCommandError;
 }
 
 /**
- * Type guard to check if error is a PDFError
+ * Guarda de tipo para verificar si el error es un PDFError
  */
 export function isPDFError(error: unknown): error is PDFError {
   return error instanceof PDFError;
 }
 
 /**
- * Get user-friendly message from any error (UPDATED)
+ * Obtiene un mensaje amigable para el usuario de cualquier error (ACTUALIZADO)
  */
 export function getUserMessage(error: unknown): string {
   if (isAPIError(error)) return error.userMessage;

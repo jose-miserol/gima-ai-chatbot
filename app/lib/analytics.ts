@@ -1,5 +1,5 @@
 /**
- * Analytics & Business Metrics Tracking
+ * Tracking de Analíticas y Métricas de Negocio
  *
  * Sistema de tracking para métricas de negocio y uso de features
  * Integra con logger estructurado y puede extenderse con servicios externos
@@ -8,10 +8,10 @@
  * ```typescript
  * import { trackVoiceCommandUsage, trackPDFAnalysis } from '@/app/lib/analytics';
  *
- * // Track voice command
+ * // Rastrear comando de voz
  * trackVoiceCommandUsage(command, true, startTime);
  *
- * // Track PDF analysis
+ * // Rastrear análisis de PDF
  * trackPDFAnalysis(pageCount, textLength, analysisTime, true);
  * ```
  */

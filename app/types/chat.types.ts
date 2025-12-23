@@ -1,7 +1,7 @@
 // Tipos compartidos para el sistema de chat
 
 /**
- * Represents different types of content parts in a message
+ * Representa los diferentes tipos de contenido en una parte del mensaje
  */
 export type MessagePart =
   | { type: 'text'; text: string }

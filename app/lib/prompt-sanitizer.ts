@@ -1,8 +1,8 @@
 /**
- * Prompt Sanitizer - Security utilities to prevent prompt injection attacks
+ * Prompt Sanitizer - Utilidades de seguridad para prevenir ataques de inyección de prompt
  *
- * Implements OWASP Top 10 for LLM Applications best practices
- * Protects against malicious prompts that attempt to manipulate AI behavior
+ * Implementa las mejores prácticas de OWASP Top 10 para aplicaciones LLM
+ * Protege contra prompts maliciosos que intentan manipular el comportamiento de la IA
  *
  * @see https://owasp.org/www-project-top-10-for-large-language-model-applications/
  */
@@ -10,8 +10,8 @@
 import { logger } from './logger';
 
 /**
- * Patterns that indicate potential prompt injection attempts
- * These are common attack vectors used to manipulate LLM behavior
+ * Patrones que indican intentos potenciales de inyección de prompt
+ * Estos son vectores de ataque comunes usados para manipular el comportamiento del LLM
  */
 const DANGEROUS_PATTERNS = [
   // Role manipulation attempts
@@ -37,7 +37,7 @@ const DANGEROUS_PATTERNS = [
 ] as const;
 
 /**
- * Characters that could be used for injection or encoding attacks
+ * Caracteres que podrían usarse para ataques de inyección o codificación
  */
 const SUSPICIOUS_CHARS = [
   '\\u', // Unicode escapes

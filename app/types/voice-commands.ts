@@ -1,5 +1,5 @@
 /**
- * Voice Command Types and Schemas
+ * Tipos y Esquemas de Comandos de Voz
  *
  * Define tipos TypeScript y schemas Zod para comandos de voz
  * Valida estructura y contenido en runtime

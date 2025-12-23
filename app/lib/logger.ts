@@ -1,9 +1,9 @@
 /**
- * Centralized Logger
+ * Logger Centralizado
  *
- * Provides structured logging with different severity levels.
- * Automatically filters logs based on NODE_ENV and provides
- * hooks for external logging services (Sentry, Datadog, etc.)
+ * Proporciona logging estructurado con diferentes niveles de severidad.
+ * Filtra logs automáticamente basado en NODE_ENV y proporciona
+ * hooks para servicios de logging externos (Sentry, Datadog, etc.)
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -17,7 +17,7 @@ interface LogContext {
 
 class Logger {
   /**
-   * Determine if a log level should be logged based on environment
+   * Determina si un nivel de log debería registrarse basado en el entorno
    */
   private shouldLog(level: LogLevel): boolean {
     if (typeof window === 'undefined') return true; // Always log on server
@@ -30,7 +30,7 @@ class Logger {
   }
 
   /**
-   * Core logging function
+   * Función central de logging
    */
   private log(level: LogLevel, message: string, context?: LogContext) {
     if (!this.shouldLog(level)) return;
@@ -55,28 +55,28 @@ class Logger {
   }
 
   /**
-   * Log debug information (development only)
+   * Registra información de debug (solo en desarrollo)
    */
   debug(message: string, context?: LogContext) {
     this.log('debug', message, context);
   }
 
   /**
-   * Log informational messages
+   * Registra mensajes informativos
    */
   info(message: string, context?: LogContext) {
     this.log('info', message, context);
   }
 
   /**
-   * Log warning messages
+   * Registra mensajes de advertencia
    */
   warn(message: string, context?: LogContext) {
     this.log('warn', message, context);
   }
 
   /**
-   * Log error messages with optional Error object
+   * Registra mensajes de error con objeto Error opcional
    */
   error(message: string, error?: Error, context?: LogContext) {
     this.log('error', message, {
