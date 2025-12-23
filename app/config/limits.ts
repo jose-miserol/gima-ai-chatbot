@@ -1,5 +1,5 @@
 /**
- * Centralized Size Limits Configuration
+ * Configuración Centralizada de Límites de Tamaño
  *
  * Constantes para límites de tamaño de archivos y mensajes.
  * Centralizadas para consistencia y fácil mantenimiento.
@@ -10,8 +10,8 @@
 // ========================================
 
 /**
- * Límite de tamaño del body para Server Actions de Next.js
- * Must match next.config.ts bodySizeLimit
+ * Límite de tamaño del cuerpo para Server Actions de Next.js
+ * Debe coincidir con bodySizeLimit en next.config.ts
  */
 export const SERVER_ACTION_BODY_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -98,7 +98,8 @@ export const MAX_STORED_MESSAGES = 100;
 // ========================================
 
 /**
- * Convierte bytes a megabytes
+ * bytesToMB - Convierte bytes a megabytes
+ *
  * @param bytes - Cantidad de bytes
  * @returns Tamaño en megabytes (redondeado a 1 decimal)
  */

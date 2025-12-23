@@ -70,7 +70,7 @@ export const FEATURE_FLAGS = {
         // Agregar emails de beta testers aquí
         // 'admin@uneg.edu.ve',
         // 'tecnico@uneg.edu.ve',
-      ],
+      ] as string[],
     },
   },
   pdfReader: {
@@ -79,10 +79,10 @@ export const FEATURE_FLAGS = {
       percentage: 0, // Rollout desactivado por defecto
       allowlist: [
         // Agregar emails de beta testers aquí
-      ],
+      ] as string[],
     },
   },
-} as const satisfies Record<string, FeatureConfig>;
+} satisfies Record<string, FeatureConfig>;
 
 /**
  * Tipo que representa las features disponibles

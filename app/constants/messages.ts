@@ -1,6 +1,6 @@
 /**
- * Centralized message constants for the application
- * Extracted from inline strings to improve maintainability and i18n support
+ * Constantes de mensajes centralizadas para la aplicación
+ * Extraídas de cadenas en línea para mejorar el mantenimiento y soporte i18n
  */
 
 export const VOICE_MESSAGES = {
@@ -36,6 +36,6 @@ export const ERROR_MESSAGES = {
 } as const;
 
 /**
- * Maximum length for error message display
+ * Longitud máxima para mostrar mensajes de error
  */
 export const MAX_ERROR_MESSAGE_LENGTH = 30;

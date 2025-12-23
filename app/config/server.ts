@@ -1,27 +1,43 @@
-// Server configuration for GIMA chatbot
+// Configuración del servidor para GIMA chatbot
 
-// Technical acronyms glossary for UNEG maintenance context
+/**
+ * ACRONYMS_GLOSSARY - Glosario de términos técnicos
+ *
+ * Mapeo de siglas utilizadas en el contexto de mantenimiento de la UNEG.
+ * Se utiliza para generar contexto para las IAs y normalizar terminología.
+ */
 const ACRONYMS_GLOSSARY: Record<string, string> = {
-  "UNEG": "Universidad Nacional Experimental de Guayana",
-  "UMA": "Unidad Manejadora de Aire",
-  "BCA": "Bomba Centrífuga de Agua",
-  "TAB": "Tablero de Distribución Eléctrica",
-  "ST": "Subestación Transformadora",
-  "AA": "Aire Acondicionado (Split/Ventana)",
-  "GIMA": "Gestión Integral de Mantenimiento y Activos",
-  "OT": "Orden de Trabajo",
-  "MP": "Mantenimiento Preventivo",
-  "MC": "Mantenimiento Correctivo",
+  UNEG: 'Universidad Nacional Experimental de Guayana',
+  UMA: 'Unidad Manejadora de Aire',
+  BCA: 'Bomba Centrífuga de Agua',
+  TAB: 'Tablero de Distribución Eléctrica',
+  ST: 'Subestación Transformadora',
+  AA: 'Aire Acondicionado (Split/Ventana)',
+  GIMA: 'Gestión Integral de Mantenimiento y Activos',
+  OT: 'Orden de Trabajo',
+  MP: 'Mantenimiento Preventivo',
+  MC: 'Mantenimiento Correctivo',
 };
 
-// Helper function to format glossary for injection into prompt
-const formatGlossary = (): string => {
+/**
+ * formatGlossary - Formatea el glosario para inyección en prompts
+ *
+ * Convierte el objeto de glosario en una cadena de texto con formato de lista Markdown.
+ *
+ * @returns Cadena formateada con las definiciones del glosario
+ */
+export const formatGlossary = (): string => {
   return Object.entries(ACRONYMS_GLOSSARY)
     .map(([acronym, meaning]) => `- **${acronym}**: ${meaning}`)
     .join('\n');
 };
 
-// System prompt for GIMA assistant
+/**
+ * SYSTEM_PROMPT - Prompt principal del asistente
+ *
+ * Define la personalidad, alcance y reglas de interacción del chatbot GIMA.
+ * Incluye el contexto de terminología técnica obligatoria.
+ */
 export const SYSTEM_PROMPT = `Eres un asistente experto en gestión de mantenimiento y activos para la Universidad Nacional Experimental de Guayana (UNEG).
 
 Tu objetivo es ayudar a técnicos, ingenieros y personal de mantenimiento con:
@@ -46,6 +62,12 @@ Directrices:
 
 Contexto General: La UNEG está digitalizando su sistema de mantenimiento. Actualmente muchos procesos son manuales.`;
 
+/**
+ * VOICE_PROMPT - Prompt para transcripción de voz
+ *
+ * Instrucciones estrictas para la transcripción literal de audio a texto.
+ * Enfatiza la captura exacta de códigos y siglas técnicas.
+ */
 export const VOICE_PROMPT = `Actúa como una máquina de transcripción estricta para el sistema GIMA.
 Tu ÚNICA función es convertir el audio en texto, palabra por palabra.
 
@@ -62,7 +84,12 @@ ${formatGlossary()}
 
 Si el audio no es claro, escribe lo que mejor entiendas fonéticamente.`;
 
-// Prompt especializado para visión por computadora e inventario de piezas
+/**
+ * INVENTORY_PROMPT - Prompt para análisis de inventario
+ *
+ * Instrucciones para análisis de visión por computadora de piezas y equipos.
+ * Solicita extracción estructurada de datos (JSON) y un resumen legible.
+ */
 export const INVENTORY_PROMPT = `Eres un Auditor de Inventario Experto para el sistema GIMA de la UNEG.
 Tu tarea es analizar fotografías de piezas industriales, repuestos o equipos y extraer datos técnicos precisos para el catálogo.
 
@@ -98,7 +125,11 @@ Estructura JSON requerida:
 
 Después del JSON, proporciona un resumen breve como: "He identificado un/una [nombre] en estado [condición]. Se recomienda [acción]."`;
 
-// Streaming configuration
+/**
+ * STREAM_CONFIG - Configuración de streaming de IA
+ *
+ * Define límites y comportamientos para las respuestas en streaming.
+ */
 export const STREAM_CONFIG = {
   maxDuration: 30, // seconds
   sendSources: false,

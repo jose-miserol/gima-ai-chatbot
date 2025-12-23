@@ -1,25 +1,25 @@
 /**
- * Voice Command Prompt for Work Order Processing
+ * Prompt de Comandos de Voz para Procesamiento de Órdenes de Trabajo
  *
- * Specialized prompt for parsing voice commands into structured work order actions
- * Uses GIMA/UNEG terminology
+ * Prompt especializado para convertir comandos de voz en acciones estructuradas de órdenes de trabajo.
+ * Utiliza terminología específica de GIMA/UNEG.
  */
 
 import { formatGlossary } from './server';
 
+/**
+ * WORK_ORDER_VOICE_PROMPT - Prompt del sistema para parser de comandos
+ *
+ * Prompt especializado para convertir comandos de voz en acciones estructuradas JSON.
+ * Define la terminología técnica, acciones válidas y formato de salida esperado.
+ * Utiliza el glosario compartido de `server.ts` para consistencia.
+ */
 export const WORK_ORDER_VOICE_PROMPT = `Eres un parser de comandos de voz para el sistema GIMA de la UNEG.
 
 Tu tarea es convertir comandos de voz del usuario en acciones estructuradas para órdenes de trabajo de mantenimiento.
 
 TERMINOLOGÍA TÉCNICA UNEG:
-- UMA: Unidad Manejadora de Aire
-- BCA: Bomba Centrífuga de Agua
-- TAB: Tablero de Distribución Eléctrica
-- ST: Subestación Transformadora
-- AA: Aire Acondicionado
-- OT: Orden de Trabajo
-- MP: Mantenimiento Preventivo
-- MC: Mantenimiento Correctivo
+${formatGlossary()}
 
 ACCIONES VÁLIDAS:
 - create_work_order: Crear nueva orden de trabajo
