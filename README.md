@@ -7,9 +7,37 @@ Asistente inteligente para la gestión de mantenimiento y activos de la Universi
 - **Chat multimodal**: Texto, voz e imágenes
 - **Análisis automático de piezas** con IA (Gemini Vision)
 - **Transcripción de voz** inteligente con Gemini API + fallback nativo Web Speech API
+- **Comandos de voz** para órdenes de trabajo (crear, consultar, asignar)
 - **Múltiples modelos de IA**: GROQ (Llama, Mixtral) + Google Gemini
 - **Persistencia de historial** en navegador (localStorage)
 - **Interfaz responsiva** con React 19 y Tailwind CSS 4
+
+## 🎤 Comandos de Voz
+
+El sistema permite crear órdenes de trabajo usando comandos de voz naturales.
+
+### Acciones Disponibles
+
+| Comando Ejemplo                                | Acción                    |
+| ---------------------------------------------- | ------------------------- |
+| "Crear orden urgente para la UMA del sector 3" | Crea orden de trabajo     |
+| "Mostrar órdenes pendientes"                   | Lista órdenes pendientes  |
+| "Verificar estado de la BCA"                   | Consulta estado de equipo |
+| "Asignar orden al técnico Carlos"              | Asigna técnico            |
+
+### Terminología UNEG Reconocida
+
+- **UMA**: Unidad Manejadora de Aire
+- **BCA**: Bomba Centrífuga de Agua
+- **TAB**: Tablero de Distribución Eléctrica
+- **ST**: Subestación Transformadora
+
+### Uso
+
+1. Click en "🎤 Usar comando de voz para órdenes de trabajo"
+2. Habla tu comando de forma clara
+3. Revisa el preview del comando interpretado
+4. Confirma o reintenta
 
 ## 📋 Requisitos
 
