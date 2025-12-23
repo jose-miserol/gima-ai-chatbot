@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useToast } from '@/app/components/ui/toast';
-import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
+import { ConfirmDialog } from '@/app/components/shared/confirm-dialog';
 import { ChatHeader } from './chat-header';
 import { ChatConversation } from './chat-conversation';
 import { ChatStatusIndicators } from './chat-status-bar';

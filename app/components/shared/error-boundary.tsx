@@ -22,7 +22,7 @@ interface State {
  *
  * Catches React errors in child components and displays a fallback UI.
  * Prevents the entire application from crashing due to errors in individual components.
- * 
+ *
  * Features:
  * - Infinite loop prevention with retry count limiting
  * - Automatic reset when resetKeys change
@@ -31,7 +31,7 @@ interface State {
  *
  * @example
  * ```tsx
- * <ErrorBoundary 
+ * <ErrorBoundary
  *   fallback={<div>Something went wrong</div>}
  *   maxRetries={3}
  *   resetKeys={[userId, routeId]}
@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = { 
+    this.state = {
       hasError: false,
       retryCount: 0,
     };
@@ -60,9 +60,9 @@ export class ErrorBoundary extends Component<Props, State> {
     const { retryCount } = this.state;
 
     // Increment retry counter to track consecutive errors
-    this.setState((prev) => ({ 
+    this.setState((prev) => ({
       retryCount: prev.retryCount + 1,
-      errorInfo 
+      errorInfo,
     }));
 
     // Gather comprehensive error details for logging and debugging
@@ -85,7 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (retryCount >= maxRetries) {
       console.error(
         `ErrorBoundary: Se alcanzó el límite de reintentos (${maxRetries}). ` +
-        'El componente tiene un error persistente.'
+          'El componente tiene un error persistente.'
       );
       return;
     }
@@ -120,9 +120,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     if (retryCount >= maxRetries) {
       if (typeof window !== 'undefined') {
-        const shouldReload = confirm(
-          'Se ha detectado un error persistente. ¿Recargar la página?'
-        );
+        const shouldReload = confirm('Se ha detectado un error persistente. ¿Recargar la página?');
         if (shouldReload) {
           window.location.reload();
         }
@@ -208,9 +206,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </svg>
             </div>
 
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Algo salió mal
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Algo salió mal</h2>
 
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {error.message || 'Ha ocurrido un error inesperado'}
@@ -244,9 +240,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 onClick={() => {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                    navigator.clipboard.writeText(
-                      `${error.message}\n\n${error.stack || ''}`
-                    );
+                    navigator.clipboard.writeText(`${error.message}\n\n${error.stack || ''}`);
                   }
                 }}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-md transition-colors"
