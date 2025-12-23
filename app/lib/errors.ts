@@ -143,13 +143,110 @@ export function normalizeError(error: unknown): Error {
 }
 
 /**
- * Get user-friendly message from any error
+ * Error for voice command processing failures
+ * Use this for errors specific to voice-activated requests
+ */
+export class VoiceCommandError extends Error {
+  static readonly CODES = {
+    PARSING_FAILED: 'VOICE_CMD_PARSING_FAILED',
+    CONFIDENCE_TOO_LOW: 'VOICE_CMD_CONFIDENCE_LOW',
+    RATE_LIMITED: 'VOICE_CMD_RATE_LIMITED',
+    INVALID_ACTION: 'VOICE_CMD_INVALID_ACTION',
+    SANITIZATION_FAILED: 'VOICE_CMD_SANITIZATION_FAILED',
+  } as const;
+
+  constructor(
+    message: string,
+    public readonly code: keyof typeof VoiceCommandError.CODES,
+    public readonly metadata?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'VoiceCommandError';
+    Object.setPrototypeOf(this, VoiceCommandError.prototype);
+  }
+
+  get userMessage(): string {
+    switch (this.code) {
+      case 'CONFIDENCE_TOO_LOW':
+        return 'No pude entender el comando claramente. Por favor, repite.';
+      case 'RATE_LIMITED':
+        return 'Has excedido el límite de comandos de voz. Intenta más tarde.';
+      case 'INVALID_ACTION':
+        return 'Acción no válida. Comandos disponibles: crear orden, verificar estado.';
+      case 'SANITIZATION_FAILED':
+        return 'Por seguridad, no puedo procesar esta entrada.';
+      default:
+        return this.message;
+    }
+  }
+}
+
+/**
+ * Error for PDF processing failures
+ * Use this for errors specific to PDF upload and analysis
+ */
+export class PDFError extends Error {
+  static readonly CODES = {
+    INVALID_FILE: 'PDF_INVALID_FILE',
+    TOO_LARGE: 'PDF_TOO_LARGE',
+    TOO_MANY_PAGES: 'PDF_TOO_MANY_PAGES',
+    EXTRACTION_FAILED: 'PDF_EXTRACTION_FAILED',
+    CORRUPTED: 'PDF_CORRUPTED',
+    ANALYSIS_FAILED: 'PDF_ANALYSIS_FAILED',
+  } as const;
+
+  constructor(
+    message: string,
+    public readonly code: keyof typeof PDFError.CODES,
+    public readonly metadata?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = 'PDFError';
+    Object.setPrototypeOf(this, PDFError.prototype);
+  }
+
+  get userMessage(): string {
+    switch (this.code) {
+      case 'INVALID_FILE':
+        return 'El archivo debe ser un PDF válido.';
+      case 'TOO_LARGE':
+        return `PDF demasiado grande. Máximo 10MB.`;
+      case 'TOO_MANY_PAGES':
+        return 'PDF tiene demasiadas páginas. Máximo 50 páginas.';
+      case 'CORRUPTED':
+        return 'El PDF está corrupto o no se puede leer.';
+      case 'ANALYSIS_FAILED':
+        return 'No pude analizar el contenido del PDF. Intenta con otro archivo.';
+      default:
+        return this.message;
+    }
+  }
+}
+
+/**
+ * Type guard to check if error is a VoiceCommandError
+ */
+export function isVoiceCommandError(error: unknown): error is VoiceCommandError {
+  return error instanceof VoiceCommandError;
+}
+
+/**
+ * Type guard to check if error is a PDFError
+ */
+export function isPDFError(error: unknown): error is PDFError {
+  return error instanceof PDFError;
+}
+
+/**
+ * Get user-friendly message from any error (UPDATED)
  */
 export function getUserMessage(error: unknown): string {
   if (isAPIError(error)) return error.userMessage;
   if (isValidationError(error)) return error.userMessage;
   if (isRateLimitError(error)) return error.userMessage;
   if (isStorageQuotaError(error)) return error.userMessage;
+  if (isVoiceCommandError(error)) return error.userMessage;
+  if (isPDFError(error)) return error.userMessage;
   if (error instanceof Error) return error.message;
   return String(error);
 }
