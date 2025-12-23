@@ -133,6 +133,7 @@ export interface ChatInputAreaProps {
   onSubmit: (message: any) => void; // PromptInputMessage from ai-elements
   canSend: boolean;
   status: 'ready' | 'streaming' | 'submitted' | 'error';
+  isAnalyzingImage: boolean;
   voiceProps: VoiceButtonProps;
 }
 

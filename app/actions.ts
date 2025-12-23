@@ -95,11 +95,13 @@ export async function transcribeAudio(
  *
  * @param imageDataUrl - String codificado en base64 de la imagen
  * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
+ * @param customPrompt - Prompt personalizado del usuario (opcional, usa INVENTORY_PROMPT por defecto)
  * @returns Descripción detallada generada por la IA
  */
 export async function analyzePartImage(
   imageDataUrl: string,
-  mediaType: string = 'image/jpeg'
+  mediaType: string = 'image/jpeg',
+  customPrompt?: string
 ): Promise<{ text: string; success: boolean; error?: string }> {
   try {
     const base64Content = imageDataUrl.includes('base64,')
@@ -127,7 +129,7 @@ export async function analyzePartImage(
           content: [
             {
               type: 'text',
-              text: INVENTORY_PROMPT,
+              text: customPrompt || INVENTORY_PROMPT,
             },
             {
               type: 'file',

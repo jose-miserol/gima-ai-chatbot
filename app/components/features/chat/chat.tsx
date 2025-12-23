@@ -11,7 +11,7 @@ import { ChatHeader } from './chat-header';
 import { ChatConversation } from './chat-conversation';
 import { ChatStatusIndicators } from './chat-status-bar';
 import { ChatInputArea } from './chat-input-area';
-import { CHAT_MESSAGES, CHAT_CONFIG } from './constants';
+import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
 import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
@@ -104,7 +104,10 @@ export function Chat() {
 
   // Computed values
   const canSend =
-    status === 'ready' || status === 'error' || (status !== 'streaming' && status !== 'submitted');
+    (status === 'ready' ||
+      status === 'error' ||
+      (status !== 'streaming' && status !== 'submitted')) &&
+    !isAnalyzingImage;
 
   // Handle message submission with image analysis
   const handleSubmit = useCallback(
@@ -124,12 +127,8 @@ export function Chat() {
       // Check if there's an image attachment for auto-analysis
       const imageFile = message.files?.find((file) => file.mediaType?.startsWith('image/'));
 
-      // If image attached with minimal/no text, use Gemini for vision analysis
-      if (
-        imageFile &&
-        imageFile.url &&
-        (!hasText || (message.text?.trim().length || 0) < CHAT_CONFIG.MIN_TEXT_LENGTH_FOR_IMAGE)
-      ) {
+      // If image attached, always use Gemini for vision analysis (with custom prompt or default)
+      if (imageFile && imageFile.url) {
         setIsAnalyzingImage(true);
 
         try {
@@ -146,21 +145,42 @@ export function Chat() {
 
           const imageDataUrl = await base64Promise;
 
-          // Call Gemini vision via server action
-          const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
+          // Add user message with the image attachment
+          const userMessageId = `user-${Date.now()}`;
+          const userText = message.text?.trim() || 'Analizar esta imagen';
+
+          setMessages(
+            (prev) =>
+              [
+                ...prev,
+                {
+                  id: userMessageId,
+                  role: 'user',
+                  content: userText,
+                  parts: [
+                    { type: 'text', text: userText },
+                    {
+                      type: 'image',
+                      imageUrl: imageFile.url,
+                      mimeType: imageFile.mediaType || 'image/jpeg',
+                    },
+                  ],
+                  createdAt: new Date(),
+                },
+              ] as any
+          );
+
+          // Call Gemini vision via server action with custom prompt (or default)
+          const result = await analyzePartImage(
+            imageDataUrl,
+            imageFile.mediaType || 'image/jpeg',
+            message.text?.trim() // Pass user's text as custom prompt
+          );
 
           if (result.success && result.text) {
             const visionId = `vision-${Date.now()}`;
-            const analysisText = `📷 **Análisis de Imagen Subida por el Usuario**
 
-He analizado la imagen que el usuario acaba de subir. Este es el resultado del análisis visual:
-
-${result.text}
-
----
-*Este análisis fue generado automáticamente a partir de la imagen subida.*`;
-
-            // Agregar mensaje de análisis al chat (usar forma funcional)
+            // Agregar mensaje de análisis al chat con imagen incluida
             setMessages(
               (prev) =>
                 [
@@ -168,8 +188,15 @@ ${result.text}
                   {
                     id: visionId,
                     role: 'assistant',
-                    content: analysisText,
-                    parts: [],
+                    content: result.text,
+                    parts: [
+                      { type: 'text', text: result.text },
+                      {
+                        type: 'image',
+                        imageUrl: imageFile.url,
+                        mimeType: imageFile.mediaType || 'image/jpeg',
+                      },
+                    ],
                     createdAt: new Date(),
                   },
                 ] as any
@@ -186,7 +213,7 @@ ${result.text}
                     id: `vision-error-${Date.now()}`,
                     role: 'assistant',
                     content: errorMsg,
-                    parts: [],
+                    parts: [{ type: 'text', text: errorMsg }],
                     createdAt: new Date(),
                   },
                 ] as any
@@ -205,7 +232,7 @@ ${result.text}
                   id: `vision-error-${Date.now()}`,
                   role: 'assistant',
                   content: errorMsg,
-                  parts: [],
+                  parts: [{ type: 'text', text: errorMsg }],
                   createdAt: new Date(),
                 },
               ] as any
@@ -289,6 +316,7 @@ ${result.text}
           onSubmit={handleSubmit}
           canSend={canSend}
           status={status}
+          isAnalyzingImage={isAnalyzingImage}
           voiceProps={{
             isListening,
             isProcessing,

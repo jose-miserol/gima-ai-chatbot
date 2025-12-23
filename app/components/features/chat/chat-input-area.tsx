@@ -62,6 +62,7 @@ export function ChatInputArea({
   onSubmit,
   canSend,
   status,
+  isAnalyzingImage,
   voiceProps,
 }: ChatInputAreaProps) {
   return (
@@ -92,7 +93,7 @@ export function ChatInputArea({
           <VoiceButton {...voiceProps} />
         </PromptInputTools>
 
-        <PromptInputSubmit disabled={!input || !canSend} status={status} />
+        <PromptInputSubmit disabled={!canSend} status={status} />
       </PromptInputFooter>
     </PromptInput>
   );

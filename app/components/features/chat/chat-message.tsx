@@ -4,6 +4,8 @@ import {
   MessageResponse,
   MessageActions,
   MessageAction,
+  MessageAttachments,
+  MessageAttachment,
 } from '@/app/components/ai-elements/message';
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import type { ChatMessageProps } from './types';
@@ -54,31 +56,48 @@ export function ChatMessage({ message, onRegenerate, onCopy }: ChatMessageProps)
     );
   }
 
-  // Renderizar usando parts (comportamiento original)
+  // Renderizar usando parts
+  const textParts = message.parts.filter((part: any) => part.type === 'text');
+  const imageParts = message.parts.filter((part: any) => part.type === 'image');
+  const textContent = textParts.map((part: any) => part.text).join('\n\n');
+
   return (
-    <div>
-      {message.parts.map((part: any, i: number) => {
-        if (part.type === 'text') {
-          return (
-            <Message key={`${message.id}-${i}`} from={message.role}>
-              <MessageContent>
-                <MessageResponse>{part.text}</MessageResponse>
-              </MessageContent>
-              {message.role === 'assistant' && i === (message.parts?.length ?? 0) - 1 && (
-                <MessageActions>
-                  <MessageAction onClick={onRegenerate} label="Reintentar">
-                    <RefreshCcwIcon className="size-3" />
-                  </MessageAction>
-                  <MessageAction onClick={() => onCopy(part.text)} label="Copiar">
-                    <CopyIcon className="size-3" />
-                  </MessageAction>
-                </MessageActions>
-              )}
-            </Message>
-          );
-        }
-        return null;
-      })}
-    </div>
+    <Message key={message.id} from={message.role}>
+      {/* Mostrar imágenes primero si existen */}
+      {imageParts.length > 0 && (
+        <MessageAttachments>
+          {imageParts.map((part: any, i: number) => (
+            <MessageAttachment
+              key={`${message.id}-img-${i}`}
+              data={{
+                type: 'file',
+                url: part.imageUrl,
+                mediaType: part.mimeType || 'image/jpeg',
+                filename: `image-${i + 1}.jpg`,
+              }}
+            />
+          ))}
+        </MessageAttachments>
+      )}
+
+      {/* Mostrar contenido de texto */}
+      {textContent && (
+        <MessageContent>
+          <MessageResponse>{textContent}</MessageResponse>
+        </MessageContent>
+      )}
+
+      {/* Acciones solo para mensajes del asistente */}
+      {message.role === 'assistant' && textContent && (
+        <MessageActions>
+          <MessageAction onClick={onRegenerate} label="Reintentar">
+            <RefreshCcwIcon className="size-3" />
+          </MessageAction>
+          <MessageAction onClick={() => onCopy(textContent)} label="Copiar">
+            <CopyIcon className="size-3" />
+          </MessageAction>
+        </MessageActions>
+      )}
+    </Message>
   );
 }
