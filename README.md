@@ -6,6 +6,7 @@ Asistente inteligente para la gestión de mantenimiento y activos de la Universi
 
 - **Chat multimodal**: Texto, voz e imágenes
 - **Análisis automático de piezas** con IA (Gemini Vision)
+- **Lector de PDFs**: Análisis y resumen de documentos PDF (manuales, reportes)
 - **Transcripción de voz** inteligente con Gemini API + fallback nativo Web Speech API
 - **Comandos de voz** para órdenes de trabajo (crear, consultar, asignar)
 - **Múltiples modelos de IA**: GROQ (Llama, Mixtral) + Google Gemini

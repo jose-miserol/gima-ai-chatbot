@@ -49,6 +49,26 @@ export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 export const MAX_IMAGE_SIZE_MB = 5;
 
 // ========================================
+// PDF Limits
+// ========================================
+
+/**
+ * Tamaño máximo permitido para archivos PDF
+ * Gemini soporta hasta 2GB probados, pero limitamos a 10MB por UX
+ */
+export const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
+/**
+ * Tamaño máximo permitido para archivos PDF (en MB)
+ */
+export const MAX_PDF_SIZE_MB = 10;
+
+/**
+ * Tipos MIME permitidos para documentos
+ */
+export const SUPPORTED_PDF_MIME_TYPES = ['application/pdf'];
+
+// ========================================
 // Message Limits
 // ========================================
 

@@ -62,11 +62,17 @@ export function ChatInputArea({
   onSubmit,
   canSend,
   status,
-  isAnalyzingImage: _isAnalyzingImage, // Reserved for future UI enhancements
+  isAnalyzingFile: _isAnalyzingFile, // Reserved for future UI enhancements
   voiceProps,
 }: ChatInputAreaProps) {
   return (
-    <PromptInput onSubmit={onSubmit} className="mt-2" globalDrop multiple>
+    <PromptInput
+      onSubmit={onSubmit}
+      className="mt-2"
+      globalDrop
+      multiple
+      accept="image/*,application/pdf"
+    >
       <PromptInputHeader>
         <PromptInputAttachments>
           {(attachment) => <PromptInputAttachment data={attachment} />}
@@ -77,7 +83,7 @@ export function ChatInputArea({
         <PromptInputTextarea
           ref={textareaRef}
           onChange={onInputChange}
-          placeholder="Escribe tu pregunta sobre mantenimiento..."
+          placeholder="Escribe tu pregunta o sube imágenes/PDFs..."
         />
       </PromptInputBody>
 

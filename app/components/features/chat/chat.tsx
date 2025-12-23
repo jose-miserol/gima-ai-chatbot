@@ -12,7 +12,7 @@ import { ChatInputArea } from './chat-input-area';
 import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
-import { useImageSubmission } from './hooks/use-image-submission';
+import { useFileSubmission } from './hooks/use-file-submission';
 import { VoiceCommandMode } from '@/app/components/features/voice';
 import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 
@@ -95,8 +95,8 @@ export function Chat() {
     error: voiceError,
   } = useVoiceInput({ onTranscript: updateTextareaValue });
 
-  // Image submission handling
-  const { handleSubmit, isAnalyzing } = useImageSubmission({
+  // File submission handling (Images & PDFs)
+  const { handleSubmit, isAnalyzing } = useFileSubmission({
     setMessages,
     sendMessage,
     isListening,
@@ -215,7 +215,7 @@ export function Chat() {
           onSubmit={handleSubmit}
           canSend={canSend}
           status={status}
-          isAnalyzingImage={isAnalyzing}
+          isAnalyzingFile={isAnalyzing}
           voiceProps={{
             isListening,
             isProcessing,
