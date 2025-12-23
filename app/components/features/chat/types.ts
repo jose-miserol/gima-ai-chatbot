@@ -127,7 +127,7 @@ export interface VoiceButtonProps {
  * @property voiceProps - Props to pass to the VoiceButton component
  */
 export interface ChatInputAreaProps {
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: (message: any) => void; // PromptInputMessage from ai-elements

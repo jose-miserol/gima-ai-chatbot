@@ -273,7 +273,7 @@ ${result.text}
 
         {/* Status Indicators */}
         <ChatStatusIndicators
-          voiceError={voiceError}
+          voiceError={voiceError ?? undefined}
           isListening={isListening}
           isProcessing={isProcessing}
           isAnalyzingImage={isAnalyzingImage}
