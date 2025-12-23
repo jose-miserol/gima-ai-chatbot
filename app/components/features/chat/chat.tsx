@@ -13,6 +13,8 @@ import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
 import { useImageSubmission } from './hooks/use-image-submission';
+import { VoiceCommandMode } from '@/app/components/features/voice';
+import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 
 /**
  * Chat - Componente principal del sistema de chat inteligente de GIMA
@@ -54,6 +56,7 @@ export function Chat() {
   // Estado local
   const [input, setInput] = useState('');
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [isCommandMode, setIsCommandMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Integraciones
@@ -114,6 +117,19 @@ export function Chat() {
       (status !== 'streaming' && status !== 'submitted')) &&
     !isAnalyzing;
 
+  // Voice command handler
+  const handleVoiceCommand = useCallback(
+    async (command: VoiceWorkOrderCommand) => {
+      // TODO: Connect to backend work order creation
+      toast.info(
+        'Comando recibido',
+        `Acción: ${command.action}${command.equipment ? ` - Equipo: ${command.equipment}` : ''}`
+      );
+      setIsCommandMode(false);
+    },
+    [toast]
+  );
+
   // Keyboard shortcuts
   useChatKeyboard({
     onSubmit: () => {
@@ -158,6 +174,38 @@ export function Chat() {
           chatError={chatError}
           mode={mode}
         />
+
+        {/* Voice Command Mode (when active) */}
+        {isCommandMode && (
+          <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                Modo Comando de Voz
+              </span>
+              <button
+                onClick={() => setIsCommandMode(false)}
+                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
+              >
+                Cancelar
+              </button>
+            </div>
+            <VoiceCommandMode
+              onCommandConfirmed={handleVoiceCommand}
+              onError={(err) => toast.error('Error', err)}
+              minConfidence={0.7}
+            />
+          </div>
+        )}
+
+        {/* Toggle Command Mode Button */}
+        {!isCommandMode && (
+          <button
+            onClick={() => setIsCommandMode(true)}
+            className="mb-2 text-xs text-zinc-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 transition-colors"
+          >
+            🎤 Usar comando de voz para órdenes de trabajo
+          </button>
+        )}
 
         {/* Input Area */}
         <ChatInputArea
