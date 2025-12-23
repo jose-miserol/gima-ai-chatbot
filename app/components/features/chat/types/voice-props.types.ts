@@ -1,21 +1,21 @@
 /**
- * Voice Props Types
+ * Tipos de Props de Voz
  *
- * Specific types for voice-related component props.
- * Separated to avoid circular dependencies.
+ * Tipos específicos para props de componentes relacionados con voz.
+ * Separado para evitar dependencias circulares.
  */
 
 /**
- * Props for VoiceButton component
+ * Props para el componente VoiceButton
  *
- * Defines the interface for the voice input button configuration.
+ * Define la interfaz para la configuración del botón de entrada de voz.
  *
- * @property isListening - Whether voice recording is currently active
- * @property isProcessing - Whether voice is being processed by AI
- * @property isSupported - Whether voice input is supported in browser
- * @property mode - Current voice recognition mode
- * @property onClick - Callback to toggle voice recording
- * @property disabled - Whether the button should be disabled
+ * @property isListening - Si la grabación de voz está actualmente activa
+ * @property isProcessing - Si la voz está siendo procesada por IA
+ * @property isSupported - Si la entrada de voz está soportada en el navegador
+ * @property mode - Modo actual de reconocimiento de voz
+ * @property onClick - Callback para alternar grabación de voz
+ * @property disabled - Si el botón debe estar deshabilitado
  */
 export interface VoiceButtonProps {
   isListening: boolean;

@@ -1,49 +1,49 @@
 /**
- * Chat configuration constants
- * Centralized configuration for chat interface behavior
+ * Constantes de configuración del chat
+ * Configuración centralizada para el comportamiento de la interfaz de chat
  */
 export const CHAT_CONFIG = {
   /**
-   * Minimum text length required before analyzing images
-   * Prevents empty or very short prompts with images
+   * Longitud mínima de texto requerida antes de analizar imágenes
+   * Evita prompts vacíos o muy cortos con imágenes
    */
   MIN_TEXT_LENGTH_FOR_IMAGE: 10,
 
   /**
-   * Maximum file size for uploads (in bytes)
-   * Current limit: 5MB
+   * Tamaño máximo de archivo para subidas (en bytes)
+   * Límite actual: 5MB
    */
   MAX_FILE_SIZE: 5 * 1024 * 1024,
 
   /**
-   * Allowed image MIME types for upload
+   * Tipos MIME de imagen permitidos para subida
    */
   ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const,
 
   /**
-   * Debounce delay for input changes (in milliseconds)
+   * Retardo de debounce para cambios de input (en milisegundos)
    */
   INPUT_DEBOUNCE_MS: 300,
 } as const;
 
 /**
- * User-facing messages and text constants
- * Centralized for easy i18n in the future
+ * Mensajes y textos visibles para el usuario
+ * Centralizado para fácil i18n en el futuro
  */
 export const CHAT_MESSAGES = {
   /**
-   * Prefix for image analysis results
+   * Prefijo para resultados de análisis de imagen
    */
   IMAGE_ANALYSIS_PREFIX: '📷 **Análisis de Imagen Subida por el Usuario**',
 
   /**
-   * Confirmation dialog messages
+   * Mensajes de diálogo de confirmación
    */
   CONFIRM_CLEAR_HISTORY: '¿Borrar todo el historial de conversación?',
   CONFIRM_DELETE_MESSAGE: '¿Eliminar este mensaje?',
 
   /**
-   * Error messages
+   * Mensajes de error
    */
   ERROR_ANALYZING_IMAGE: 'Error al analizar la imagen',
   ERROR_SENDING_MESSAGE: 'Error al enviar mensaje',
@@ -51,43 +51,43 @@ export const CHAT_MESSAGES = {
   ERROR_INVALID_FILE_TYPE: 'Tipo de archivo no permitido',
 
   /**
-   * Status messages
+   * Mensajes de estado
    */
   STATUS_ANALYZING: 'Analizando imagen...',
   STATUS_SENDING: 'Enviando mensaje...',
   STATUS_TYPING: 'Escribiendo...',
 
   /**
-   * Placeholder text
+   * Texto placeholder
    */
   PLACEHOLDER_DEFAULT: 'Escribe un mensaje...',
   PLACEHOLDER_WITH_IMAGE: 'Describe la imagen o haz una pregunta...',
 } as const;
 
 /**
- * Keyboard shortcut configurations
+ * Configuraciones de atajos de teclado
  */
 export const KEYBOARD_SHORTCUTS = {
   /**
-   * Submit message
+   * Enviar mensaje
    */
   SUBMIT: 'Enter',
   SUBMIT_WITH_SHIFT: 'Shift+Enter',
 
   /**
-   * Clear conversation history
+   * Borrar historial de conversación
    */
   CLEAR_HISTORY: 'Ctrl+K',
   CLEAR_HISTORY_MAC: 'Cmd+K',
 
   /**
-   * Focus input
+   * Enfocar input
    */
   FOCUS_INPUT: '/',
 } as const;
 
 /**
- * Type exports for better TypeScript support
+ * Exportación de tipos para mejor soporte TypeScript
  */
 export type ChatConfig = typeof CHAT_CONFIG;
 export type ChatMessages = typeof CHAT_MESSAGES;

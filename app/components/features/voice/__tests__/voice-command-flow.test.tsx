@@ -1,7 +1,7 @@
 /**
- * Integration Tests for Voice Command Flow
+ * Pruebas de Integración para Flujo de Comandos de Voz
  *
- * Tests del flujo lógico de voice commands sin dependencias de React
+ * Tests del flujo lógico de comandos de voz sin dependencias de React
  */
 
 import { describe, it, expect } from 'vitest';

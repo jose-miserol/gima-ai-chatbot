@@ -1,18 +1,18 @@
 /**
- * Hook Parameter Types
+ * Tipos de Parámetros de Hooks
  *
- * Type definitions for custom hook parameters.
- * Includes chat actions, keyboard shortcuts, and toast notifications.
+ * Definiciones de tipos para parámetros de hooks personalizados.
+ * Incluye acciones de chat, atajos de teclado y notificaciones toast.
  */
 
 /**
- * Parameters for useChatActions hook
+ * Parámetros para el hook useChatActions
  *
- * Defines the required callbacks for chat action management.
+ * Define los callbacks requeridos para gestión de acciones de chat.
  *
- * @property regenerate - Function to regenerate the last assistant response
- * @property clearHistory - Function to clear all chat history
- * @property setInput - Function to update the input field value
+ * @property regenerate - Función para regenerar la última respuesta del asistente
+ * @property clearHistory - Función para borrar todo el historial de chat
+ * @property setInput - Función para actualizar el valor del campo de input
  */
 export interface UseChatActionsParams {
   regenerate: () => void;
@@ -21,15 +21,15 @@ export interface UseChatActionsParams {
 }
 
 /**
- * Parameters for useChatKeyboard hook
+ * Parámetros para el hook useChatKeyboard
  *
- * Defines the callbacks for keyboard shortcut handling.
+ * Define los callbacks para manejo de atajos de teclado.
  *
- * @property onSubmit - Callback to submit the current message (Ctrl+Enter)
- * @property onCancelVoice - Callback to cancel voice recording (Esc)
- * @property onFocusInput - Callback to focus the input textarea (/)
- * @property canSubmit - Whether message submission is allowed
- * @property isListening - Whether voice recording is active
+ * @property onSubmit - Callback para enviar el mensaje actual (Ctrl+Enter)
+ * @property onCancelVoice - Callback para cancelar grabación de voz (Esc)
+ * @property onFocusInput - Callback para enfocar el textarea de input (/)
+ * @property canSubmit - Si se permite el envío de mensajes
+ * @property isListening - Si la grabación de voz está activa
  */
 export interface UseChatKeyboardParams {
   onSubmit: () => void;
@@ -40,12 +40,12 @@ export interface UseChatKeyboardParams {
 }
 
 /**
- * Toast notification functions interface
+ * Interfaz de funciones de notificación toast
  *
- * Defines the interface for toast notification methods.
+ * Define la interfaz para métodos de notificación toast.
  *
- * @property success - Show success toast notification
- * @property error - Show error toast notification
+ * @property success - Mostrar notificación toast de éxito
+ * @property error - Mostrar notificación toast de error
  */
 export interface ToastFunctions {
   success: (title: string, message: string) => void;

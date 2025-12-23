@@ -10,39 +10,39 @@ import type { MessagePart } from '../types';
 import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
 
 /**
- * Parameters for useFileSubmission hook
+ * Parámetros para el hook useFileSubmission
  */
 export interface UseFileSubmissionParams {
-  /** Function to update messages array */
+  /** Función para actualizar el array de mensajes */
   setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void;
-  /** Function to send regular (non-file) messages */
+  /** Función para enviar mensajes regulares (sin archivos) */
   sendMessage: (message: any, options?: ChatRequestOptions) => Promise<string | null | undefined>;
-  /** Whether voice is currently listening */
+  /** Si el modo de voz está escuchando activamente */
   isListening: boolean;
-  /** Function to toggle voice listening */
+  /** Función para alternar el estado de escucha de voz */
   toggleListening: () => void;
 }
 
 /**
- * Return type for useFileSubmission hook
+ * Tipo de retorno para el hook useFileSubmission
  */
 export interface UseFileSubmissionReturn {
-  /** Submit handler for messages with potential file attachments */
+  /** Manejador de envío para mensajes con posibles adjuntos */
   handleSubmit: (message: PromptInputMessage) => Promise<void>;
-  /** Whether a file is currently being analyzed */
+  /** Si se está analizando un archivo actualmente */
   isAnalyzing: boolean;
 }
 
 /**
- * useFileSubmission - Custom hook for handling file analysis in chat
- * Supports Images and PDFs
+ * useFileSubmission - Hook personalizado para manejo de análisis de archivos en chat
+ * Soporta Imágenes y PDFs
  *
- * Extracts all file processing logic from the Chat component:
- * - Detects image and PDF attachments
- * - Validates file sizes
- * - Converts blob URLs to base64
- * - Calls appropriate server actions (Gemini Vision or PDF analysis)
- * - Manages analysis state and loading indicators
+ * Extrae toda la lógica de procesamiento de archivos del componente Chat:
+ * - Detecta adjuntos de imágenes y PDF
+ * - Valida tamaños de archivo
+ * - Convierte URLs blob a base64
+ * - Llama a las server actions apropiadas (Gemini Vision o análisis PDF)
+ * - Gestiona estado de análisis e indicadores de carga
  */
 export function useFileSubmission({
   setMessages,

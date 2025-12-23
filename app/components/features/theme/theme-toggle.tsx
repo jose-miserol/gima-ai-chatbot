@@ -7,8 +7,8 @@ import type { Theme } from './types';
 import { THEME_CONFIG } from './constants';
 
 /**
- * Get the current theme from localStorage or system preferences
- * Returns default theme for SSR compatibility
+ * Obtiene el tema actual de localStorage o preferencias del sistema
+ * Retorna el tema por defecto para compatibilidad con SSR
  */
 function getThemeSnapshot(): Theme {
   if (typeof window === 'undefined') return THEME_CONFIG.defaultTheme as Theme;
@@ -18,14 +18,14 @@ function getThemeSnapshot(): Theme {
 }
 
 /**
- * Server-side snapshot always returns default theme to prevent hydration mismatch
+ * Snapshot del servidor siempre retorna el tema por defecto para prevenir hydration mismatch
  */
 function getServerSnapshot(): Theme {
   return THEME_CONFIG.defaultTheme as Theme;
 }
 
 /**
- * Subscribe to storage events for cross-tab synchronization
+ * Suscribirse a eventos de storage para sincronización entre pestañas
  */
 function subscribe(callback: () => void): () => void {
   window.addEventListener('storage', callback);

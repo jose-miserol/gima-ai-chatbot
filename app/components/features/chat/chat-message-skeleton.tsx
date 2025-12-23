@@ -7,6 +7,12 @@ interface MessageSkeletonProps {
   className?: string;
 }
 
+/**
+ * Componente Skeleton para mensajes de chat
+ *
+ * Muestra un estado de carga animado que imita la estructura de un mensaje.
+ * Se usa mientras se reciben o generan mensajes.
+ */
 export function ChatMessageSkeleton({ role = 'assistant', className }: MessageSkeletonProps) {
   return (
     <div
@@ -34,6 +40,11 @@ export function ChatMessageSkeleton({ role = 'assistant', className }: MessageSk
   );
 }
 
+/**
+ * Contenedor de skeletons para la carga inicial del chat
+ *
+ * Muestra múltiples mensajes de skeleton para simular un historial cargando.
+ */
 export function ChatSkeleton({ messageCount = 3 }: { messageCount?: number }) {
   return (
     <div className="flex flex-col gap-4 p-4">

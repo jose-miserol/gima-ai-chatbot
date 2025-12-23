@@ -1,77 +1,77 @@
 /**
- * Voice Feature Types
+ * Tipos de la Funcionalidad de Voz
  *
- * Type definitions for the voice input feature.
+ * Definiciones de tipos para la funcionalidad de entrada de voz.
  */
 
 /**
- * Voice recognition mode - either Gemini AI or native browser API
+ * Modo de reconocimiento de voz - Gemini AI o API nativa del navegador
  */
 export type VoiceMode = 'gemini' | 'native';
 
 /**
- * Voice recording state
+ * Estado de grabación de voz
  *
- * Represents the current state of voice input.
+ * Representa el estado actual de la entrada de voz.
  */
 export interface VoiceState {
   /**
-   * Whether the microphone is actively listening
+   * Si el micrófono está escuchando activamente
    */
   isListening: boolean;
 
   /**
-   * Whether audio is being processed/transcribed
+   * Si el audio se está procesando/transcribiendo
    */
   isProcessing: boolean;
 
   /**
-   * Current voice recognition mode
+   * Modo actual de reconocimiento de voz
    */
   mode: VoiceMode;
 
   /**
-   * Error message if voice input failed
+   * Mensaje de error si falla la entrada de voz
    */
   error?: string;
 }
 
 /**
- * Props for the VoiceButton component
+ * Props para el componente VoiceButton
  */
 export interface VoiceButtonProps {
   /**
-   * Whether the microphone is actively listening
+   * Si el micrófono está escuchando activamente
    */
   isListening: boolean;
 
   /**
-   * Whether audio is being processed (optional, defaults to false)
+   * Si el audio se está procesando (opcional, por defecto false)
    */
   isProcessing?: boolean;
 
   /**
-   * Whether voice input is supported in the current browser
+   * Si la entrada de voz está soportada en el navegador actual
    */
   isSupported: boolean;
 
   /**
-   * Current voice recognition mode (optional, defaults to 'native')
+   * Modo actual de reconocimiento de voz (opcional, por defecto 'native')
    */
   mode?: VoiceMode;
 
   /**
-   * Click handler to toggle voice recording
+   * Manejador de click para alternar grabación de voz
    */
   onClick: () => void;
 
   /**
-   * Whether the button should be disabled (optional)
+   * Si el botón debe estar deshabilitado (opcional)
    */
   disabled?: boolean;
 
   /**
-   * Additional CSS classes (optional)
+   * Clases CSS adicionales (opcional)
    */
   className?: string;
 }

@@ -18,21 +18,21 @@ interface State {
 }
 
 /**
- * Error Boundary Component
+ * Componente Error Boundary
  *
- * Catches React errors in child components and displays a fallback UI.
- * Prevents the entire application from crashing due to errors in individual components.
+ * Captura errores de React en componentes hijos y muestra una UI de respaldo.
+ * Evita que toda la aplicación se bloquee debido a errores en componentes individuales.
  *
- * Features:
- * - Infinite loop prevention with retry count limiting
- * - Automatic reset when resetKeys change
- * - Enhanced UI with retry counter and error details
- * - Production error reporting capabilities
+ * Características:
+ * - Prevención de bucles infinitos con límitede reintentos
+ * - Restablecimiento automático cuando cambian las resetKeys
+ * - UI mejorada con contador de reintentos y detalles del error
+ * - Capacidades de reporte de errores en producción
  *
  * @example
  * ```tsx
  * <ErrorBoundary
- *   fallback={<div>Something went wrong</div>}
+ *   fallback={<div>Algo salió mal</div>}
  *   maxRetries={3}
  *   resetKeys={[userId, routeId]}
  * >
@@ -136,8 +136,8 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   /**
-   * Compare arrays for resetKeys equality
-   * Used to detect when resetKeys change and trigger auto-reset
+   * Compara arrays para igualdad de resetKeys
+   * Usado para detectar cuando resetKeys cambian y disparar auto-reset
    */
   private areArraysEqual(a?: Array<string | number>, b?: Array<string | number>): boolean {
     if (!a || !b) return a === b;
@@ -146,8 +146,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   /**
-   * Send error details to external monitoring service
-   * In production, this should integrate with services like Sentry or LogRocket
+   * Envía detalles del error a un servicio de monitoreo externo
+   * En producción, esto debería integrarse con servicios como Sentry o LogRocket
    */
   private async reportErrorToService(errorDetails: {
     message: string;

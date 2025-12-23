@@ -1,19 +1,19 @@
 /**
- * Component Props Types
+ * Tipos de Props de Componentes
  *
- * Type definitions for all chat component props.
- * Organized by component for easy maintenance.
+ * Definiciones de tipos para todas las props de componentes de chat.
+ * Organizado por componente para fácil mantenimiento.
  */
 
 import type { VoiceButtonProps } from './voice-props.types';
 
 /**
- * Props for ChatEmptyState component
+ * Props para el componente ChatEmptyState
  *
- * Defines the interface for the empty state shown when no messages exist.
+ * Define la interfaz para el estado vacío mostrado cuando no hay mensajes.
  *
- * @property isVoiceSupported - Whether voice input is available in the browser
- * @property voiceMode - Current voice recognition mode (Gemini AI or native)
+ * @property isVoiceSupported - Si la entrada de voz está disponible en el navegador
+ * @property voiceMode - Modo actual de reconocimiento de voz (Gemini AI o nativo)
  */
 export interface ChatEmptyStateProps {
   isVoiceSupported: boolean;
@@ -21,13 +21,13 @@ export interface ChatEmptyStateProps {
 }
 
 /**
- * Props for ChatMessage component
+ * Props para el componente ChatMessage
  *
- * Defines the interface for rendering individual chat messages with actions.
+ * Define la interfaz para renderizar mensajes individuales del chat con acciones.
  *
- * @property message - The message data to display (UIMessage from AI SDK)
- * @property onRegenerate - Callback to regenerate the assistant's response
- * @property onCopy - Callback to copy message text to clipboard
+ * @property message - Datos del mensaje a mostrar (UIMessage de AI SDK)
+ * @property onRegenerate - Callback para regenerar la respuesta del asistente
+ * @property onCopy - Callback para copiar el texto del mensaje al portapapeles
  */
 export interface ChatMessageProps {
   message: any; // UIMessage from AI SDK
@@ -36,16 +36,16 @@ export interface ChatMessageProps {
 }
 
 /**
- * Props for ChatConversation component
+ * Props para el componente ChatConversation
  *
- * Defines the interface for the conversation area that displays all messages.
+ * Define la interfaz para el área de conversación que muestra todos los mensajes.
  *
- * @property messages - Array of all messages in the conversation (UIMessage from AI SDK)
- * @property status - Current chat status (ready, streaming, submitted, error)
- * @property isVoiceSupported - Whether voice input is available
- * @property voiceMode - Current voice recognition mode
- * @property onRegenerate - Callback to regenerate last assistant message
- * @property onCopyMessage - Callback to copy a message to clipboard
+ * @property messages - Array de todos los mensajes en la conversación (UIMessage de AI SDK)
+ * @property status - Estado actual del chat (listo, transmitiendo, enviado, error)
+ * @property isVoiceSupported - Si la entrada de voz está disponible
+ * @property voiceMode - Modo actual de reconocimiento de voz
+ * @property onRegenerate - Callback para regenerar último mensaje del asistente
+ * @property onCopyMessage - Callback para copiar un mensaje al portapapeles
  */
 export interface ChatConversationProps {
   messages: any[]; // UIMessage from AI SDK
@@ -57,17 +57,17 @@ export interface ChatConversationProps {
 }
 
 /**
- * Props for ChatInputArea component
+ * Props para el componente ChatInputArea
  *
- * Defines the interface for the user input area with attachments and voice.
+ * Define la interfaz para el área de input del usuario con adjuntos y voz.
  *
- * @property textareaRef - Ref to the textarea element for programmatic control
- * @property input - Current input value
- * @property onInputChange - Callback when input text changes
- * @property onSubmit - Callback when message is submitted
- * @property canSend - Whether sending is allowed (based on chat status)
- * @property status - Current chat status
- * @property voiceProps - Props to pass to the VoiceButton component
+ * @property textareaRef - Referencia al elemento textarea para control programático
+ * @property input - Valor actual del input
+ * @property onInputChange - Callback al cambiar el texto del input
+ * @property onSubmit - Callback al enviar el mensaje
+ * @property canSend - Si se permite enviar (basado en estado del chat)
+ * @property status - Estado actual del chat
+ * @property voiceProps - Props para pasar al componente VoiceButton
  */
 export interface ChatInputAreaProps {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;

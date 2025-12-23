@@ -14,7 +14,7 @@ import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 import { formatCommandSummary, requiresConfirmation } from '@/app/types/voice-commands';
 
 /**
- * CommandPreviewProps - Props for the command preview component
+ * CommandPreviewProps - Props para el componente de vista previa de comandos
  */
 interface CommandPreviewProps {
   /** Parsed voice command to display */
@@ -32,13 +32,13 @@ interface CommandPreviewProps {
 }
 
 /**
- * CommandPreview - Displays parsed voice command for user confirmation
+ * CommandPreview - Muestra el comando de voz parseado para confirmación del usuario
  *
- * Shows the interpreted command with extracted fields:
- * - Action type with icon
- * - Equipment, location, priority if present
- * - Confidence indicator
- * - Confirm/Cancel/Retry buttons
+ * Muestra el comando interpretado con campos extraídos:
+ * - Tipo de acción con icono
+ * - Equipo, ubicación, prioridad si están presentes
+ * - Indicador de confianza
+ * - Botones de Confirmar/Cancelar/Reintentar
  *
  * @example
  * ```tsx

@@ -9,7 +9,7 @@ import type { VoiceButtonProps as BaseVoiceButtonProps } from './types';
 import { VOICE_LABELS } from './constants';
 
 /**
- * Voice button variants using CVA for type-safe and declarative style management
+ * Variantes del botón de voz usando CVA para gestión de estilos declarativa y type-safe
  */
 const voiceButtonVariants = cva(
   // Base styles applied to all variants

@@ -1,86 +1,86 @@
 /**
- * Voice Feature Constants
+ * Constantes de la Funcionalidad de Voz
  *
- * Centralized configuration for the voice input feature.
- * Contains configuration for voice recording, processing, and UI.
+ * Configuración centralizada para la funcionalidad de entrada de voz.
+ * Contiene configuración para grabación de voz, procesamiento y UI.
  */
 
 /**
- * Voice recognition configuration
+ * Configuración de reconocimiento de voz
  */
 export const VOICE_CONFIG = {
   /**
-   * Maximum recording time in milliseconds (30 seconds)
+   * Tiempo máximo de grabación en milisegundos (30 segundos)
    */
   maxRecordingTime: 30000,
 
   /**
-   * Sample rate for audio recording (Hz)
+   * Frecuencia de muestreo para grabación de audio (Hz)
    */
   sampleRate: 16000,
 
   /**
-   * MIME type for audio encoding
+   * Tipo MIME para codificación de audio
    */
   mimeType: 'audio/webm',
 
   /**
-   * Visual waveform configuration
+   * Configuración de forma de onda visual
    */
   waveform: {
     /**
-     * Height of the waveform bars in pixels
+     * Altura de las barras de forma de onda en píxeles
      */
     height: 16,
 
     /**
-     * Number of waveform bars to display
+     * Número de barras de forma de onda a mostrar
      */
     bars: 4,
   },
 } as const;
 
 /**
- * Voice button labels and messages
+ * Etiquetas y mensajes del botón de voz
  */
 export const VOICE_LABELS = {
   /**
-   * Label when idle
+   * Etiqueta cuando está inactivo
    */
   idle: 'Dictar reporte',
 
   /**
-   * Label when listening
+   * Etiqueta cuando está escuchando
    */
   listening: 'Detener',
 
   /**
-   * ARIA label when idle
+   * Etiqueta ARIA cuando está inactivo
    */
   ariaIdle: 'Iniciar grabación de voz',
 
   /**
-   * ARIA label when listening
+   * Etiqueta ARIA cuando está escuchando
    */
   ariaListening: 'Detener grabación de voz',
 
   /**
-   * Status message when processing
+   * Mensaje de estado cuando está procesando
    */
   processing: 'Procesando audio...',
 
   /**
-   * Status message when ready
+   * Mensaje de estado cuando está listo
    */
   ready: 'Listo para grabar',
 
   /**
-   * Listening indicator for Gemini mode
+   * Indicador de escucha para modo Gemini
    */
   listeningGemini: 'IA Escuchando...',
 
   /**
-   * Listening indicator for native mode
+   * Indicador de escucha para modo nativo
    */
   listeningNative: 'Grabando...',
 } as const;

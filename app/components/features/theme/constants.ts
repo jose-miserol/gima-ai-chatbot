@@ -1,36 +1,36 @@
 /**
- * Theme Feature Constants
+ * Constantes de la Funcionalidad de Tema
  *
- * Centralized configuration for the theme feature.
- * Contains theme options, storage keys, and default values.
+ * Configuración centralizada para la funcionalidad de tema.
+ * Contiene opciones de tema, claves de almacenamiento y valores por defecto.
  */
 
 /**
- * Available theme options
+ * Opciones de tema disponibles
  */
 export const THEMES = ['light', 'dark'] as const;
 
 /**
- * Theme configuration constants
+ * Constantes de configuración de tema
  */
 export const THEME_CONFIG = {
   /**
-   * LocalStorage key for persisting theme preference
+   * Clave de LocalStorage para persistir preferencia de tema
    */
   storageKey: 'theme',
 
   /**
-   * Default theme when no preference is set
+   * Tema por defecto cuando no hay preferencia establecida
    */
   defaultTheme: 'light',
 
   /**
-   * Transition duration for theme changes (in milliseconds)
+   * Duración de transición para cambios de tema (en milisegundos)
    */
   transitionDuration: 200,
 
   /**
-   * CSS class name applied to html element for dark mode
+   * Nombre de clase CSS aplicada al elemento html para modo oscuro
    */
   darkModeClass: 'dark',
 } as const;

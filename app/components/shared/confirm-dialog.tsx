@@ -24,10 +24,10 @@ interface ConfirmDialogProps {
 }
 
 /**
- * Accessible confirmation dialog component
+ * Componente de diálogo de confirmación accesible
  *
- * Replaces native window.confirm() with a proper accessible dialog
- * that supports keyboard navigation and screen readers.
+ * Reemplaza el window.confirm() nativo con un diálogo accesible adecuado
+ * que soporta navegación por teclado y lectores de pantalla.
  *
  * @example
  * ```tsx
@@ -36,9 +36,9 @@ interface ConfirmDialogProps {
  * <ConfirmDialog
  *   open={open}
  *   onOpenChange={setOpen}
- *   title="Delete item"
- *   description="Are you sure you want to delete this item? This action cannot be undone."
- *   confirmLabel="Delete"
+ *   title="Eliminar elemento"
+ *   description="¿Está seguro de que desea eliminar este elemento? Esta acción no se puede deshacer."
+ *   confirmLabel="Eliminar"
  *   variant="destructive"
  *   onConfirm={() => handleDelete()}
  * />
@@ -118,18 +118,18 @@ export function ConfirmDialog({
 }
 
 /**
- * Hook for managing ConfirmDialog state
+ * Hook para gestionar el estado de ConfirmDialog
  *
  * @example
  * ```tsx
  * const confirmDelete = useConfirmDialog();
  *
- * <button onClick={() => confirmDelete.open()}>Delete</button>
+ * <button onClick={() => confirmDelete.open()}>Eliminar</button>
  *
  * <ConfirmDialog
  *   {...confirmDelete.props}
- *   title="Delete item"
- *   description="Are you sure?"
+ *   title="Eliminar elemento"
+ *   description="¿Está seguro?"
  *   onConfirm={() => handleDelete()}
  * />
  * ```

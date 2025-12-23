@@ -1,12 +1,12 @@
 /**
- * Message Types
+ * Tipos de Mensajes
  *
- * Core message type definitions for the chat system.
- * Includes message parts, sanitized messages, and API request/response types.
+ * Definiciones de tipos de mensajes core para el sistema de chat.
+ * Incluye partes de mensaje, mensajes sanitizados y tipos de petición/respuesta API.
  */
 
 /**
- * Represents different types of content parts in a message
+ * Representa diferentes tipos de partes de contenido en un mensaje
  */
 export type MessagePart =
   | { type: 'text'; text: string }
@@ -14,9 +14,9 @@ export type MessagePart =
   | { type: 'file'; data: string; mediaType: string };
 
 /**
- * Sanitized message interface for API communication
+ * Interfaz de mensaje sanitizado para comunicación API
  *
- * Represents a cleaned message ready for API submission.
+ * Representa un mensaje limpio listo para envío a API.
  */
 export interface SanitizedMessage {
   role: 'user' | 'assistant' | 'system';
@@ -27,7 +27,7 @@ export interface SanitizedMessage {
 }
 
 /**
- * Chat API request structure
+ * Estructura de petición API de Chat
  */
 export interface ChatAPIRequest {
   messages: SanitizedMessage[];
@@ -35,7 +35,7 @@ export interface ChatAPIRequest {
 }
 
 /**
- * Chat API response structure
+ * Estructura de respuesta API de Chat
  */
 export interface ChatAPIResponse {
   success: boolean;
@@ -47,9 +47,9 @@ export interface ChatAPIResponse {
 }
 
 /**
- * Raw message interface for handling malformed data
+ * Interfaz de mensaje crudo para manejo de datos malformados
  *
- * Used when receiving messages that may not be properly structured.
+ * Usado al recibir mensajes que pueden no estar bien estructurados.
  */
 export interface RawMessage {
   role: 'user' | 'assistant' | 'system';

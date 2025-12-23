@@ -1,30 +1,30 @@
 /**
- * Theme Feature Types
+ * Tipos de la Funcionalidad de Tema
  *
- * Type definitions for the theme feature.
+ * Definiciones de tipos para la funcionalidad de tema.
  */
 
 import type { THEMES } from './constants';
 
 /**
- * Theme type - either 'light' or 'dark'
+ * Tipo de tema - ya sea 'light' o 'dark'
  */
 export type Theme = (typeof THEMES)[number];
 
 /**
- * Theme configuration interface
+ * Interfaz de configuración de tema
  *
- * Represents the complete theme state including user preference
- * and system preference detection.
+ * Representa el estado completo del tema incluyendo preferencia de usuario
+ * y detección de preferencia del sistema.
  */
 export interface ThemeConfig {
   /**
-   * Current active theme
+   * Tema activo actual
    */
   theme: Theme;
 
   /**
-   * Whether to use system color scheme preference
+   * Si usar preferencia de esquema de color del sistema
    */
   systemPreference: boolean;
 }

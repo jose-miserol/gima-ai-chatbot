@@ -10,12 +10,12 @@ import { cn } from '@/app/lib/utils';
 import { logger } from '@/app/lib/logger';
 
 /**
- * Voice command flow states
+ * Estados del flujo de comando de voz
  */
 type CommandFlowState = 'idle' | 'listening' | 'processing' | 'preview' | 'confirming';
 
 /**
- * VoiceCommandModeProps - Props for the voice command mode component
+ * VoiceCommandModeProps - Props para el componente de modo comando de voz
  */
 interface VoiceCommandModeProps {
   /** Callback when command is confirmed and ready for execution */
@@ -31,13 +31,13 @@ interface VoiceCommandModeProps {
 }
 
 /**
- * VoiceCommandMode - Complete voice command input workflow
+ * VoiceCommandMode - Flujo de trabajo completo de entrada de comando de voz
  *
- * Integrates voice input with command parsing and confirmation:
- * - Uses VoiceButton for recording
- * - Parses transcript with executeVoiceCommand
- * - Shows CommandPreview for confirmation
- * - Handles the full flow: idle → listening → processing → preview
+ * Integra la entrada de voz con el parsing de comandos y confirmación:
+ * - Usa VoiceButton para grabar
+ * - Parsea la transcripción con executeVoiceCommand
+ * - Muestra CommandPreview para confirmación
+ * - Maneja el flujo completo: idle → listening → processing → preview
  *
  * @example
  * ```tsx

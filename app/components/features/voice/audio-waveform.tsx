@@ -7,6 +7,10 @@ interface AudioWaveformProps {
   className?: string;
 }
 
+/**
+ * Componente de visualización de forma de onda de audio animada
+ * Muestra barras animadas cuando el estado está activo
+ */
 export function AudioWaveform({ active = false, className }: AudioWaveformProps) {
   return (
     <div className={cn('flex items-center gap-0.5 h-4', className)}>
