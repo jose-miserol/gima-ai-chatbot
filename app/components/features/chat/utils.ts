@@ -6,7 +6,7 @@
  */
 
 import type { UIMessage } from 'ai';
-import type { MessagePart } from './types';
+import type { MessagePart } from './types/message.types';
 import type { Message } from '@/app/lib/schemas/chat';
 
 /**
