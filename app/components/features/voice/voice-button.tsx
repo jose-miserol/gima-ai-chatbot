@@ -5,6 +5,8 @@ import { Mic, Square, Loader2 } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/app/lib/utils';
 import { AudioWaveform } from './audio-waveform';
+import type { VoiceButtonProps as BaseVoiceButtonProps } from './types';
+import { VOICE_LABELS } from './constants';
 
 /**
  * Voice button variants using CVA for type-safe and declarative style management
@@ -30,7 +32,8 @@ const voiceButtonVariants = cva(
       {
         state: 'listening',
         mode: 'gemini',
-        className: 'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900/50 ring-2 ring-blue-200 dark:ring-blue-800',
+        className:
+          'bg-blue-600 border-blue-600 text-white shadow-blue-200 dark:shadow-blue-900/50 ring-2 ring-blue-200 dark:ring-blue-800',
       },
       // Listening state with native mode (gray)
       {
@@ -46,14 +49,8 @@ const voiceButtonVariants = cva(
   }
 );
 
-interface VoiceButtonProps extends VariantProps<typeof voiceButtonVariants> {
-  isListening: boolean;
-  isProcessing?: boolean;
-  isSupported: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  className?: string;
-}
+interface VoiceButtonProps
+  extends VariantProps<typeof voiceButtonVariants>, Omit<BaseVoiceButtonProps, 'mode'> {}
 
 export const VoiceButton = forwardRef<HTMLButtonElement, VoiceButtonProps>(
   (
@@ -80,19 +77,17 @@ export const VoiceButton = forwardRef<HTMLButtonElement, VoiceButtonProps>(
           : 'idle';
 
     // Determine ARIA label dynamically
-    const ariaLabel = isListening
-      ? 'Detener grabación de voz'
-      : 'Iniciar grabación de voz';
+    const ariaLabel = isListening ? VOICE_LABELS.ariaListening : VOICE_LABELS.ariaIdle;
 
     // Determine title text
-    const title = isListening ? 'Detener' : 'Dictar reporte';
+    const title = isListening ? VOICE_LABELS.listening : VOICE_LABELS.idle;
 
     // Determine status text for screen readers
     const statusText = isProcessing
-      ? 'Procesando audio...'
+      ? VOICE_LABELS.processing
       : isListening
         ? `Grabando con ${mode === 'gemini' ? 'IA' : 'método nativo'}`
-        : 'Listo para grabar';
+        : VOICE_LABELS.ready;
 
     return (
       <div className="flex items-center gap-2">
@@ -100,7 +95,9 @@ export const VoiceButton = forwardRef<HTMLButtonElement, VoiceButtonProps>(
         {isListening && (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/50 rounded-full text-blue-600 dark:text-blue-400 text-xs font-medium animate-in fade-in slide-in-from-right-4 duration-300">
             <AudioWaveform active={true} />
-            <span>{mode === 'gemini' ? 'IA Escuchando...' : 'Grabando...'}</span>
+            <span>
+              {mode === 'gemini' ? VOICE_LABELS.listeningGemini : VOICE_LABELS.listeningNative}
+            </span>
           </div>
         )}
 
