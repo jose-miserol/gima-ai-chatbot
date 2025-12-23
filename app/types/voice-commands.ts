@@ -75,7 +75,7 @@ export const VoiceWorkOrderCommandSchema = z.object({
   rawTranscript: z.string().min(1),
 
   /** Metadata adicional del procesamiento */
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
@@ -199,7 +199,7 @@ export function validateVoiceCommand(data: unknown): {
   }
 
   // Formatear errores de Zod para usuario
-  const errors = result.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`);
+  const errors = result.error.issues.map((err) => `${err.path.join('.')}: ${err.message}`);
 
   return { success: false, errors };
 }

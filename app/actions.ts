@@ -152,3 +152,158 @@ export async function analyzePartImage(
     return { text: '', success: false, error: errorMessage };
   }
 }
+
+/**
+ * Ejecuta un comando de voz parseando la transcripción y validando el resultado.
+ * Usa Gemini para interpretar el comando y Zod para validar la estructura.
+ *
+ * @param transcript - Texto transcrito del audio de voz
+ * @param options - Opciones de parsing (idioma, confianza mínima, contexto)
+ * @returns Resultado discriminado con comando parseado o error
+ *
+ * @example
+ * ```typescript
+ * const result = await executeVoiceCommand("Crear orden urgente para la UMA");
+ * if (result.success) {
+ *   console.log(result.command.action); // 'create_work_order'
+ * }
+ * ```
+ */
+export async function executeVoiceCommand(
+  transcript: string,
+  options?: { minConfidence?: number; context?: string }
+): Promise<
+  | {
+      success: true;
+      command: {
+        action: string;
+        equipment?: string;
+        location?: string;
+        priority?: string;
+        description?: string;
+        assignee?: string;
+        confidence: number;
+        rawTranscript: string;
+      };
+    }
+  | {
+      success: false;
+      error: string;
+      code?: string;
+      recoverable?: boolean;
+    }
+> {
+  const { WORK_ORDER_VOICE_PROMPT } = await import('@/app/config/voice-command-prompt');
+  const { VoiceWorkOrderCommandSchema } = await import('@/app/types/voice-commands');
+
+  try {
+    if (!transcript || transcript.trim().length < 3) {
+      return {
+        success: false,
+        error: 'Transcripción vacía o demasiado corta',
+        code: 'EMPTY_TRANSCRIPT',
+        recoverable: true,
+      };
+    }
+
+    const minConfidence = options?.minConfidence ?? 0.7;
+
+    // Construir prompt con contexto opcional
+    const contextPrompt = options?.context ? `\n\nCONTEXTO ADICIONAL: ${options.context}` : '';
+
+    const result = await generateText({
+      model: google('gemini-2.5-flash-lite'),
+      temperature: 0, // Determinístico para parsing
+      messages: [
+        {
+          role: 'system',
+          content: WORK_ORDER_VOICE_PROMPT + contextPrompt,
+        },
+        {
+          role: 'user',
+          content: transcript,
+        },
+      ],
+    });
+
+    // Parsear JSON de la respuesta
+    let parsed: unknown;
+    try {
+      // Limpiar posibles backticks de markdown
+      const cleanJson = result.text
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim();
+      parsed = JSON.parse(cleanJson);
+    } catch {
+      logger.warn('JSON inválido del modelo', {
+        component: 'actions',
+        action: 'executeVoiceCommand',
+        rawResponse: result.text.slice(0, 200),
+      });
+      return {
+        success: false,
+        error: 'No se pudo interpretar el comando de voz',
+        code: 'PARSE_ERROR',
+        recoverable: true,
+      };
+    }
+
+    // Validar con Zod
+    const validation = VoiceWorkOrderCommandSchema.safeParse(parsed);
+
+    if (!validation.success) {
+      const errors = validation.error.issues
+        .map((e: { path: PropertyKey[]; message: string }) => `${e.path.join('.')}: ${e.message}`)
+        .join(', ');
+
+      logger.warn('Validación Zod falló', {
+        component: 'actions',
+        action: 'executeVoiceCommand',
+        errors,
+      });
+
+      return {
+        success: false,
+        error: `Comando inválido: ${errors}`,
+        code: 'VALIDATION_ERROR',
+        recoverable: true,
+      };
+    }
+
+    // Verificar confianza mínima
+    if (validation.data.confidence < minConfidence) {
+      return {
+        success: false,
+        error: `Confianza insuficiente (${(validation.data.confidence * 100).toFixed(0)}% < ${(minConfidence * 100).toFixed(0)}%)`,
+        code: 'LOW_CONFIDENCE',
+        recoverable: true,
+      };
+    }
+
+    logger.info('Comando de voz parseado', {
+      component: 'actions',
+      action: 'executeVoiceCommand',
+      commandAction: validation.data.action,
+      confidence: validation.data.confidence,
+    });
+
+    return {
+      success: true,
+      command: validation.data,
+    };
+  } catch (error: unknown) {
+    logger.error(
+      'Error ejecutando comando de voz',
+      error instanceof Error ? error : new Error(String(error)),
+      { component: 'actions', action: 'executeVoiceCommand' }
+    );
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      code: 'EXECUTION_ERROR',
+      recoverable: false,
+    };
+  }
+}
