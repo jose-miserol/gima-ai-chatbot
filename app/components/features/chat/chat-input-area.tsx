@@ -57,12 +57,12 @@ import type { ChatInputAreaProps } from './types';
  */
 export function ChatInputArea({
   textareaRef,
-  input,
+  input: _input, // Managed internally by PromptInputTextarea
   onInputChange,
   onSubmit,
   canSend,
   status,
-  isAnalyzingImage,
+  isAnalyzingImage: _isAnalyzingImage, // Reserved for future UI enhancements
   voiceProps,
 }: ChatInputAreaProps) {
   return (

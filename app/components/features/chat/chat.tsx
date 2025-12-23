@@ -4,8 +4,6 @@ import { useState, useCallback, useRef } from 'react';
 import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useToast } from '@/app/components/ui/toast';
-import { DEFAULT_MODEL } from '@/app/config';
-import { analyzePartImage } from '@/app/actions';
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog';
 import { ChatHeader } from './chat-header';
 import { ChatConversation } from './chat-conversation';
@@ -14,7 +12,7 @@ import { ChatInputArea } from './chat-input-area';
 import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
-import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+import { useImageSubmission } from './hooks/use-image-submission';
 
 /**
  * Chat - Componente principal del sistema de chat inteligente de GIMA
@@ -55,7 +53,6 @@ import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-inp
 export function Chat() {
   // Estado local
   const [input, setInput] = useState('');
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -95,6 +92,14 @@ export function Chat() {
     error: voiceError,
   } = useVoiceInput({ onTranscript: updateTextareaValue });
 
+  // Image submission handling
+  const { handleSubmit, isAnalyzing } = useImageSubmission({
+    setMessages,
+    sendMessage,
+    isListening,
+    toggleListening,
+  });
+
   // Chat actions
   const { handleRegenerate, handleClear, handleCopyMessage } = useChatActions({
     regenerate,
@@ -107,168 +112,14 @@ export function Chat() {
     (status === 'ready' ||
       status === 'error' ||
       (status !== 'streaming' && status !== 'submitted')) &&
-    !isAnalyzingImage;
-
-  // Handle message submission with image analysis
-  const handleSubmit = useCallback(
-    async (message: PromptInputMessage) => {
-      const hasText = Boolean(message.text);
-      const hasAttachments = Boolean(message.files?.length);
-
-      if (!(hasText || hasAttachments)) {
-        return;
-      }
-
-      // Stop listening if voice is active
-      if (isListening) {
-        toggleListening();
-      }
-
-      // Check if there's an image attachment for auto-analysis
-      const imageFile = message.files?.find((file) => file.mediaType?.startsWith('image/'));
-
-      // If image attached, always use Gemini for vision analysis (with custom prompt or default)
-      if (imageFile && imageFile.url) {
-        setIsAnalyzingImage(true);
-
-        try {
-          // Fetch blob URL and convert to base64
-          const response = await fetch(imageFile.url);
-          const blob = await response.blob();
-
-          const base64Promise = new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-
-          const imageDataUrl = await base64Promise;
-
-          // Add user message with the image attachment
-          const userMessageId = `user-${Date.now()}`;
-          const userText = message.text?.trim() || 'Analizar esta imagen';
-
-          setMessages(
-            (prev) =>
-              [
-                ...prev,
-                {
-                  id: userMessageId,
-                  role: 'user',
-                  content: userText,
-                  parts: [
-                    { type: 'text', text: userText },
-                    {
-                      type: 'image',
-                      imageUrl: imageFile.url,
-                      mimeType: imageFile.mediaType || 'image/jpeg',
-                    },
-                  ],
-                  createdAt: new Date(),
-                },
-              ] as any
-          );
-
-          // Call Gemini vision via server action with custom prompt (or default)
-          const result = await analyzePartImage(
-            imageDataUrl,
-            imageFile.mediaType || 'image/jpeg',
-            message.text?.trim() // Pass user's text as custom prompt
-          );
-
-          if (result.success && result.text) {
-            const visionId = `vision-${Date.now()}`;
-
-            // Agregar mensaje de análisis al chat con imagen incluida
-            setMessages(
-              (prev) =>
-                [
-                  ...prev,
-                  {
-                    id: visionId,
-                    role: 'assistant',
-                    content: result.text,
-                    parts: [
-                      { type: 'text', text: result.text },
-                      {
-                        type: 'image',
-                        imageUrl: imageFile.url,
-                        mimeType: imageFile.mediaType || 'image/jpeg',
-                      },
-                    ],
-                    createdAt: new Date(),
-                  },
-                ] as any
-            );
-
-            toast.success('Imagen analizada', 'El análisis se ha agregado al chat');
-          } else {
-            const errorMsg = `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`;
-            setMessages(
-              (prev) =>
-                [
-                  ...prev,
-                  {
-                    id: `vision-error-${Date.now()}`,
-                    role: 'assistant',
-                    content: errorMsg,
-                    parts: [{ type: 'text', text: errorMsg }],
-                    createdAt: new Date(),
-                  },
-                ] as any
-            );
-            toast.error('Error de visión', result.error || 'No se pudo analizar la imagen');
-          }
-        } catch (error: unknown) {
-          console.error('Error processing image:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-          const errorMsg = `❌ Error al procesar imagen: ${errorMessage}`;
-          setMessages(
-            (prev) =>
-              [
-                ...prev,
-                {
-                  id: `vision-error-${Date.now()}`,
-                  role: 'assistant',
-                  content: errorMsg,
-                  parts: [{ type: 'text', text: errorMsg }],
-                  createdAt: new Date(),
-                },
-              ] as any
-          );
-          toast.error('Error al procesar imagen', errorMessage);
-        } finally {
-          setIsAnalyzingImage(false);
-        }
-
-        setInput('');
-        return;
-      }
-
-      // Normal text message - use GROQ
-      sendMessage(
-        {
-          text: message.text || 'Archivo adjunto',
-          files: message.files,
-        },
-        {
-          body: {
-            model: DEFAULT_MODEL,
-          },
-        }
-      );
-
-      setInput('');
-    },
-    [isListening, toggleListening, setMessages, toast, sendMessage]
-  );
+    !isAnalyzing;
 
   // Keyboard shortcuts
   useChatKeyboard({
     onSubmit: () => {
       if (input.trim() && canSend) {
         handleSubmit({ text: input, files: [] });
+        setInput('');
       }
     },
     onCancelVoice: () => {
@@ -303,7 +154,7 @@ export function Chat() {
           voiceError={voiceError ?? undefined}
           isListening={isListening}
           isProcessing={isProcessing}
-          isAnalyzingImage={isAnalyzingImage}
+          isAnalyzingImage={isAnalyzing}
           chatError={chatError}
           mode={mode}
         />
@@ -316,7 +167,7 @@ export function Chat() {
           onSubmit={handleSubmit}
           canSend={canSend}
           status={status}
-          isAnalyzingImage={isAnalyzingImage}
+          isAnalyzingImage={isAnalyzing}
           voiceProps={{
             isListening,
             isProcessing,
