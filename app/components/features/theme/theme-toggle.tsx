@@ -3,25 +3,25 @@
 import { useState, useCallback, useSyncExternalStore, useLayoutEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
-
-type Theme = 'light' | 'dark';
+import type { Theme } from './types';
+import { THEME_CONFIG } from './constants';
 
 /**
  * Get the current theme from localStorage or system preferences
- * Returns 'light' as default for SSR compatibility
+ * Returns default theme for SSR compatibility
  */
 function getThemeSnapshot(): Theme {
-  if (typeof window === 'undefined') return 'light';
-  const saved = localStorage.getItem('theme') as Theme | null;
+  if (typeof window === 'undefined') return THEME_CONFIG.defaultTheme as Theme;
+  const saved = localStorage.getItem(THEME_CONFIG.storageKey) as Theme | null;
   if (saved) return saved;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 /**
- * Server-side snapshot always returns 'light' to prevent hydration mismatch
+ * Server-side snapshot always returns default theme to prevent hydration mismatch
  */
 function getServerSnapshot(): Theme {
-  return 'light';
+  return THEME_CONFIG.defaultTheme as Theme;
 }
 
 /**
@@ -40,15 +40,16 @@ export function ThemeToggle({ className }: { className?: string }) {
   // useLayoutEffect runs synchronously before browser paint
   // This prevents theme flash and avoids cascading renders
   useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional for SSR hydration
     setMounted(true);
-    document.documentElement.classList.toggle('dark', storedTheme === 'dark');
+    document.documentElement.classList.toggle(THEME_CONFIG.darkModeClass, storedTheme === 'dark');
   }, [storedTheme]);
 
   const toggleTheme = useCallback(() => {
     const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    localStorage.setItem(THEME_CONFIG.storageKey, newTheme);
+    document.documentElement.classList.toggle(THEME_CONFIG.darkModeClass, newTheme === 'dark');
   }, [theme]);
 
   // Prevent hydration mismatch
