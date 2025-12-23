@@ -33,9 +33,31 @@ import type { ChatMessageProps } from './types';
  * ```
  */
 export function ChatMessage({ message, onRegenerate, onCopy }: ChatMessageProps) {
+  // Si parts está vacío o no existe, renderizar usando content directamente
+  if (!message.parts || message.parts.length === 0) {
+    return (
+      <Message key={message.id} from={message.role}>
+        <MessageContent>
+          <MessageResponse>{message.content}</MessageResponse>
+        </MessageContent>
+        {message.role === 'assistant' && (
+          <MessageActions>
+            <MessageAction onClick={onRegenerate} label="Reintentar">
+              <RefreshCcwIcon className="size-3" />
+            </MessageAction>
+            <MessageAction onClick={() => onCopy(message.content)} label="Copiar">
+              <CopyIcon className="size-3" />
+            </MessageAction>
+          </MessageActions>
+        )}
+      </Message>
+    );
+  }
+
+  // Renderizar usando parts (comportamiento original)
   return (
     <div>
-      {message.parts?.map((part: any, i: number) => {
+      {message.parts.map((part: any, i: number) => {
         if (part.type === 'text') {
           return (
             <Message key={`${message.id}-${i}`} from={message.role}>

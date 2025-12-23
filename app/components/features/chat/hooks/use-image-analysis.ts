@@ -110,7 +110,7 @@ ${result.text}
               id: visionId,
               role: 'assistant',
               content: analysisText,
-              parts: [{ type: 'text', text: analysisText }],
+              parts: [], // Array vacío - compatible con AI SDK
               createdAt: new Date(),
             },
           ]);
@@ -126,7 +126,7 @@ ${result.text}
               id: `vision-error-${Date.now()}`,
               role: 'assistant',
               content: errorMsg,
-              parts: [{ type: 'text', text: errorMsg }],
+              parts: [], // Array vacío - compatible con AI SDK
               createdAt: new Date(),
             },
           ]);
@@ -144,7 +144,7 @@ ${result.text}
             id: `vision-error-${Date.now()}`,
             role: 'assistant',
             content: errorMsg,
-            parts: [{ type: 'text', text: errorMsg }],
+            parts: [], // Array vacío - compatible con AI SDK
             createdAt: new Date(),
           },
         ]);

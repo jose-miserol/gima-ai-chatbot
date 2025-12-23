@@ -63,11 +63,12 @@ function loadMessagesFromStorage(storageKey: string): UIMessage[] {
     // Formato legacy (sin versión) - array directo de mensajes
     if (Array.isArray(parsed)) {
       // Transformar a formato UIMessage si es necesario
+      // IMPORTANTE: usar parts: [] en lugar de [{type: 'text'}] para evitar error de discriminador
       return parsed.map((msg) => ({
         id: msg.id || `msg-${Date.now()}-${Math.random()}`,
         role: msg.role,
         content: msg.content || '',
-        parts: msg.parts || [{ type: 'text', text: msg.content || '' }],
+        parts: [], // Array vacío - compatible con AI SDK
         createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
       }));
     }

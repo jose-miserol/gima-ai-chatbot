@@ -160,47 +160,56 @@ ${result.text}
 ---
 *Este análisis fue generado automáticamente a partir de la imagen subida.*`;
 
-            // Add as actual message to history so GROQ has context
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: visionId,
-                role: 'assistant' as const,
-                content: analysisText,
-                parts: [],
-                createdAt: new Date(),
-              },
-            ]);
+            // Agregar mensaje de análisis al chat (usar forma funcional)
+            setMessages(
+              (prev) =>
+                [
+                  ...prev,
+                  {
+                    id: visionId,
+                    role: 'assistant',
+                    content: analysisText,
+                    parts: [],
+                    createdAt: new Date(),
+                  },
+                ] as any
+            );
 
             toast.success('Imagen analizada', 'El análisis se ha agregado al chat');
           } else {
             const errorMsg = `❌ Error al analizar imagen: ${result.error || 'Error desconocido'}`;
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `vision-error-${Date.now()}`,
-                role: 'assistant' as const,
-                content: errorMsg,
-                parts: [],
-                createdAt: new Date(),
-              },
-            ]);
+            setMessages(
+              (prev) =>
+                [
+                  ...prev,
+                  {
+                    id: `vision-error-${Date.now()}`,
+                    role: 'assistant',
+                    content: errorMsg,
+                    parts: [],
+                    createdAt: new Date(),
+                  },
+                ] as any
+            );
             toast.error('Error de visión', result.error || 'No se pudo analizar la imagen');
           }
         } catch (error: unknown) {
           console.error('Error processing image:', error);
           const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
           const errorMsg = `❌ Error al procesar imagen: ${errorMessage}`;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `vision-error-${Date.now()}`,
-              role: 'assistant' as const,
-              content: errorMsg,
-              parts: [],
-              createdAt: new Date(),
-            },
-          ]);
+          setMessages(
+            (prev) =>
+              [
+                ...prev,
+                {
+                  id: `vision-error-${Date.now()}`,
+                  role: 'assistant',
+                  content: errorMsg,
+                  parts: [],
+                  createdAt: new Date(),
+                },
+              ] as any
+          );
           toast.error('Error al procesar imagen', errorMessage);
         } finally {
           setIsAnalyzingImage(false);
