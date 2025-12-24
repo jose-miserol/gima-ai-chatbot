@@ -1,14 +1,10 @@
-import { createGroq } from '@ai-sdk/groq';
-import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
-import { SYSTEM_PROMPT, STREAM_CONFIG } from '@/app/config';
+import { STREAM_CONFIG } from '@/app/config';
 import { env } from '@/app/config/env';
-import { chatRateLimiter } from '@/app/lib/rate-limiter';
 import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
-import { chatRequestSchema } from '@/app/lib/schemas';
-import { sanitizeForModel } from '@/app/components/features/chat/utils';
 import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
+import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
 
 // ===========================================
 // Constants
@@ -19,17 +15,6 @@ import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
  * @see https://vercel.com/docs/functions/runtimes#max-duration
  */
 export const maxDuration = 30;
-
-// ===========================================
-// Module Initialization
-// ===========================================
-
-/**
- * Cliente GROQ inicializado con API key del entorno
- */
-const groq = createGroq({
-  apiKey: env.GROQ_API_KEY,
-});
 
 // ===========================================
 // Helper Functions
@@ -94,56 +79,43 @@ function createValidationErrorResponse(details: unknown): NextResponse {
  * ```
  */
 export async function POST(req: Request): Promise<NextResponse | Response> {
+  // 1. Validate client IP
+  const clientIP = extractClientIP(req, {
+    allowLocalhost: env.NODE_ENV === 'development',
+  });
+
+  if (!clientIP) {
+    return createInvalidIPResponse();
+  }
+
+  // 2. Parse JSON body
+  let rawBody: unknown;
   try {
-    // 1. Validate client IP and apply rate limiting
-    const clientIP = extractClientIP(req, {
-      allowLocalhost: env.NODE_ENV === 'development',
-    });
+    rawBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+  }
 
-    // En producción, rechazar requests sin IP válida
-    if (!clientIP) {
-      return createInvalidIPResponse();
-    }
-
-    if (!chatRateLimiter.checkLimit(clientIP)) {
-      const retryAfter = Math.ceil(chatRateLimiter.getRetryAfter(clientIP) / 1000);
-      return createRateLimitResponse(retryAfter);
-    }
-
-    // 2. Parse JSON body
-    let rawBody: unknown;
-    try {
-      rawBody = await req.json();
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
-    }
-
-    // 3. Validate request with Zod schema
-    const parseResult = chatRequestSchema.safeParse(rawBody);
-
-    if (!parseResult.success) {
-      return createValidationErrorResponse(parseResult.error.issues);
-    }
-
-    const { messages: rawMessages, model } = parseResult.data;
-
-    // 4. Sanitize messages for AI processing
-    // sanitizeForModel retorna formato simple { role, content } que GROQ acepta
-    const messages = sanitizeForModel(rawMessages);
-
-    // 5. Stream AI response
-    const result = streamText({
-      model: groq(model),
-      messages,
-      system: SYSTEM_PROMPT,
-    });
+  // 3. Process with ChatService
+  try {
+    const chatService = new ChatService();
+    const result = await chatService.processMessage(rawBody, clientIP);
 
     return result.toUIMessageStreamResponse({
       sendSources: STREAM_CONFIG.sendSources,
       sendReasoning: STREAM_CONFIG.sendReasoning,
     });
   } catch (error) {
-    // Log error with context
+    // 4. Map specific errors to HTTP responses
+    if (error instanceof RateLimitError) {
+      return createRateLimitResponse(error.retryAfter);
+    }
+
+    if (error instanceof ValidationError) {
+      return createValidationErrorResponse(error.details);
+    }
+
+    // 5. Generic error handling
     logger.error(
       'Error en API de chat',
       error instanceof Error ? error : new Error(String(error)),
