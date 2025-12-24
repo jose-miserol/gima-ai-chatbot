@@ -5,7 +5,7 @@ import { google } from '@ai-sdk/google';
 import { INVENTORY_PROMPT } from '@/app/config';
 import { MAX_IMAGE_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-import { getBase64Size } from './utils';
+import { getBase64Size } from '@/app/utils/base64';
 
 /**
  * Analiza una imagen de una pieza industrial para inventario.
@@ -15,6 +15,14 @@ import { getBase64Size } from './utils';
  * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
  * @param customPrompt - Prompt personalizado del usuario (opcional, usa INVENTORY_PROMPT por defecto)
  * @returns Descripción detallada generada por la IA
+ *
+ * @example
+ * ```typescript
+ * const result = await analyzePartImage("data:image/jpeg;base64,...");
+ * if (result.success) {
+ *   console.log("Descripción:", result.text);
+ * }
+ * ```
  */
 export async function analyzePartImage(
   imageDataUrl: string,

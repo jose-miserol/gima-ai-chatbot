@@ -5,7 +5,7 @@ import { google } from '@ai-sdk/google';
 import { VOICE_PROMPT } from '@/app/config';
 import { MAX_AUDIO_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-import { getBase64Size } from './utils';
+import { getBase64Size } from '@/app/utils/base64';
 import { WORK_ORDER_VOICE_PROMPT } from '@/app/config/voice-command-prompt';
 import { VoiceWorkOrderCommandSchema } from '@/app/types/voice-commands';
 
@@ -16,6 +16,14 @@ import { VoiceWorkOrderCommandSchema } from '@/app/types/voice-commands';
  * @param audioDataUrl - String codificado en base64 del audio (data:audio/...)
  * @param mimeType - Tipo MIME del audio (default: 'audio/webm' para backward compatibility)
  * @returns Objeto con el texto transcrito y estado de éxito
+ *
+ * @example
+ * ```typescript
+ * const result = await transcribeAudio("data:audio/webm;base64,...");
+ * if (result.success) {
+ *   console.log("Transcripción:", result.text);
+ * }
+ * ```
  */
 export async function transcribeAudio(
   audioDataUrl: string,
