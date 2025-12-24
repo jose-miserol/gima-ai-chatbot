@@ -1,82 +1,203 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChatService, RateLimitError, ValidationError } from '../chat-service';
-import { MockAiSdk } from '@/tests/mocks/ai-sdk';
 
-// Mock dependencies
-const mockLogger = {
+// Mock del módulo 'ai' ANTES de importar ChatService
+vi.mock('ai', () => ({
+  streamText: vi.fn(),
+}));
+
+// Mock del módulo 'env' para evitar validación de API keys
+vi.mock('@/app/config/env', () => ({
+  env: {
+    GROQ_API_KEY: 'gsk_test_mock_key_1234567890abcdef',
+    GOOGLE_GENERATIVE_AI_API_KEY: 'AIzaTestMockKey1234567890',
+    NODE_ENV: 'test',
+  },
+}));
+
+// Importar después de los mocks
+import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
+import type { Message } from '@/app/lib/schemas/chat';
+import { streamText } from 'ai';
+
+// Mocks con implementaciones fake
+const createMockLogger = () => ({
   error: vi.fn(),
   info: vi.fn(),
   warn: vi.fn(),
   debug: vi.fn(),
-} as any;
+});
 
-const mockRateLimiter = {
-  checkLimit: vi.fn(),
-  getRetryAfter: vi.fn(),
-} as any;
+const createMockRateLimiter = () => ({
+  checkLimit: vi.fn(() => true),
+  getRetryAfter: vi.fn(() => 5000),
+});
 
-const mockModelProvider = vi.fn();
-
-describe.skip('ChatService', () => {
+describe('ChatService', () => {
   let service: ChatService;
+  let mockLogger: ReturnType<typeof createMockLogger>;
+  let mockRateLimiter: ReturnType<typeof createMockRateLimiter>;
+  let mockModelProvider: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Recrear mocks para aislamiento total
+    mockLogger = createMockLogger();
+    mockRateLimiter = createMockRateLimiter();
+    mockModelProvider = vi.fn(() => ({
+      provider: 'groq',
+      modelId: 'llama-3.3-70b-versatile',
+    }));
+
     service = new ChatService({
-      logger: mockLogger,
-      rateLimiter: mockRateLimiter,
-      modelProvider: mockModelProvider,
+      logger: mockLogger as any,
+      rateLimiter: mockRateLimiter as any,
+      modelProvider: mockModelProvider as any,
     });
 
-    // Default mocks
-    mockRateLimiter.checkLimit.mockReturnValue(true);
-    // Mock the model provider to return a dummy model object
-    mockModelProvider.mockReturnValue({ provider: 'test', modelId: 'test-model' });
-
-    // Mock streamText via factory or direct module mock if possible
-    // Since streamText is imported in ChatService, we must mock 'ai' module
+    // Mock streamText con respuesta válida
+    (streamText as ReturnType<typeof vi.fn>).mockResolvedValue({
+      toUIMessageStreamResponse: vi.fn(() => new Response('mock stream')),
+    });
   });
 
-  // We need to mock 'ai' module at the top level
-  vi.mock('ai', () => ({
-    streamText: vi.fn((args) => MockAiSdk.streamText(args)),
-  }));
+  describe('Rate Limiting', () => {
+    it('debe lanzar RateLimitError cuando límite es alcanzado', async () => {
+      mockRateLimiter.checkLimit.mockReturnValue(false);
+      mockRateLimiter.getRetryAfter.mockReturnValue(5000);
 
-  it('should throw RateLimitError if limit is reached', async () => {
-    mockRateLimiter.checkLimit.mockReturnValue(false);
-    mockRateLimiter.getRetryAfter.mockReturnValue(5000);
+      const validBody = createValidRequestBody();
 
-    await expect(service.processMessage({}, '127.0.0.1')).rejects.toThrow(RateLimitError);
+      await expect(service.processMessage(validBody, '192.168.1.1')).rejects.toThrow(
+        RateLimitError
+      );
 
-    expect(mockRateLimiter.checkLimit).toHaveBeenCalledWith('127.0.0.1');
+      expect(mockRateLimiter.checkLimit).toHaveBeenCalledWith('192.168.1.1');
+    });
+
+    it('debe incluir retryAfter en error de rate limit', async () => {
+      mockRateLimiter.checkLimit.mockReturnValue(false);
+      mockRateLimiter.getRetryAfter.mockReturnValue(5000);
+
+      try {
+        await service.processMessage(createValidRequestBody(), '192.168.1.1');
+        expect.fail('Debería haber lanzado RateLimitError');
+      } catch (error) {
+        expect(error).toBeInstanceOf(RateLimitError);
+        expect((error as RateLimitError).retryAfter).toBe(5);
+      }
+    });
   });
 
-  it('should throw ValidationError if body is invalid', async () => {
-    await expect(service.processMessage({ invalid: 'field' }, '127.0.0.1')).rejects.toThrow(
-      ValidationError
-    );
+  describe('Validación de Input', () => {
+    it('debe lanzar ValidationError si messages no es array', async () => {
+      const invalidBody = {
+        messages: 'not an array', // Inválido
+        model: 'llama-3.3-70b-versatile',
+      };
+
+      await expect(service.processMessage(invalidBody, '192.168.1.1')).rejects.toThrow(
+        ValidationError
+      );
+    });
+
+    it('debe lanzar ValidationError si mensaje sin role', async () => {
+      const invalidBody = {
+        messages: [
+          { content: 'hello' }, // Falta 'role'
+        ],
+        model: 'llama-3.3-70b-versatile',
+      };
+
+      await expect(service.processMessage(invalidBody, '192.168.1.1')).rejects.toThrow(
+        ValidationError
+      );
+    });
+
+    it('debe aceptar modelo válido', async () => {
+      const validBody = createValidRequestBody();
+
+      await service.processMessage(validBody, '192.168.1.1');
+
+      expect(mockModelProvider).toHaveBeenCalledWith('llama-3.3-70b-versatile');
+    });
   });
 
-  it('should call streamText with correct parameters on valid request', async () => {
-    const validBody = {
-      messages: [{ role: 'user', content: 'hello' }],
-      model: 'llama-3.3-70b-versatile',
-    };
+  describe('Procesamiento de Mensajes', () => {
+    it('debe llamar streamText con parámetros correctos', async () => {
+      const validBody = createValidRequestBody();
 
-    // Mock streamText result
-    const mockResult = { toUIMessageStreamResponse: vi.fn() };
-    MockAiSdk.streamText.mockReturnValue(mockResult);
+      await service.processMessage(validBody, '192.168.1.1');
 
-    const result = await service.processMessage(validBody, '127.0.0.1');
+      expect(streamText).toHaveBeenCalledWith(
+        expect.objectContaining({
+          system: expect.any(String),
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              role: 'user',
+              content: 'hello',
+            }),
+          ]),
+        })
+      );
+    });
 
-    expect(result).toBe(mockResult);
-    expect(MockAiSdk.streamText).toHaveBeenCalledWith(
-      expect.objectContaining({
-        system: expect.any(String),
-        messages: expect.arrayContaining([
-          expect.objectContaining({ role: 'user', content: 'hello' }),
-        ]),
-      })
-    );
+    it('debe incluir system prompt en llamada a AI', async () => {
+      const validBody = createValidRequestBody();
+
+      await service.processMessage(validBody, '192.168.1.1');
+
+      const callArgs = (streamText as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(callArgs.system).toContain('GIMA');
+      expect(callArgs.system).toContain('mantenimiento');
+    });
+
+    it('debe retornar el resultado de streamText', async () => {
+      const mockStreamResult = {
+        toUIMessageStreamResponse: vi.fn(() => new Response('mock stream')),
+      };
+      (streamText as ReturnType<typeof vi.fn>).mockReturnValue(mockStreamResult);
+
+      const result = await service.processMessage(createValidRequestBody(), '192.168.1.1');
+
+      expect(result).toBe(mockStreamResult);
+    });
+  });
+
+  describe('Manejo de Errores', () => {
+    it('debe manejar error de streamText', async () => {
+      const streamError = new Error('GROQ API timeout');
+      (streamText as ReturnType<typeof vi.fn>).mockRejectedValue(streamError);
+
+      await expect(service.processMessage(createValidRequestBody(), '192.168.1.1')).rejects.toThrow(
+        'GROQ API timeout'
+      );
+    });
   });
 });
+
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Crea un cuerpo de request válido según chatRequestSchema
+ */
+function createValidRequestBody(): {
+  messages: Message[];
+  model: string;
+} {
+  return {
+    messages: [
+      {
+        id: 'msg-123',
+        role: 'user',
+        content: 'hello',
+        parts: [],
+        // @ts-expect-error - Valid date string, preprocess handles conversion
+        createdAt: new Date().toISOString(),
+      },
+    ],
+    model: 'llama-3.3-70b-versatile',
+  };
+}

@@ -40,9 +40,9 @@ export class ChatService {
     }
 
     // 2. Validation
+    // console.log('RawBody:', JSON.stringify(rawBody, null, 2));
     const parseResult = chatRequestSchema.safeParse(rawBody);
     if (!parseResult.success) {
-      console.error(JSON.stringify(parseResult.error.issues, null, 2));
       throw new ValidationError(parseResult.error.issues);
     }
 
