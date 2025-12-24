@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
+import { executeVoiceCommand } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
 import { ConfirmDialog } from '@/app/components/shared/confirm-dialog';
 import { ChatHeader } from './chat-header';
@@ -57,6 +58,7 @@ export function Chat() {
   const [input, setInput] = useState('');
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [isCommandMode, setIsCommandMode] = useState(false);
+  const [detectedCommand, setDetectedCommand] = useState<VoiceWorkOrderCommand | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Integraciones
@@ -91,6 +93,7 @@ export function Chat() {
     isProcessing,
     isSupported,
     mode,
+    transcript,
     toggleListening,
     error: voiceError,
   } = useVoiceInput({ onTranscript: updateTextareaValue });
@@ -145,6 +148,36 @@ export function Chat() {
     canSubmit: Boolean(input.trim() && canSend),
     isListening,
   });
+
+  // Auto-detect voice commands
+  const prevIsListening = useRef(false);
+  const prevIsProcessing = useRef(false);
+
+  useEffect(() => {
+    const isGeminiFinish = prevIsProcessing.current && !isProcessing;
+    const isNativeFinish = prevIsListening.current && !isListening && !isProcessing;
+
+    // Use transcript directly to avoid state sync issues
+    if ((isGeminiFinish || isNativeFinish) && transcript.trim().length > 5) {
+      const checkCommand = async () => {
+        try {
+          // Check if transcript is a command
+          const result = await executeVoiceCommand(transcript, { minConfidence: 0.6 });
+
+          if (result.success && result.command) {
+            setDetectedCommand(result.command as VoiceWorkOrderCommand);
+          }
+        } catch (error) {
+          console.error('Error detecting voice command:', error);
+        }
+      };
+
+      checkCommand();
+    }
+
+    prevIsListening.current = isListening;
+    prevIsProcessing.current = isProcessing;
+  }, [isListening, isProcessing, transcript]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
@@ -205,6 +238,45 @@ export function Chat() {
           >
             🎤 Usar comando de voz para órdenes de trabajo
           </button>
+        )}
+
+        {/* Auto-detected Command Alert */}
+        {detectedCommand && (
+          <div className="absolute bottom-24 left-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in">
+            <div className="bg-background border border-border shadow-lg rounded-lg p-4 flex items-start gap-4">
+              <div className="flex-1">
+                <h4 className="font-medium text-sm mb-1">Comando detectado</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {detectedCommand.action}{' '}
+                  {detectedCommand.equipment ? `- ${detectedCommand.equipment}` : ''}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      handleVoiceCommand(detectedCommand);
+                      setDetectedCommand(null);
+                      setInput('');
+                    }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+                  >
+                    Ejecutar
+                  </button>
+                  <button
+                    onClick={() => setDetectedCommand(null)}
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+                  >
+                    Ignorar
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => setDetectedCommand(null)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Input Area */}
