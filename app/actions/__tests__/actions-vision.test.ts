@@ -17,7 +17,6 @@ describe('Server Action: Vision (analyzePartImage)', () => {
     vi.clearAllMocks();
   });
 
-  const validBase64 = 'data:image/jpeg;base64,validBase64String';
   // Small fake base64
   const smallBase64 =
     'data:image/jpeg;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
