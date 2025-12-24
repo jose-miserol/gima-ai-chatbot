@@ -17,8 +17,17 @@ const envSchema = z.object({
     .string()
     .min(1, 'Google API Key es requerida')
     .startsWith('AIza', 'Google API key debe empezar con "AIza"'),
+
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+
+  // Backend Integration
+  NEXT_PUBLIC_BACKEND_API_URL: z.string().url().optional().or(z.literal('')),
+  BACKEND_API_KEY: z.string().optional().or(z.literal('')),
+  NEXT_PUBLIC_DEMO_MODE: z
+    .string()
+    .default('false')
+    .transform((val) => val === 'true'),
 });
 
 /**

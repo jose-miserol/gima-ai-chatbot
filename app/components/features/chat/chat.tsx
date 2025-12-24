@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
+import { useWorkOrderCommands } from '@/app/hooks/use-work-order-commands';
 import { executeVoiceCommand } from '@/app/actions';
 import { useToast } from '@/app/components/ui/toast';
 import { ConfirmDialog } from '@/app/components/shared/confirm-dialog';
@@ -73,6 +74,9 @@ export function Chat() {
     setMessages,
   } = usePersistentChat({ storageKey: 'gima-chat-v1' });
 
+  // Hook de ejecución de Work Orders
+  const { executeCommand } = useWorkOrderCommands();
+
   // Voice input
   const updateTextareaValue = useCallback((value: string) => {
     const textarea = textareaRef.current;
@@ -123,14 +127,18 @@ export function Chat() {
   // Voice command handler
   const handleVoiceCommand = useCallback(
     async (command: VoiceWorkOrderCommand) => {
-      // TODO: Connect to backend work order creation
-      toast.info(
-        'Comando recibido',
-        `Acción: ${command.action}${command.equipment ? ` - Equipo: ${command.equipment}` : ''}`
-      );
-      setIsCommandMode(false);
+      try {
+        const result = await executeCommand(command);
+        toast.success(result.message, `ID: ${result.resourceId}`);
+        setIsCommandMode(false);
+      } catch (err) {
+        toast.error(
+          'Error al crear orden',
+          err instanceof Error ? err.message : 'Error desconocido'
+        );
+      }
     },
-    [toast]
+    [executeCommand, toast]
   );
 
   // Keyboard shortcuts
@@ -223,7 +231,10 @@ export function Chat() {
               </button>
             </div>
             <VoiceCommandMode
-              onCommandConfirmed={handleVoiceCommand}
+              onCommandExecuted={(result) => {
+                toast.success('Orden creada', result.message);
+                setIsCommandMode(false);
+              }}
               onError={(err) => toast.error('Error', err)}
               minConfidence={0.7}
             />

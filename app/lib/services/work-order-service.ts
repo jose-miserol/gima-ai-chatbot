@@ -130,6 +130,45 @@ export class WorkOrderService {
       equipment: command.equipment,
     });
 
+    // 🎭 MODO DEMO: Simula respuestas sin backend real
+    if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+      this.deps.loggerImpl.info('Demo mode enabled - simulating backend response', {
+        correlationId,
+      });
+
+      // Simular delay de red (1.5-2.5 segundos)
+      await this.sleep(1500 + Math.random() * 1000);
+
+      const duration = this.getCurrentTime() - startTime;
+
+      // Simular éxito (90% de las veces) o error (10%)
+      if (Math.random() > 0.1) {
+        const demoResult: WorkOrderExecutionResult = {
+          success: true,
+          message: `Orden de trabajo creada exitosamente (Demo)`,
+          resourceId: `demo-wo-${Date.now()}`,
+          resourceUrl: `/work-orders/demo-wo-${Date.now()}`,
+          metadata: {
+            duration,
+            demo: true,
+            equipment: command.equipment,
+            priority: command.priority,
+          },
+        };
+
+        this.deps.loggerImpl.info('WorkOrder created successfully (Demo)', {
+          correlationId,
+          resourceId: demoResult.resourceId,
+          duration,
+        });
+
+        return demoResult;
+      } else {
+        // Simular error ocasional
+        throw new ServiceUnavailableError('Error simulado en modo demo (10% probabilidad)');
+      }
+    }
+
     try {
       // Validar y sanitizar input
       const payload = sanitizeWorkOrderCommand(command, context.userId);
@@ -465,9 +504,11 @@ let _workOrderServiceInstance: WorkOrderService | null = null;
  */
 export function getWorkOrderService(): WorkOrderService {
   if (!_workOrderServiceInstance) {
+    const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
     _workOrderServiceInstance = new WorkOrderService({
-      baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL || '',
-      apiKey: process.env.BACKEND_API_KEY || '',
+      baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL || (isDemo ? 'https://demo.local' : ''),
+      apiKey: process.env.BACKEND_API_KEY || (isDemo ? 'demo-key' : ''),
       timeoutMs: 30000,
       maxRetries: 3,
     });
