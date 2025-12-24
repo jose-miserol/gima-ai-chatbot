@@ -1,5 +1,5 @@
 import { createGroq } from '@ai-sdk/groq';
-import { streamText, convertToModelMessages } from 'ai';
+import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
 import { SYSTEM_PROMPT, STREAM_CONFIG } from '@/app/config';
 import { env } from '@/app/config/env';
@@ -7,7 +7,7 @@ import { chatRateLimiter } from '@/app/lib/rate-limiter';
 import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
 import { chatRequestSchema } from '@/app/lib/schemas';
-import { sanitizeMessages } from '@/app/components/features/chat/utils';
+import { sanitizeForModel } from '@/app/components/features/chat/utils';
 import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
 
 // ===========================================
@@ -128,12 +128,13 @@ export async function POST(req: Request): Promise<NextResponse | Response> {
     const { messages: rawMessages, model } = parseResult.data;
 
     // 4. Sanitize messages for AI processing
-    const sanitizedMessages = sanitizeMessages(rawMessages);
+    // sanitizeForModel retorna formato simple { role, content } que GROQ acepta
+    const messages = sanitizeForModel(rawMessages);
 
     // 5. Stream AI response
     const result = streamText({
       model: groq(model),
-      messages: convertToModelMessages(sanitizedMessages),
+      messages,
       system: SYSTEM_PROMPT,
     });
 

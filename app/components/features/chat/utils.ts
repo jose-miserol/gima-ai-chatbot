@@ -79,10 +79,37 @@ export function sanitizeMessages(rawMessages: Message[]): UIMessage[] {
       id: msg.id || crypto.randomUUID(),
       role: msg.role,
       content: textContent,
-      parts: msg.parts,
+      parts: msg.parts || [],
       createdAt: msg.createdAt,
     } as UIMessage;
   });
+}
+
+/**
+ * Tipo para mensajes compatibles con el modelo AI
+ * Formato simple que GROQ y otros providers aceptan
+ */
+export interface CoreMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+/**
+ * Sanitiza mensajes para uso directo con streamText/generateText
+ *
+ * Retorna un array simple de { role, content } que todos los providers aceptan.
+ * Filtra mensajes vacíos automáticamente.
+ *
+ * @param rawMessages - Mensajes del cliente
+ * @returns Array de mensajes en formato CoreMessage
+ */
+export function sanitizeForModel(rawMessages: Message[]): CoreMessage[] {
+  return rawMessages
+    .map((msg) => ({
+      role: msg.role,
+      content: extractTextContent(msg.content, msg.parts),
+    }))
+    .filter((msg) => msg.content.trim().length > 0);
 }
 
 /**
