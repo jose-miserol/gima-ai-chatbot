@@ -79,15 +79,6 @@ export function FeatureGuard({
 }
 
 /**
- * Variante del FeatureGuard que renderiza solo en servidor
- * Útil para evitar flash de contenido en cliente
- */
-interface ServerFeatureGuardProps extends FeatureGuardProps {
-  /** Fuerza rendering solo en servidor */
-  serverOnly?: boolean;
-}
-
-/**
  * Hook personalizado para verificar feature flags
  * Útil cuando no quieres usar el componente guard
  *

@@ -248,6 +248,8 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
 
   return {
     ...chat,
+    sendMessage: (chat as any).append, // Type assertion to bypass incorrect SDK typing
+    regenerate: (chat as any).reload, // Type assertion to bypass incorrect SDK typing
     visionResponse,
     setVisionResponse,
     clearHistory,

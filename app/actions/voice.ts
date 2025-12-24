@@ -2,24 +2,12 @@
 
 import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { VOICE_PROMPT, INVENTORY_PROMPT } from '@/app/config';
-import {
-  MAX_AUDIO_SIZE_MB,
-  MAX_IMAGE_SIZE_MB,
-  MAX_PDF_SIZE_MB,
-  bytesToMB,
-} from '@/app/config/limits';
+import { VOICE_PROMPT } from '@/app/config';
+import { MAX_AUDIO_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-
-/**
- * Calcula el tamaño aproximado de un string base64 en bytes
- */
-function getBase64Size(base64: string): number {
-  // Remover data URL prefix si existe
-  const cleanBase64 = base64.split('base64,').pop() || base64;
-  // Cada carácter base64 representa 6 bits, pero con padding, ~75% del tamaño string
-  return (cleanBase64.length * 3) / 4;
-}
+import { getBase64Size } from './utils';
+import { WORK_ORDER_VOICE_PROMPT } from '@/app/config/voice-command-prompt';
+import { VoiceWorkOrderCommandSchema } from '@/app/types/voice-commands';
 
 /**
  * Transcribe un archivo de audio usando el modelo Gemini Flash Lite.
@@ -93,136 +81,6 @@ export async function transcribeAudio(
   }
 }
 
-// Analyze industrial part image for inventory
-/**
- * Analiza una imagen de una pieza industrial para inventario.
- * Utiliza Gemini Vision para identificar, describir y evaluar el estado de la pieza.
- *
- * @param imageDataUrl - String codificado en base64 de la imagen
- * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
- * @param customPrompt - Prompt personalizado del usuario (opcional, usa INVENTORY_PROMPT por defecto)
- * @returns Descripción detallada generada por la IA
- */
-export async function analyzePartImage(
-  imageDataUrl: string,
-  mediaType: string = 'image/jpeg',
-  customPrompt?: string
-): Promise<{ text: string; success: boolean; error?: string }> {
-  try {
-    const base64Content = imageDataUrl.includes('base64,')
-      ? imageDataUrl.split('base64,').pop() || ''
-      : imageDataUrl;
-
-    if (!base64Content) throw new Error('Imagen vacía');
-
-    // Validar tamaño de la imagen
-    const sizeInBytes = getBase64Size(base64Content);
-    const sizeInMB = bytesToMB(sizeInBytes);
-
-    if (sizeInMB > MAX_IMAGE_SIZE_MB) {
-      throw new Error(
-        `Imagen demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_IMAGE_SIZE_MB}MB`
-      );
-    }
-
-    const result = await generateText({
-      model: google('gemini-2.5-flash'),
-      temperature: 0.2, // Un poco más de creatividad para descripciones
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: customPrompt || INVENTORY_PROMPT,
-            },
-            {
-              type: 'file',
-              data: base64Content,
-              mediaType: mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-            },
-          ],
-        },
-      ],
-    });
-
-    return { text: result.text, success: true };
-  } catch (error: unknown) {
-    logger.error(
-      'Error análisis de imagen',
-      error instanceof Error ? error : new Error(String(error)),
-      { component: 'actions', action: 'analyzePartImage' }
-    );
-    const errorMessage = error instanceof Error ? error.message : 'Error desconocido de visión';
-    return { text: '', success: false, error: errorMessage };
-  }
-}
-
-/**
- * Analiza un documento PDF.
- * Utiliza Gemini para leer y analizar el contenido del documento.
- *
- * @param pdfDataUrl - String codificado en base64 del PDF
- * @param prompt - Prompt para el análisis (opcional)
- * @returns Análisis generado por la IA
- */
-export async function analyzePdf(
-  pdfDataUrl: string,
-  prompt?: string
-): Promise<{ text: string; success: boolean; error?: string }> {
-  try {
-    const base64Content = pdfDataUrl.includes('base64,')
-      ? pdfDataUrl.split('base64,').pop() || ''
-      : pdfDataUrl;
-
-    if (!base64Content) throw new Error('PDF vacío');
-
-    // Validar tamaño del PDF
-    const sizeInBytes = getBase64Size(base64Content);
-    const sizeInMB = bytesToMB(sizeInBytes);
-
-    if (sizeInMB > MAX_PDF_SIZE_MB) {
-      throw new Error(
-        `PDF demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_PDF_SIZE_MB}MB`
-      );
-    }
-
-    const result = await generateText({
-      model: google('gemini-2.5-flash'), // Flash soporta hasta 1M tokens, ideal para PDFs
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: prompt || 'Analiza este documento PDF y resume sus puntos clave.',
-            },
-            {
-              type: 'file',
-              data: base64Content,
-              mediaType: 'application/pdf',
-            },
-          ],
-        },
-      ],
-    });
-
-    return { text: result.text, success: true };
-  } catch (error: unknown) {
-    logger.error(
-      'Error análisis de PDF',
-      error instanceof Error ? error : new Error(String(error)),
-      {
-        component: 'actions',
-        action: 'analyzePdf',
-      }
-    );
-    const errorMessage =
-      error instanceof Error ? error.message : 'Error desconocido al analizar PDF';
-    return { text: '', success: false, error: errorMessage };
-  }
-}
-
 /**
  * Ejecuta un comando de voz parseando la transcripción y validando el resultado.
  * Usa Gemini para interpretar el comando y Zod para validar la estructura.
@@ -263,9 +121,6 @@ export async function executeVoiceCommand(
       recoverable?: boolean;
     }
 > {
-  const { WORK_ORDER_VOICE_PROMPT } = await import('@/app/config/voice-command-prompt');
-  const { VoiceWorkOrderCommandSchema } = await import('@/app/types/voice-commands');
-
   try {
     if (!transcript || transcript.trim().length < 3) {
       return {

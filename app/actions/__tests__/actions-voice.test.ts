@@ -22,7 +22,7 @@ vi.mock('@/app/config/voice-command-prompt', () => ({
 
 // Import después de los mocks
 import { generateText } from 'ai';
-import { executeVoiceCommand } from '../actions';
+import { executeVoiceCommand } from '../voice';
 
 const mockGenerateText = vi.mocked(generateText);
 
