@@ -19,7 +19,8 @@
 9. [Testing](#testing)
 10. [Configuración y Feature Flags](#configuración-y-feature-flags)
 11. [Plantillas y Herramientas](#plantillas-y-herramientas)
-12. [Criterios de Calidad](#criterios-de-calidad)
+12. [Testing y Calidad de Código](#testing-y-calidad-de-código)
+13. [Criterios de Calidad](#criterios-de-calidad)
 
 ---
 
@@ -1598,6 +1599,535 @@ EOF
 echo "export * from './${FEATURE_NAME^}';" > "${BASE_DIR}/index.ts"
 
 echo "✅ Feature '${FEATURE_NAME}' creado con estructura estándar"
+```
+
+---
+
+## 13. Testing y Calidad de Código
+
+### 13.1 Filosofía de Testing
+
+**Principio Fundamental**: Los tests son código de producción que valida contratos. Deben cumplir los mismos estándares de calidad que el código que prueban.
+
+**Reglas No Negociables**:
+
+- **Cada test debe fallar antes de pasar**: Si no falla primero, no está testeando nada.
+- **Tests > Cobertura**: Un test con 100% de cobertura que no valida comportamiento es código muerto.
+- **No mockear lo que no controlas**: Mockear `fetch` está bien; mockear `streamText` del AI SDK es un error de arquitectura.
+
+---
+
+### 13.2 Principios FIRST en Implementación
+
+#### 13.2.1 Fast (Rápidos) - Límites de Tiempo
+
+**Implementación Obligatoria**:
+
+```typescript
+// tests/config/vitest.setup.ts
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.runOnlyPendingTimers();
+  vi.useRealTimers();
+});
+
+// tests/hooks/use-persistent-chat.test.ts
+it('debe debounce guardado en localStorage', async () => {
+  const { result } = renderHook(() => usePersistentChat({ debounceMs: 300 }));
+
+  act(() => {
+    result.current.handleInputChange({ target: { value: 'Hola' } } as any);
+  });
+
+  vi.advanceTimersByTime(300); // Exacto, no aproximado
+  await vi.waitFor(() => {
+    expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+  });
+});
+```
+
+**Criterio de Rechazo**: Tests que tardan > 500ms sin usar `vi.useFakeTimers()` son rechazados automáticamente.
+
+#### 13.2.2 Independent (Independientes) - Aislamiento Total
+
+**Implementación Obligatoria**:
+
+```typescript
+// tests/lib/services/chat-service.test.ts
+describe('ChatService', () => {
+  beforeEach(() => {
+    vi.resetAllMocks(); // Limpia TODO: fetch, logger, crypto
+    vi.stubGlobal('fetch', vi.fn());
+    vi.stubGlobal('crypto', {
+      randomUUID: vi.fn(() => 'mocked-uuid-123'),
+    });
+  });
+
+  it('debe generar UUID consistente', async () => {
+    const service = new ChatService({ apiKey: 'test-key', logger: mockLogger });
+    await service.sendMessage([{ role: 'user', content: 'Hola' }]);
+
+    expect(crypto.randomUUID).toHaveReturnedWith('mocked-uuid-123');
+  });
+});
+```
+
+**Criterio de Rechazo**: Tests que comparten estado entre instancias o no limpian mocks son rechazados automáticamente.
+
+#### 13.2.3 Repeatable (Repetibles) - Determinismo Garantizado
+
+**Implementación Obligatoria**:
+
+```typescript
+// tests/lib/utils/chat-utils.test.ts
+describe('sanitizeMessages', () => {
+  it('debe producir salida determinista', () => {
+    const input = [
+      { id: '1', role: 'user', content: 'Hola', parts: [], createdAt: new Date('2024-01-01') },
+    ];
+
+    const result1 = sanitizeMessages(input);
+    const result2 = sanitizeMessages(input);
+
+    expect(result1).toEqual(result2); // Deep equality
+    expect(result1[0].id).toBe('1'); // No regenera IDs si ya existen
+  });
+});
+```
+
+**Criterio de Rechazo**: Uso de `Date.now()` o `Math.random()` sin mockeo en lógica de negocio.
+
+#### 13.2.4 Self-Validating (Auto-validables) - No Console.log
+
+**Implementación Obligatoria**:
+
+```typescript
+// tests/hooks/use-persistent-chat.test.ts
+it('debe manejar error de localStorage', () => {
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('QuotaExceededError');
+  });
+
+  const { result } = renderHook(() => usePersistentChat());
+
+  act(() => {
+    result.current.handleInputChange({ target: { value: 'Hola' } } as any);
+  });
+
+  vi.advanceTimersByTime(500);
+
+  expect(consoleError).toHaveBeenCalledWith(
+    expect.stringContaining('Error saving chat history'),
+    expect.any(Error)
+  );
+
+  consoleError.mockRestore();
+});
+```
+
+**Criterio de Rechazo**: Presencia de `console.log()` o comentarios que requieren "verificar manualmente".
+
+#### 13.2.5 Timely (Oportunos) - Test-First en Features Nuevas
+
+**Implementación Obligatoria**:
+Para cualquier nueva feature en `app/components/features/chat/`:
+
+1. **Crear test primero** (debe fallar):
+
+```typescript
+// app/components/features/chat-voice/__tests__/chat-voice.test.ts
+it('debe transcribir audio a texto', async () => {
+  const { result } = renderHook(() => useVoiceInput());
+
+  await act(async () => {
+    await result.current.startRecording();
+  });
+
+  // Esto fallará inicialmente porque useVoiceInput no existe
+  expect(result.current.transcript).toBe('Hola mundo');
+});
+```
+
+2. **Implementar mínimo para pasar test**:
+
+```typescript
+// app/components/features/chat-voice/hooks/use-voice-input.ts
+export function useVoiceInput() {
+  const [transcript, setTranscript] = useState('');
+
+  const startRecording = async () => {
+    setTranscript('Hola mundo'); // Mínimo viable
+  };
+
+  return { transcript, startRecording };
+}
+```
+
+3. **Refactor con tests verdes**:
+
+```typescript
+// Implementación real con Web Speech API
+```
+
+**Criterio de Rechazo**: PRs sin tests que fallen primero son rechazados automáticamente.
+
+---
+
+### 13.3 Arquitectura de Testing: Diseño de Interfaces
+
+#### 13.3.1 Interfaces Explícitas sobre Tipos Implícitos
+
+**Implementación Obligatoria para `BaseService`**:
+
+```typescript
+// lib/services/base-service.ts
+export interface ServiceConfig {
+  baseUrl: string;
+  defaultHeaders: Record<string, string>;
+  timeoutMs: number;
+  logger: Logger;
+}
+
+export interface ServiceDependencies {
+  fetchImpl?: typeof fetch;
+  cryptoImpl?: { randomUUID: () => string };
+}
+
+/**
+ * BaseService - Clase base abstracta para todos los servicios
+ *
+ * Interfaz pura que expone TODO para testing.
+ */
+export abstract class BaseService {
+  constructor(
+    protected config: ServiceConfig,
+    protected deps: ServiceDependencies = {}
+  ) {
+    this.fetch = deps.fetchImpl || fetch;
+    this.crypto = deps.cryptoImpl || crypto;
+  }
+
+  protected abstract getEndpoint(): string;
+}
+```
+
+**Test que valida contrato**:
+
+```typescript
+// tests/lib/services/base-service.test.ts
+describe('BaseService', () => {
+  class TestService extends BaseService {
+    getEndpoint() {
+      return '/test';
+    }
+  }
+
+  it('debe permitir inyección de fetch', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: 'test' }),
+    });
+
+    const service = new TestService(
+      { baseUrl: 'https://api.test.com', defaultHeaders: {}, timeoutMs: 30000, logger: mockLogger },
+      { fetchImpl: mockFetch }
+    );
+
+    await service.request('/test');
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.test.com/test',
+      expect.objectContaining({ method: 'GET' })
+    );
+  });
+});
+```
+
+#### 13.3.2 Inyección de Dependencias en Hooks
+
+**Implementación Obligatoria para `usePersistentChat`**:
+
+```typescript
+// hooks/use-persistent-chat.ts
+export interface PersistentChatDependencies {
+  storage: Storage;
+  logger: Logger;
+  crypto: { randomUUID: () => string };
+}
+
+export function usePersistentChat(
+  options: UsePersistentChatOptions = {},
+  deps: PersistentChatDependencies = {
+    storage: typeof window !== 'undefined' ? localStorage : ({} as Storage),
+    logger,
+    crypto,
+  }
+) {
+  // Implementación usando deps en lugar de globals
+}
+```
+
+**Test con inyección completa**:
+
+```typescript
+// tests/hooks/use-persistent-chat.test.ts
+it('debe manejar storage quota exceeded', async () => {
+  const mockStorage = {
+    getItem: vi.fn(),
+    setItem: vi.fn(() => {
+      throw new Error('QuotaExceededError');
+    }),
+    removeItem: vi.fn(),
+  };
+
+  const { result } = renderHook(() =>
+    usePersistentChat(
+      { storageKey: 'test' },
+      { storage: mockStorage, logger: mockLogger, crypto: { randomUUID: () => 'uuid' } }
+    )
+  );
+
+  act(() => {
+    result.current.handleInputChange({ target: { value: 'Hola' } } as any);
+  });
+
+  vi.advanceTimersByTime(500);
+
+  expect(mockLogger.error).toHaveBeenCalledWith('Error saving chat history', expect.any(Error));
+});
+```
+
+---
+
+### 13.4 Testing de Integración: Contratos Reales
+
+#### 13.4.1 Tests de Contrato sobre Mocks
+
+**Implementación Obligatoria para `route.ts`**:
+
+```typescript
+// app/api/chat/route.ts
+export async function POST(req: Request): Promise<Response> {
+  // ... validación ...
+
+  // Extraer lógica pura para testear sin HTTP
+  const handler = createChatHandler({ groq, logger, rateLimiter });
+  return handler(rawBody, clientIP);
+}
+
+// Función pura, testeable sin Request/Response
+export function createChatHandler(deps: {
+  groq: ReturnType<typeof createGroq>;
+  logger: Logger;
+  rateLimiter: RateLimiter;
+}) {
+  return async (rawBody: unknown, clientIP: string) => {
+    // ... lógica completa ...
+    const result = streamText({
+      model: deps.groq(model),
+      messages: validMessages,
+      system: SYSTEM_PROMPT,
+    });
+
+    return result.toUIMessageStreamResponse({
+      sendSources: STREAM_CONFIG.sendSources,
+      sendReasoning: STREAM_CONFIG.sendReasoning,
+    });
+  };
+}
+```
+
+**Test de integración real**:
+
+```typescript
+// tests/api/chat/handler.test.ts
+describe('createChatHandler', () => {
+  it('debe rechazar IP inválida', async () => {
+    const handler = createChatHandler({
+      groq: mockGroq,
+      logger: mockLogger,
+      rateLimiter: realRateLimiter,
+    });
+
+    const response = await handler({}, 'invalid-ip');
+    const data = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(data.error).toBe('Invalid client IP');
+  });
+
+  it('debe aplicar rate limiting por IP', async () => {
+    const handler = createChatHandler({
+      groq: mockGroq,
+      logger: mockLogger,
+      rateLimiter: realRateLimiter,
+    });
+
+    // 100 requests rápidas
+    const requests = Array.from({ length: 100 }, () => handler({ messages: [] }, '192.168.1.1'));
+
+    await Promise.all(requests);
+
+    // Request 101
+    const response = await handler({ messages: [] }, '192.168.1.1');
+    expect(response.status).toBe(429);
+  });
+});
+```
+
+#### 13.4.2 Tests de Estado Real con MSW
+
+**Implementación Obligatoria**:
+
+```typescript
+// tests/setup.msw.ts
+import { setupServer } from 'msw/node';
+import { http, HttpResponse, delay } from 'msw';
+
+export const server = setupServer(
+  // Mock GROQ API
+  http.post('https://api.groq.com/openai/v1/chat/completions', async ({ request }) => {
+    const body = await request.json();
+
+    // Validar contrato
+    if (!body.messages || !Array.isArray(body.messages)) {
+      return HttpResponse.json({ error: 'Invalid messages' }, { status: 400 });
+    }
+
+    // Simular delay realista
+    await delay(100);
+
+    return HttpResponse.json({
+      choices: [
+        {
+          message: { content: 'Respuesta mock' },
+          finish_reason: 'stop',
+        },
+      ],
+    });
+  })
+);
+
+// tests/hooks/use-persistent-chat.integration.test.ts
+describe('usePersistentChat - Integration', () => {
+  beforeAll(() => server.listen());
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
+
+  it('debe manejar error 429 de GROQ', async () => {
+    server.use(
+      http.post('https://api.groq.com/openai/v1/chat/completions', () => {
+        return HttpResponse.json({ error: 'Rate limited' }, { status: 429 });
+      })
+    );
+
+    const { result } = renderHook(() => usePersistentChat({ api: '/api/chat' }));
+
+    await act(async () => {
+      await result.current.handleSubmit(new Event('submit'));
+    });
+
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect(result.current.error.message).toContain('Rate limited');
+  });
+});
+```
+
+---
+
+### 13.5 Performance Testing: Límites Concretos
+
+#### 13.5.1 Implementación de Budgets de Performance
+
+```typescript
+// tests/performance/budgets.ts
+export const PERFORMANCE_BUDGETS = {
+  RENDER_MESSAGE: 2, // ms por mensaje
+  RENDER_CONVERSATION: 16, // ms total (60fps)
+  SANITIZE_MESSAGE: 0.5, // ms por mensaje
+  SERIALIZE_TO_STORAGE: 5, // ms total
+  DESERIALIZE_FROM_STORAGE: 3, // ms total
+} as const;
+
+// tests/performance/chat-render.test.ts
+describe('Chat Performance Budgets', () => {
+  const messages = Array.from({ length: 100 }, (_, i) => ({
+    id: `msg-${i}`,
+    role: i % 2 === 0 ? 'user' : 'assistant',
+    content: `Mensaje ${i} con texto largo para simular carga real`,
+    parts: [],
+    createdAt: new Date()
+  }));
+
+  it(`debe renderizar conversación en < ${PERFORMANCE_BUDGETS.RENDER_CONVERSATION}ms`, () => {
+    const start = performance.now();
+    render(<ChatConversation messages={messages} />);
+    const duration = performance.now() - start;
+
+    expect(duration).toBeLessThan(PERFORMANCE_BUDGETS.RENDER_CONVERSATION);
+  });
+
+  it(`debe sanitizar mensaje en < ${PERFORMANCE_BUDGETS.SANITIZE_MESSAGE}ms`, () => {
+    const rawMessage = {
+      id: '1',
+      role: 'user',
+      content: { text: 'Hola' }, // Formato legacy
+      parts: []
+    };
+
+    const start = performance.now();
+    sanitizeMessages([rawMessage]);
+    const duration = performance.now() - start;
+
+    expect(duration).toBeLessThan(PERFORMANCE_BUDGETS.SANITIZE_MESSAGE);
+  });
+});
+```
+
+#### 13.5.2 Implementación de Tests de Memoria
+
+```typescript
+// tests/performance/memory.test.ts
+import { getEventListenerCount } from 'tests/utils/dom';
+
+describe('Memory Leak Prevention', () => {
+  it('no debe leak event listeners en Chat', async () => {
+    const { unmount } = render(<Chat />);
+
+    const listenersBefore = getEventListenerCount(document);
+
+    // Interactuar
+    fireEvent.click(screen.getByRole('button', { name: /enviar/i }));
+
+    unmount();
+
+    // Forzar garbage collection
+    await vi.waitFor(() => {
+      const listenersAfter = getEventListenerCount(document);
+      expect(listenersAfter).toBe(listenersBefore);
+    });
+  });
+
+  it('debe limpiar timers en unmount', async () => {
+    const { result, unmount } = renderHook(() => usePersistentChat());
+
+    act(() => {
+      result.current.handleInputChange({ target: { value: 'Hola' } } as any);
+    });
+
+    unmount();
+
+    vi.advanceTimersByTime(1000);
+
+    // Si hay leak, localStorage.setItem sería llamado
+     expect(localStorage.setItem).not.toHaveBeenCalled();
+  });
+});
 ```
 
 ---
