@@ -160,7 +160,9 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
   });
 
   // ✅ CORRECTO: Inicializar useChat primero
-  const chat = useChat();
+  const chat = useChat({
+    api: '/api/chat',
+  } as any);
   const { messages, setMessages } = chat;
 
   // ✅ CORRECTO: Cargar mensajes una sola vez al montar
@@ -248,8 +250,10 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
 
   return {
     ...chat,
-    sendMessage: (chat as any).append, // Type assertion to bypass incorrect SDK typing
-    regenerate: (chat as any).reload, // Type assertion to bypass incorrect SDK typing
+    // AI SDK v5 usa sendMessage en lugar de append
+    // Type assertions necesarias porque el tipo del SDK no coincide con la implementación real
+    sendMessage: (chat as any).sendMessage ?? (chat as any).append,
+    regenerate: (chat as any).reload,
     visionResponse,
     setVisionResponse,
     clearHistory,
