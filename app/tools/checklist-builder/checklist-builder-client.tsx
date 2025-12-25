@@ -35,9 +35,9 @@ const formFields: FormField[] = [
     label: 'Tipo de Activo',
     type: 'select',
     required: true,
-    options: Object.entries(ASSET_TYPES).map(([key, value]) => ({
-      value: key,
-      label: value,
+    options: ASSET_TYPES.map((type) => ({
+      value: type,
+      label: type.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
     })),
     placeholder: 'Selecciona el tipo de equipo',
     helpText: 'Tipo de equipo o activo para el mantenimiento',
@@ -47,9 +47,9 @@ const formFields: FormField[] = [
     label: 'Tipo de Mantenimiento',
     type: 'select',
     required: true,
-    options: Object.entries(TASK_TYPES).map(([key, value]) => ({
-      value: key,
-      label: value,
+    options: TASK_TYPES.map((type) => ({
+      value: type,
+      label: type.charAt(0).toUpperCase() + type.slice(1),
     })),
     placeholder: 'Selecciona el tipo de tarea',
     helpText: 'Tipo de mantenimiento a realizar',
