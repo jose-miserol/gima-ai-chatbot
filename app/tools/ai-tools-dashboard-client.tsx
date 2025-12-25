@@ -59,6 +59,20 @@ const aiTools: AITool[] = [
     ],
   },
   {
+    id: 'data-transformation',
+    title: 'Data Transformation',
+    description: 'Limpia, formatea y transforma datos con instrucciones en lenguaje natural',
+    icon: <Zap className="h-8 w-8 text-primary" />,
+    href: '/tools/data-transformation',
+    badge: 'Nuevo',
+    features: [
+      'Transformación con IA (Gemini)',
+      'Vista previa antes de aplicar',
+      'Historial con rollback',
+      'Múltiples formatos (JSON, CSV)',
+    ],
+  },
+  {
     id: 'work-order-closeout',
     title: 'Work Order Closeout',
     description: 'Notas de cierre profesionales para órdenes de trabajo',
