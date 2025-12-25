@@ -53,7 +53,7 @@ export async function transformData(request: unknown) {
 
     // 3. Llamar a Gemini (usando configuración de mayor contexto)
     const { object: result } = await generateObject({
-      model: google('gemini-1.5-flash'), // Context window optimizada
+      model: google('gemini-2.5-flash'), // Context window 1M tokens
       schema: transformationResponseSchema,
       system: systemPrompt,
       messages: [
