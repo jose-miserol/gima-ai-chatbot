@@ -21,6 +21,7 @@ export { AIHistoryList } from './ai-history-list';
 // Status & Badges
 export { AIStatusBadge } from './ai-status-badge';
 export { AIUsageStats } from './ai-usage-stats';
+export type { AIUsageStatsProps, FeatureUsage } from './ai-usage-stats';
 
 // Types
 export type * from './types';

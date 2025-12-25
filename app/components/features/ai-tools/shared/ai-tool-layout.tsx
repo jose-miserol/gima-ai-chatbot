@@ -31,8 +31,8 @@ export interface AIToolStats {
   quota: number;
   /** Fecha de reset */
   resetDate?: Date;
-  /** Costo estimado en USD (opcional) */
-  costEstimate?: number;
+  /** Costo estimado formateado (opcional) */
+  costEstimate?: string;
 }
 
 /**
@@ -104,7 +104,7 @@ function StatsBar({ stats }: { stats: AIToolStats }) {
           <span>Se reinicia en {daysUntilReset} días</span>
         )}
         {stats.costEstimate !== undefined && (
-          <span>Costo estimado: ${stats.costEstimate.toFixed(2)}</span>
+          <span>Costo estimado: {stats.costEstimate}</span>
         )}
       </div>
     </div>
