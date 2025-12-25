@@ -60,6 +60,11 @@ export interface FormField {
    * Texto de ayuda
    */
   helpText?: string;
+
+  /**
+   * Filas para textarea
+   */
+  rows?: number;
 }
 
 /**

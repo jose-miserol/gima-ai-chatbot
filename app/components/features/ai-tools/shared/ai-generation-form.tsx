@@ -129,7 +129,7 @@ export function AIGenerationForm<T = Record<string, unknown>>({
                 required={field.required}
                 maxLength={field.maxLength}
                 disabled={isGenerating}
-                rows={4}
+                rows={field.rows || 4}
               />
             )}
 
