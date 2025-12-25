@@ -161,8 +161,8 @@ export class ActivitySummaryAIService extends BaseAIService {
         ...section,
         order: section.order ?? index,
       })),
-      assetType: request.assetType,
-      taskType: request.taskType,
+      assetType: request.assetType as any, // Cast necesario - viene validado del request
+      taskType: request.taskType as any, // Cast necesario - viene validado del request
       style: request.style,
       detailLevel: request.detailLevel,
       createdAt: new Date(),
