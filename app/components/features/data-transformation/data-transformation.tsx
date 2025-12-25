@@ -3,59 +3,40 @@
 import { useState } from 'react';
 import { DataTransformationForm } from './data-transformation-form';
 import { DataTransformationPreview } from './data-transformation-preview';
-import type { TransformationRequest, TransformationResult } from './types';
-import { logger } from '@/app/lib/logger';
+import { useDataTransformation } from './hooks/use-data-transformation';
 
 /**
  * Componente principal de Data Transformation
  *
- * Orquesta el flujo completo:
- * 1. Form submit -> Análisis (Mock por ahora)
+ * Orquesta el flujo completo usando useDataTransformation:
+ * 1. Form submit -> Análisis (Server Action con Gemini)
  * 2. Preview -> Visualización y aceptación
  * 3. Apply -> Guardado (Mock por ahora)
  */
 export function DataTransformation() {
-  const [status, setStatus] = useState<'idle' | 'analyzing' | 'previewing' | 'applying'>('idle');
   const [originalData, setOriginalData] = useState<string>('');
-  const [result, setResult] = useState<TransformationResult | null>(null);
 
-  const handleAnalyze = async (request: TransformationRequest) => {
-    setStatus('analyzing');
-    setOriginalData(request.sourceData);
+  // Usar hook logic real
+  const { status, result, processTransformation, applyTransformation, reset } =
+    useDataTransformation();
 
-    // TODO: Replace with real service call in Sprint 5.2
+  const handleAnalyze = async (data: any) => {
+    setOriginalData(data.sourceData);
+    await processTransformation(data);
+  };
+
+  const handleApply = async () => {
+    await applyTransformation();
+    // Opcional: limpiar data después de éxito, o dejar resultado visible
     setTimeout(() => {
-      // Mock logic for basic prototype
-      const mockResult: TransformationResult = {
-        success: true,
-        data: {
-          message: 'Datos transformados (Simulación)',
-          originalLength: request.sourceData.length,
-          instruction: request.instruction,
-        },
-        stats: { additions: 3, deletions: 0, durationMs: 450, itemsProcessed: 1 },
-        timestamp: Date.now(),
-      };
-      setResult(mockResult);
-      setStatus('previewing');
-      logger.info('Analysis completed (mock)', { requestId: 'mock-123' });
+      setOriginalData('');
+      reset();
     }, 1500);
   };
 
-  const handleApply = () => {
-    setStatus('applying');
-    // TODO: Replace with real apply (save snapshot ?)
-    setTimeout(() => {
-      setStatus('idle');
-      setResult(null);
-      setOriginalData('');
-      logger.info('Transformation applied (mock)');
-    }, 1000);
-  };
-
   const handleReject = () => {
-    setStatus('idle');
-    setResult(null);
+    reset();
+    // Mantener form data si se quisiera (requeriría elevar estado del form)
   };
 
   return (
@@ -63,22 +44,22 @@ export function DataTransformation() {
       <div className="space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">Transformación de Datos</h2>
         <p className="text-muted-foreground">
-          Limpia, formatea y transforma tus datos usando instrucciones en lenguaje natural (Dry-Run
-          Mode activo).
+          Limpia, formatea y transforma tus datos usando instrucciones en lenguaje natural (Powered
+          by Gemini).
         </p>
       </div>
 
-      {status !== 'previewing' && status !== 'applying' && (
+      {(status === 'idle' || status === 'analyzing' || status === 'error') && (
         <DataTransformationForm onSubmit={handleAnalyze} isProcessing={status === 'analyzing'} />
       )}
 
-      {(status === 'previewing' || status === 'applying') && result && (
+      {(status === 'previewing' || status === 'uploading' || status === 'completed') && result && (
         <DataTransformationPreview
           originalData={originalData}
           result={result}
           onApply={handleApply}
           onReject={handleReject}
-          isApplying={status === 'applying'}
+          isApplying={status === 'uploading'}
         />
       )}
     </div>
