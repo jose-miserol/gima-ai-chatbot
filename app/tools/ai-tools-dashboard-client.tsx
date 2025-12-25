@@ -1,11 +1,12 @@
 /**
  * AI Tools Dashboard Client
  *
- * Muestra cards de todas las herramientas AI disponibles.
+ * Muestra cards de todas las herramientas AI disponibles con stats y tips.
  */
 
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import {
   Card,
@@ -17,7 +18,17 @@ import {
 } from '@/app/components/ui/card';
 import { Button } from '@/app/components/ui/button';
 import { Badge } from '@/app/components/ui/badge';
-import { CheckCircle2, FileText, Sparkles, ArrowRight, Zap } from 'lucide-react';
+import { Progress } from '@/app/components/ui/progress';
+import {
+  CheckCircle2,
+  FileText,
+  Sparkles,
+  ArrowRight,
+  Zap,
+  Clock,
+  TrendingUp,
+  Lightbulb,
+} from 'lucide-react';
 
 interface AITool {
   id: string;
@@ -36,7 +47,7 @@ const aiTools: AITool[] = [
     description: 'Genera checklists de mantenimiento personalizados con IA',
     icon: <CheckCircle2 className="h-8 w-8 text-primary" />,
     href: '/tools/checklist-builder',
-    badge: 'Nuevo',
+    badge: 'Popular',
     features: [
       'Checklists personalizados por activo',
       'Múltiples tipos de mantenimiento',
@@ -88,31 +99,145 @@ const aiTools: AITool[] = [
   },
 ];
 
+const proTips = [
+  {
+    title: 'Usa atajos de teclado',
+    description: 'Presiona Ctrl+Enter para generar contenido rápidamente en cualquier formulario.',
+    icon: <Zap className="h-5 w-5" />,
+  },
+  {
+    title: 'Activa el guardado automático',
+    description: 'Tus borradores se guardan cada 30 segundos para que nunca pierdas tu trabajo.',
+    icon: <Clock className="h-5 w-5" />,
+  },
+  {
+    title: 'Exporta en múltiples formatos',
+    description: 'Cada resultado puede exportarse como JSON o Markdown con un solo clic.',
+    icon: <FileText className="h-5 w-5" />,
+  },
+  {
+    title: 'Revisa el historial',
+    description: 'Todas tus generaciones se guardan en el historial para acceso rápido.',
+    icon: <TrendingUp className="h-5 w-5" />,
+  },
+];
+
+/**
+ * Obtiene saludo personalizado según hora del día
+ */
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return '¡Buenos días!';
+  if (hour < 18) return '¡Buenas tardes!';
+  return '¡Buenas noches!';
+}
+
 export function AIToolsDashboardClient() {
+  // Greeting personalizado según hora
+  const greeting = useMemo(() => getGreeting(), []);
+
+  // Tip aleatorio del día (basado en día del mes)
+  const tipOfTheDay = useMemo(() => {
+    const dayIndex = new Date().getDate() % proTips.length;
+    return proTips[dayIndex];
+  }, []);
+
+  // Quick stats (simulados - en producción vendrían de API)
+  const quickStats = useMemo(() => ({
+    usedToday: 3,
+    quota: 100,
+    timeSaved: '45 min',
+    successRate: 98,
+  }), []);
+
   return (
     <div className="container mx-auto py-8 space-y-8">
-      {/* Hero Section */}
+      {/* Hero Section con Greeting */}
       <div className="text-center space-y-4 py-8">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
           <Zap className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-primary">Powered by AI</span>
         </div>
 
-        <h1 className="text-4xl font-bold tracking-tight">Herramientas de IA</h1>
+        <h1 className="text-4xl font-bold tracking-tight">{greeting} Herramientas de IA</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Potencia tu gestión de mantenimiento con inteligencia artificial de última generación
         </p>
       </div>
 
+      {/* Quick Stats Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{quickStats.usedToday}</p>
+              <p className="text-xs text-muted-foreground">Generaciones hoy</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-500/10 rounded-lg">
+              <Clock className="h-5 w-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{quickStats.timeSaved}</p>
+              <p className="text-xs text-muted-foreground">Tiempo ahorrado</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/10 rounded-lg">
+              <CheckCircle2 className="h-5 w-5 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{quickStats.successRate}%</p>
+              <p className="text-xs text-muted-foreground">Tasa de éxito</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Cuota mensual</span>
+              <span className="font-medium">{quickStats.usedToday}/{quickStats.quota}</span>
+            </div>
+            <Progress value={(quickStats.usedToday / quickStats.quota) * 100} className="h-2" />
+          </div>
+        </Card>
+      </div>
+
+      {/* Tip del Día */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="flex items-start gap-4 p-4">
+          <div className="p-2 bg-primary/10 rounded-lg text-primary">
+            <Lightbulb className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              💡 Tip del día: {tipOfTheDay.title}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">{tipOfTheDay.description}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Tools Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {aiTools.map((tool) => (
           <Card key={tool.id} className="flex flex-col hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="p-3 bg-primary/10 rounded-lg">{tool.icon}</div>
                 {tool.badge && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge
+                    variant={tool.badge === 'Popular' ? 'default' : 'secondary'}
+                    className="text-xs"
+                  >
                     {tool.badge}
                   </Badge>
                 )}
