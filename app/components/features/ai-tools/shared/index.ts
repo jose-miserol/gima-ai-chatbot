@@ -1,5 +1,5 @@
 /**
- * Shared AT Components
+ * Shared AI Components
  *
  * Componentes reutilizables para todas las AI features.
  * Proporciona consistencia visual y reduce duplicación de código.
@@ -9,13 +9,11 @@
 export { AIToolLayout } from './ai-tool-layout';
 
 // Form & Input
-// TODO: Implementar AIGenerationForm
-// export { AIGenerationForm } from './ai-generation-form';
+export { AIGenerationForm } from './ai-generation-form';
 
 // Preview & Display
-// TODO: Implementar AIPreviewCard y AIHistoryList
-// export { AIPreviewCard } from './ai-preview-card';
-// export { AIHistoryList } from './ai-history-list';
+export { AIPreviewCard } from './ai-preview-card';
+export { AIHistoryList } from './ai-history-list';
 
 // Status & Badges
 export { AIStatusBadge } from './ai-status-badge';
