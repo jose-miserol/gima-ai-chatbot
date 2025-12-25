@@ -22,6 +22,7 @@ describe('Voice Command Flow Integration', () => {
         priority: 'urgent',
         confidence: 0.95,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const result = validateVoiceCommand(command);
@@ -34,6 +35,7 @@ describe('Voice Command Flow Integration', () => {
         action: 'invalid_action',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const result = validateVoiceCommand(command);
@@ -45,6 +47,7 @@ describe('Voice Command Flow Integration', () => {
       const command = {
         action: 'create_work_order',
         // Missing confidence and rawTranscript
+        type: 'work_order',
       };
 
       const result = validateVoiceCommand(command);
@@ -59,6 +62,7 @@ describe('Voice Command Flow Integration', () => {
         priority: 'urgent',
         confidence: 0.95,
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(true);
     });
@@ -69,6 +73,7 @@ describe('Voice Command Flow Integration', () => {
         assignee: 'Carlos',
         confidence: 0.95,
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(true);
     });
@@ -78,6 +83,7 @@ describe('Voice Command Flow Integration', () => {
         action: 'check_status',
         confidence: 0.6, // Low confidence < 0.85
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(true);
     });
@@ -87,6 +93,7 @@ describe('Voice Command Flow Integration', () => {
         action: 'list_pending',
         confidence: 0.95,
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(false);
     });
@@ -96,6 +103,7 @@ describe('Voice Command Flow Integration', () => {
         action: 'check_status',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(false);
     });
@@ -106,6 +114,7 @@ describe('Voice Command Flow Integration', () => {
         priority: 'normal',
         confidence: 0.95,
         rawTranscript: 'test',
+        type: 'work_order',
       };
       expect(requiresConfirmation(command)).toBe(false);
     });
@@ -118,6 +127,7 @@ describe('Voice Command Flow Integration', () => {
         equipment: 'UMA-001',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const summary = formatCommandSummary(command);
@@ -129,6 +139,7 @@ describe('Voice Command Flow Integration', () => {
         action: 'list_pending',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const summary = formatCommandSummary(command);
@@ -141,6 +152,7 @@ describe('Voice Command Flow Integration', () => {
         equipment: 'BCA-002',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const summary = formatCommandSummary(command);
@@ -155,6 +167,7 @@ describe('Voice Command Flow Integration', () => {
         priority: 'urgent',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const summary = formatCommandSummary(command);
@@ -167,6 +180,7 @@ describe('Voice Command Flow Integration', () => {
         assignee: 'Carlos Rodriguez',
         confidence: 0.9,
         rawTranscript: 'test',
+        type: 'work_order',
       };
 
       const summary = formatCommandSummary(command);
@@ -184,6 +198,7 @@ describe('Voice Command Flow Integration', () => {
         description: 'Falla en compresor',
         confidence: 0.95,
         rawTranscript: 'Crear orden urgente para la UMA del sector 3',
+        type: 'work_order',
       };
 
       // 1. Validate
@@ -208,6 +223,7 @@ describe('Voice Command Flow Integration', () => {
         equipment: 'BCA-001',
         confidence: 0.7, // Low confidence
         rawTranscript: 'verificar BCA',
+        type: 'work_order',
       };
 
       const validationResult = validateVoiceCommand(commandData);
