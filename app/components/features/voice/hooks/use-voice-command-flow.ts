@@ -3,8 +3,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useWorkOrderCommands } from '@/app/hooks/use-work-order-commands';
+import { useVoiceNavigation } from './use-voice-navigation';
+import { useVoiceSystem } from './use-voice-system';
 import { executeVoiceCommand } from '@/app/actions';
-import type { VoiceCommand, VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+import type {
+  VoiceCommand,
+  VoiceWorkOrderCommand,
+  VoiceNavigationCommand,
+  VoiceSystemCommand,
+} from '@/app/types/voice-commands';
 import { logger } from '@/app/lib/logger';
 
 export type CommandFlowState =
@@ -35,6 +42,10 @@ export function useVoiceCommandFlow({
   // Hook de ejecución de Work Orders
   const execution = useWorkOrderCommands();
   const { executeCommand, reset: resetExecution } = execution;
+
+  // Hooks de Navegación y Sistema
+  const { navigate } = useVoiceNavigation();
+  const { executeSystem } = useVoiceSystem();
 
   const handleTranscript = useCallback(
     async (transcript: string) => {
@@ -106,55 +117,88 @@ export function useVoiceCommandFlow({
   const handleConfirm = useCallback(async () => {
     if (!parsedCommand) return;
 
-    // Handle non-work-order commands locally for now
-    if (parsedCommand.type !== 'work_order') {
-      logger.info('Executing non-work-order command', {
-        type: parsedCommand.type,
-        action: parsedCommand.action,
-      });
-      onCommandExecuted?.({
-        resourceId: 'sys-' + Date.now(),
-        message: `Acción ejecutada: ${parsedCommand.action}`,
-      });
-      setParsedCommand(null);
-      setFlowState('idle');
+    // Navegación
+    if (parsedCommand.type === 'navigation') {
+      const result = navigate(parsedCommand as VoiceNavigationCommand);
+      if (result.success) {
+        onCommandExecuted?.({
+          resourceId: 'nav-' + Date.now(),
+          message: result.message,
+        });
+        setParsedCommand(null);
+        setFlowState('idle');
+      } else {
+        setParseError(result.message);
+        // Mantener estado en preview para reintentar o cancelar
+      }
       return;
     }
 
-    setFlowState('executing');
-
-    try {
-      const result = await executeCommand(parsedCommand as VoiceWorkOrderCommand);
-
-      logger.info('Work order created successfully', {
-        component: 'useVoiceCommandFlow',
-        resourceId: result.resourceId,
-        action: parsedCommand.action,
-      });
-
-      // Notificar éxito
-      onCommandExecuted?.({
-        resourceId: result.resourceId,
-        message: result.message,
-      });
-
-      // Limpiar estado después del éxito
-      setTimeout(() => {
+    // Comandos de Sistema
+    if (parsedCommand.type === 'system') {
+      const result = executeSystem(parsedCommand as VoiceSystemCommand);
+      if (result.success) {
+        onCommandExecuted?.({
+          resourceId: 'sys-' + Date.now(),
+          message: result.message,
+        });
         setParsedCommand(null);
         setFlowState('idle');
-        resetExecution();
-      }, 2000); // Mostrar éxito por 2 segundos
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Error al ejecutar comando';
-      setParseError(errorMsg);
-      setFlowState('preview'); // Volver a preview para reintentar
-      onError?.(errorMsg);
-      logger.error('Work order creation failed', err instanceof Error ? err : new Error(errorMsg), {
-        component: 'useVoiceCommandFlow',
-        action: parsedCommand.action,
-      });
+      } else {
+        setParseError(result.message);
+      }
+      return;
     }
-  }, [parsedCommand, executeCommand, onCommandExecuted, onError, resetExecution]);
+
+    // Work Orders (Legacy Logic)
+    if (parsedCommand.type === 'work_order') {
+      setFlowState('executing');
+
+      try {
+        const result = await executeCommand(parsedCommand as VoiceWorkOrderCommand);
+
+        logger.info('Work order created successfully', {
+          component: 'useVoiceCommandFlow',
+          resourceId: result.resourceId,
+          action: parsedCommand.action,
+        });
+
+        // Notificar éxito
+        onCommandExecuted?.({
+          resourceId: result.resourceId,
+          message: result.message,
+        });
+
+        // Limpiar estado después del éxito
+        setTimeout(() => {
+          setParsedCommand(null);
+          setFlowState('idle');
+          resetExecution();
+        }, 2000);
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Error al ejecutar comando';
+        setParseError(errorMsg);
+        setFlowState('preview');
+        onError?.(errorMsg);
+        logger.error(
+          'Work order creation failed',
+          err instanceof Error ? err : new Error(errorMsg),
+          {
+            component: 'useVoiceCommandFlow',
+            action: parsedCommand.action,
+          }
+        );
+      }
+    }
+  }, [
+    parsedCommand,
+    executeCommand,
+    onCommandExecuted,
+    onError,
+    resetExecution,
+    navigate,
+    executeSystem,
+  ]);
 
   const handleCancel = useCallback(() => {
     setParsedCommand(null);
