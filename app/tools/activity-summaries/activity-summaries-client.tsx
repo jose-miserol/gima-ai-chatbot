@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   AIToolLayout,
   AIGenerationForm,
@@ -16,6 +16,7 @@ import {
   AIUsageStats,
   type FormField,
   type HistoryItem,
+  type FeatureUsage,
 } from '@/app/components/features/ai-tools/shared';
 import { FileText } from 'lucide-react';
 import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
@@ -111,6 +112,18 @@ export function ActivitySummariesClient() {
   const [summary, setSummary] = useState<ActivitySummary | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [usageCount, setUsageCount] = useState(0);
+
+  // Stats de uso para mostrar
+  const usageFeatures: FeatureUsage[] = useMemo(() => [
+    { name: 'Resúmenes', used: usageCount, quota: 100, trend: 'up' as const },
+  ], [usageCount]);
+
+  // Reset date (primer día del próximo mes)
+  const resetDate = useMemo(() => {
+    const date = new Date();
+    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  }, []);
 
   const handleGenerate = async (data: Record<string, unknown>) => {
     setIsGenerating(true);
@@ -130,6 +143,7 @@ export function ActivitySummariesClient() {
 
       if (result.success && result.summary) {
         setSummary(result.summary);
+        setUsageCount((prev) => prev + 1);
 
         // Agregar al historial
         const historyItem: HistoryItem = {
@@ -143,7 +157,7 @@ export function ActivitySummariesClient() {
             wordCount: result.summary.metadata?.wordCount,
           },
         };
-        setHistory((prev) => [historyItem, ...prev].slice(0, 10));
+        setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
         toast({
           title: result.cached ? '✨ Resumen cargado del caché' : '✅ Resumen generado',
@@ -194,10 +208,10 @@ export function ActivitySummariesClient() {
     }
   };
 
-  const handleHistoryItemClick = () => {
+  const handleHistoryItemClick = (item: HistoryItem) => {
     toast({
-      title: 'Función en desarrollo',
-      description: 'Pronto podrás cargar resúmenes del historial',
+      title: 'Cargando resumen',
+      description: `Cargando "${item.title}" del historial`,
     });
   };
 
@@ -209,11 +223,40 @@ export function ActivitySummariesClient() {
     });
   };
 
+  const handleBulkDelete = (items: HistoryItem[]) => {
+    const idsToDelete = new Set(items.map((i) => i.id));
+    setHistory((prev) => prev.filter((h) => !idsToDelete.has(h.id)));
+    toast({
+      title: 'Items eliminados',
+      description: `${items.length} resúmenes eliminados del historial`,
+    });
+  };
+
   return (
     <AIToolLayout
       title="Activity Summaries"
       description="Genera resúmenes profesionales de actividades de mantenimiento con inteligencia artificial"
       icon={<FileText className="h-8 w-8" />}
+      stats={{
+        used: usageCount,
+        quota: 100,
+        resetDate,
+        costEstimate: `$${(usageCount * 0.03).toFixed(2)}`,
+      }}
+      helpContent={
+        <div className="space-y-2 text-sm">
+          <p><strong>¿Cómo funciona?</strong></p>
+          <ol className="list-decimal pl-4 space-y-1">
+            <li>Selecciona el tipo de activo y tarea</li>
+            <li>Describe las actividades realizadas</li>
+            <li>Elige el estilo y nivel de detalle</li>
+            <li>Haz clic en &quot;Generar Resumen&quot;</li>
+          </ol>
+          <p className="text-muted-foreground mt-2">
+            Tip: Usa Ctrl+Enter para generar rápidamente
+          </p>
+        </div>
+      }
     >
       {/* Left Column - Form */}
       <div className="space-y-6">
@@ -224,9 +267,14 @@ export function ActivitySummariesClient() {
           onSubmit={handleGenerate}
           isGenerating={isGenerating}
           submitLabel="Generar Resumen"
+          saveDrafts
+          draftId="activity-summaries"
         />
 
-        <AIUsageStats feature="activity-summaries" />
+        <AIUsageStats
+          features={usageFeatures}
+          resetDate={resetDate}
+        />
       </div>
 
       {/* Right Column - Preview & History */}
@@ -251,7 +299,6 @@ export function ActivitySummariesClient() {
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {section.content}
                     </p>
-                    {/* Items removed - not in SummarySection type */}
                   </div>
                 ))}
               </div>
@@ -266,6 +313,13 @@ export function ActivitySummariesClient() {
               onReject: handleReject,
               onRegenerate: handleRegenerate,
             }}
+            exportData={{
+              title: summary.title,
+              executive: summary.executive,
+              sections: summary.sections,
+              style: summary.style,
+              detailLevel: summary.detailLevel,
+            }}
           />
         ) : (
           <AIHistoryList
@@ -273,6 +327,9 @@ export function ActivitySummariesClient() {
             items={history}
             onItemClick={handleHistoryItemClick}
             onItemDelete={handleHistoryItemDelete}
+            onBulkDelete={handleBulkDelete}
+            showSearch
+            showFilters
           />
         )}
       </div>
