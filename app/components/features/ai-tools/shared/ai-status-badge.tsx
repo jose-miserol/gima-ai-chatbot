@@ -1,13 +1,19 @@
 /**
  * AIStatusBadge - Badge visual para estados de IA
  *
- * Muestra estado de generación con colores e iconos consistentes.
+ * Muestra estado de generación con colores, iconos y tooltips con detalles.
  */
 
 'use client';
 
 import { Badge } from '@/app/components/ui/badge';
-import { Loader2, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/app/components/ui/tooltip';
+import { Loader2, CheckCircle2, XCircle, Sparkles, AlertTriangle, Clock } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
 import type { AIGenerationStatus } from './types';
 
@@ -15,60 +21,109 @@ import type { AIGenerationStatus } from './types';
  * Props para AIStatusBadge
  */
 export interface AIStatusBadgeProps {
-  /**
-   * Estado actual
-   */
+  /** Estado actual */
   status: AIGenerationStatus;
-
-  /**
-   * Clase CSS adicional
-   */
+  /** Detalles adicionales para el tooltip */
+  details?: string;
+  /** Mostrar como compact (solo icono) */
+  compact?: boolean;
+  /** Clase CSS adicional */
   className?: string;
 }
 
+/** Configuración de estados */
+const STATUS_CONFIG = {
+  idle: {
+    label: 'Listo',
+    variant: 'outline' as const,
+    icon: Sparkles,
+    className: '',
+    animate: false,
+  },
+  generating: {
+    label: 'Generando',
+    variant: 'default' as const,
+    icon: Loader2,
+    className: '',
+    animate: true,
+  },
+  success: {
+    label: 'Completado',
+    variant: 'default' as const,
+    icon: CheckCircle2,
+    className: 'bg-green-500 hover:bg-green-600',
+    animate: false,
+  },
+  error: {
+    label: 'Error',
+    variant: 'destructive' as const,
+    icon: XCircle,
+    className: '',
+    animate: false,
+  },
+  cached: {
+    label: 'En caché',
+    variant: 'secondary' as const,
+    icon: Sparkles,
+    className: '',
+    animate: false,
+  },
+  rate_limited: {
+    label: 'Límite alcanzado',
+    variant: 'destructive' as const,
+    icon: AlertTriangle,
+    className: 'bg-amber-500 hover:bg-amber-600',
+    animate: false,
+  },
+  timeout: {
+    label: 'Tiempo agotado',
+    variant: 'destructive' as const,
+    icon: Clock,
+    className: '',
+    animate: false,
+  },
+} as const;
+
 /**
  * Badge de estado para generaciones de IA
+ *
+ * Features:
+ * - 7 estados diferentes (idle, generating, success, error, cached, rate_limited, timeout)
+ * - Tooltip con detalles adicionales
+ * - Modo compacto (solo icono)
+ * - Animación para estado generating
  */
-export function AIStatusBadge({ status, className }: AIStatusBadgeProps) {
-  const statusConfig = {
-    idle: {
-      label: 'Ready',
-      variant: 'outline' as const,
-      icon: null,
-      className: undefined,
-    },
-    generating: {
-      label: 'Generating',
-      variant: 'default' as const,
-      icon: <Loader2 className="h-3 w-3 animate-spin" />,
-      className: undefined,
-    },
-    success: {
-      label: 'Generated',
-      variant: 'default' as const,
-      icon: <CheckCircle2 className="h-3 w-3" />,
-      className: 'bg-green-500',
-    },
-    error: {
-      label: 'Error',
-      variant: 'destructive' as const,
-      icon: <XCircle className="h-3 w-3" />,
-      className: undefined,
-    },
-    cached: {
-      label: 'Cached',
-      variant: 'secondary' as const,
-      icon: <Sparkles className="h-3 w-3" />,
-      className: undefined,
-    },
-  };
+export function AIStatusBadge({
+  status,
+  details,
+  compact = false,
+  className,
+}: AIStatusBadgeProps) {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.idle;
+  const Icon = config.icon;
 
-  const config = statusConfig[status];
+  const badge = (
+    <Badge
+      variant={config.variant}
+      className={cn('gap-1', config.className, className)}
+    >
+      <Icon className={cn('h-3 w-3', config.animate && 'animate-spin')} />
+      {!compact && <span>{config.label}</span>}
+    </Badge>
+  );
+
+  if (!details) {
+    return badge;
+  }
 
   return (
-    <Badge variant={config.variant} className={cn('gap-1', config.className, className)}>
-      {config.icon}
-      {config.label}
-    </Badge>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+        <TooltipContent>
+          <p className="text-sm">{details}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

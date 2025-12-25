@@ -70,7 +70,7 @@ export interface FormField {
 /**
  * Estado de generación de IA
  */
-export type AIGenerationStatus = 'idle' | 'generating' | 'success' | 'error' | 'cached';
+export type AIGenerationStatus = 'idle' | 'generating' | 'success' | 'error' | 'cached' | 'rate_limited' | 'timeout';
 
 /**
  * Metadata de generación

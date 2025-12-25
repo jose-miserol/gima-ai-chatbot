@@ -7,12 +7,15 @@
 
 // Layout
 export { AIToolLayout } from './ai-tool-layout';
+export type { AIToolLayoutProps, AIToolStats, BreadcrumbItem } from './ai-tool-layout';
 
 // Form & Input
 export { AIGenerationForm } from './ai-generation-form';
+export type { AIGenerationFormProps } from './ai-generation-form';
 
 // Preview & Display
 export { AIPreviewCard } from './ai-preview-card';
+export type { AIPreviewCardProps } from './ai-preview-card';
 export { AIHistoryList } from './ai-history-list';
 
 // Status & Badges
@@ -22,3 +25,4 @@ export { AIUsageStats } from './ai-usage-stats';
 // Types
 export type * from './types';
 export type { HistoryItem } from './ai-history-list';
+
