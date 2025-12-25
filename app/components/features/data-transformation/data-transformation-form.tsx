@@ -12,6 +12,8 @@ interface DataTransformationFormProps {
   onSubmit: (data: TransformationRequest) => void;
   /** Indica si se está procesando una solicitud */
   isProcessing: boolean;
+  /** Datos iniciales para pre-llenar (ej. al restaurar snapshot) */
+  initialSourceData?: string;
 }
 
 /**
@@ -20,7 +22,11 @@ interface DataTransformationFormProps {
  * Reutiliza AIGenerationForm para proporcionar inputs de datos y texto.
  * Configurado específicamente para manejar instrucciones de transformación y datos crudos.
  */
-export function DataTransformationForm({ onSubmit, isProcessing }: DataTransformationFormProps) {
+export function DataTransformationForm({
+  onSubmit,
+  isProcessing,
+  initialSourceData,
+}: DataTransformationFormProps) {
   return (
     <AIGenerationForm
       title="Transformación de Datos"
@@ -37,6 +43,7 @@ export function DataTransformationForm({ onSubmit, isProcessing }: DataTransform
           required: true,
           maxLength: 50000,
           rows: 12,
+          defaultValue: initialSourceData,
         },
         {
           name: 'instruction',
