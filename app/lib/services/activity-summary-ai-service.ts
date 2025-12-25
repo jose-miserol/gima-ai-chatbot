@@ -7,7 +7,7 @@
 
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
-import { BaseAIService } from './base-ai-service';
+import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import { AI_TASK_MODELS } from '@/app/constants/ai';
 import {
   SUMMARY_SYSTEM_PROMPT,
@@ -60,8 +60,8 @@ export class ActivitySummaryAIService extends BaseAIService {
       // Validar request
       const validatedRequest = activitySummaryRequestSchema.parse(request);
 
-      this.logger.info('Generando resumen de actividades', {
-        serviceName: this.serviceName,
+      this.deps.logger?.info('Generando resumen de actividades', {
+        serviceName: this.config.serviceName,
         assetType: validatedRequest.assetType,
         taskType: validatedRequest.taskType,
         style: validatedRequest.style,
@@ -70,11 +70,11 @@ export class ActivitySummaryAIService extends BaseAIService {
 
       // Verificar caché
       const cacheKey = this.getCacheKey(validatedRequest);
-      const cached = this.getFromCache<ActivitySummary>(cacheKey);
+      const cached = await this.checkCache<ActivitySummary>(cacheKey);
 
       if (cached) {
-        this.logger.info('Resumen recuperado de caché', {
-          serviceName: this.serviceName,
+        this.deps.logger?.info('Resumen recuperado de caché', {
+          serviceName: this.config.serviceName,
         });
 
         return {
@@ -90,10 +90,10 @@ export class ActivitySummaryAIService extends BaseAIService {
       });
 
       // Guardar en caché
-      this.saveToCache(cacheKey, summary);
+      await this.setCache(cacheKey, summary);
 
-      this.logger.info('Resumen generado exitosamente', {
-        serviceName: this.serviceName,
+      this.deps.logger?.info('Resumen generado exitosamente', {
+        serviceName: this.config.serviceName,
         summaryId: summary.id,
         sectionsCount: summary.sections.length,
       });
@@ -103,8 +103,7 @@ export class ActivitySummaryAIService extends BaseAIService {
         summary,
       };
     } catch (error) {
-      this.logger.error('Error al generar resumen', {
-        serviceName: this.serviceName,
+      this.deps.logger?.error('Error al generar resumen', {
         error: error instanceof Error ? error.message : 'Error desconocido',
       });
 
@@ -209,8 +208,7 @@ export class ActivitySummaryAIService extends BaseAIService {
 
       return validated;
     } catch (error) {
-      this.logger.error('Error al parsear respuesta de IA', {
-        serviceName: this.serviceName,
+      this.deps.logger?.error('Error al parsear respuesta de IA', {
         error: error instanceof Error ? error.message : 'Error desconocido',
         rawResponse: rawResponse.substring(0, 200),
       });

@@ -10,16 +10,12 @@ import { z } from 'zod';
 /**
  * Estilos de resumen válidos
  */
-const summaryStyleEnum = z.enum(['ejecutivo', 'tecnico', 'narrativo'], {
-  errorMap: () => ({ message: 'Estilo de resumen inválido' }),
-});
+const summaryStyleEnum = z.enum(['ejecutivo', 'tecnico', 'narrativo']);
 
 /**
  * Niveles de detalle válidos
  */
-const detailLevelEnum = z.enum(['alto', 'medio', 'bajo'], {
-  errorMap: () => ({ message: 'Nivel de detalle inválido' }),
-});
+const detailLevelEnum = z.enum(['alto', 'medio', 'bajo']);
 
 /**
  * Schema para request de generación de resumen

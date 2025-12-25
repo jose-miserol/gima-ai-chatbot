@@ -7,7 +7,6 @@
 
 'use client';
 
-import { Button } from '@/app/components/ui/button';
 import { SUMMARY_MESSAGES } from './constants';
 import { useSummaryTemplates } from './hooks';
 import type { SummaryTemplate } from './types';
