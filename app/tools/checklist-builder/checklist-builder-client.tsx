@@ -18,15 +18,13 @@ import {
   type HistoryItem,
 } from '@/app/components/features/ai-tools/shared';
 import { CheckCircle2 } from 'lucide-react';
-import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
+import { generateChecklist } from '@/app/actions/checklist';
 import type {
   Checklist,
   ChecklistGenerationRequest,
 } from '@/app/components/features/checklist-builder/types';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/hooks/use-toast';
-
-const checklistService = new ChecklistAIService();
 
 /**
  * Form fields para generación de checklist
@@ -94,7 +92,7 @@ export function ChecklistBuilderClient() {
         context: data.context as string | undefined,
       };
 
-      const result = await checklistService.generateChecklist(request);
+      const result = await generateChecklist(request);
 
       if (result.success && result.checklist) {
         setChecklist(result.checklist);
