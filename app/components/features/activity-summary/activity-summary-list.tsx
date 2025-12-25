@@ -9,6 +9,7 @@
 
 import { Button } from '@/app/components/ui/button';
 import { SUMMARY_MESSAGES } from './constants';
+import { useSummaryTemplates } from './hooks';
 import type { SummaryTemplate } from './types';
 
 interface ActivitySummaryListProps {
@@ -19,9 +20,7 @@ interface ActivitySummaryListProps {
 }
 
 export function ActivitySummaryList({ onTemplateSelected }: ActivitySummaryListProps) {
-  // TODO: Implementar hook useSummaryTemplates
-  const templates: SummaryTemplate[] = [];
-  const isLoading = false;
+  const { templates, isLoading } = useSummaryTemplates();
 
   return (
     <div className="rounded-lg border bg-card p-6">

@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
 import { SUMMARY_STYLES, DETAIL_LEVELS, SUMMARY_LIMITS } from './constants';
+import { useSummaryGenerator } from './hooks';
 import type { ActivitySummary } from './types';
 
 interface ActivitySummaryFormProps {
@@ -26,37 +27,31 @@ export function ActivitySummaryForm({ onSummaryGenerated }: ActivitySummaryFormP
   const [activities, setActivities] = useState('');
   const [style, setStyle] = useState<string>(SUMMARY_STYLES[0]);
   const [detailLevel, setDetailLevel] = useState<string>(DETAIL_LEVELS[1]); // medio por defecto
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+
+  const { isGenerating, summary, error, generate } = useSummaryGenerator();
 
   const activitiesLength = activities.length;
   const isValidLength =
     activitiesLength >= SUMMARY_LIMITS.MIN_ACTIVITIES_LENGTH &&
     activitiesLength <= SUMMARY_LIMITS.MAX_ACTIVITIES_LENGTH;
 
+  // Notificar cuando se genera un resumen
+  useEffect(() => {
+    if (summary) {
+      onSummaryGenerated(summary);
+    }
+  }, [summary, onSummaryGenerated]);
+
   const handleGenerate = async () => {
     if (!isValidLength) return;
 
-    setIsGenerating(true);
-    setError(null);
-
-    try {
-      // TODO: Implementar llamada al servicio de IA
-      console.log('Generating summary for:', {
-        assetType,
-        taskType,
-        activities,
-        style,
-        detailLevel,
-      });
-
-      // Mock por ahora
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Error desconocido'));
-    } finally {
-      setIsGenerating(false);
-    }
+    await generate({
+      assetType,
+      taskType,
+      activities,
+      style: style as any,
+      detailLevel: detailLevel as any,
+    });
   };
 
   return (
