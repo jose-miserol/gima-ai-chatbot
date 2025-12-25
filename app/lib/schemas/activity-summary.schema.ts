@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
 
 /**
  * Estilos de resumen válidos
@@ -24,12 +25,12 @@ export const activitySummaryRequestSchema = z.object({
   /**
    * Tipo de activo
    */
-  assetType: z.string().min(1, 'Tipo de activo requerido'),
+  assetType: z.enum(ASSET_TYPES),
 
   /**
    * Tipo de tarea
    */
-  taskType: z.string().min(1, 'Tipo de tarea requerido'),
+  taskType: z.enum(TASK_TYPES),
 
   /**
    * Actividades realizadas
@@ -102,12 +103,12 @@ export const activitySummarySchema = z.object({
   /**
    * Tipo de activo
    */
-  assetType: z.string(),
+  assetType: z.enum(ASSET_TYPES),
 
   /**
    * Tipo de tarea
    */
-  taskType: z.string(),
+  taskType: z.enum(TASK_TYPES),
 
   /**
    * Estilo usado

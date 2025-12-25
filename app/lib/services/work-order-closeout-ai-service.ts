@@ -88,9 +88,10 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
       return { success: true, notes };
     } catch (error) {
-      this.deps.logger?.error('Error al generar notas', {
-        error: error instanceof Error ? error.message : 'Error desconocido',
-      });
+      this.deps.logger?.error(
+        'Error al generar notas',
+        error instanceof Error ? error : new Error('Error desconocido')
+      );
 
       return {
         success: false,
@@ -184,10 +185,13 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
       return validated;
     } catch (error) {
-      this.deps.logger?.error('Error al parsear respuesta de IA', {
-        error: error instanceof Error ? error.message : 'Error desconocido',
-        rawResponse: rawResponse.substring(0, 200),
-      });
+      this.deps.logger?.error(
+        'Error al parsear respuesta de IA',
+        error instanceof Error ? error : new Error('Error desconocido'),
+        {
+          rawResponse: rawResponse.substring(0, 200),
+        }
+      );
 
       throw new Error('Respuesta de IA inválida');
     }

@@ -77,9 +77,16 @@ export class ActivitySummaryAIService extends BaseAIService {
           serviceName: this.config.serviceName,
         });
 
+        // Normalizar Date (viene como string del JSON)
+        const normalizedSummary: ActivitySummary = {
+          ...cached,
+          createdAt:
+            cached.createdAt instanceof Date ? cached.createdAt : new Date(cached.createdAt),
+        };
+
         return {
           success: true,
-          summary: cached,
+          summary: normalizedSummary,
           cached: true,
         };
       }
@@ -103,9 +110,10 @@ export class ActivitySummaryAIService extends BaseAIService {
         summary,
       };
     } catch (error) {
-      this.deps.logger?.error('Error al generar resumen', {
-        error: error instanceof Error ? error.message : 'Error desconocido',
-      });
+      this.deps.logger?.error(
+        'Error al generar resumen',
+        error instanceof Error ? error : new Error('Error desconocido')
+      );
 
       return {
         success: false,
@@ -125,8 +133,8 @@ export class ActivitySummaryAIService extends BaseAIService {
 
     // Construir prompt
     const userPrompt = buildSummaryPrompt({
-      assetType: request.assetType as any,
-      taskType: request.taskType as any,
+      assetType: request.assetType,
+      taskType: request.taskType,
       activities: request.activities,
       style: request.style,
       detailLevel: request.detailLevel,
@@ -161,8 +169,8 @@ export class ActivitySummaryAIService extends BaseAIService {
         ...section,
         order: section.order ?? index,
       })),
-      assetType: request.assetType as any, // Cast necesario - viene validado del request
-      taskType: request.taskType as any, // Cast necesario - viene validado del request
+      assetType: request.assetType,
+      taskType: request.taskType,
       style: request.style,
       detailLevel: request.detailLevel,
       createdAt: new Date(),
@@ -208,10 +216,13 @@ export class ActivitySummaryAIService extends BaseAIService {
 
       return validated;
     } catch (error) {
-      this.deps.logger?.error('Error al parsear respuesta de IA', {
-        error: error instanceof Error ? error.message : 'Error desconocido',
-        rawResponse: rawResponse.substring(0, 200),
-      });
+      this.deps.logger?.error(
+        'Error al parsear respuesta de IA',
+        error instanceof Error ? error : new Error('Error desconocido'),
+        {
+          rawResponse: rawResponse.substring(0, 200),
+        }
+      );
 
       throw new Error('Respuesta de IA inválida');
     }
