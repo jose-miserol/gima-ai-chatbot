@@ -69,6 +69,7 @@ describe('executeVoiceCommand', () => {
   describe('Successful Parsing', () => {
     it('should parse valid create_work_order command', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'create_work_order',
         equipment: 'UMA-001',
         location: 'Sector 3',
@@ -84,16 +85,17 @@ describe('executeVoiceCommand', () => {
       const result = await executeVoiceCommand('Crear orden urgente para la UMA del sector 3');
 
       expect(result.success).toBe(true);
-      if (result.success) {
+      if (result.success && result.command) {
         expect(result.command.action).toBe('create_work_order');
-        expect(result.command.equipment).toBe('UMA-001');
-        expect(result.command.priority).toBe('urgent');
+        expect((result.command as any).equipment).toBe('UMA-001');
+        expect((result.command as any).priority).toBe('urgent');
         expect(result.command.confidence).toBe(0.95);
       }
     });
 
     it('should parse list_pending command', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'list_pending',
         confidence: 1.0,
         rawTranscript: 'Mostrar órdenes pendientes',
@@ -106,13 +108,14 @@ describe('executeVoiceCommand', () => {
       const result = await executeVoiceCommand('Mostrar órdenes pendientes');
 
       expect(result.success).toBe(true);
-      if (result.success) {
+      if (result.success && result.command) {
         expect(result.command.action).toBe('list_pending');
       }
     });
 
     it('should handle JSON wrapped in markdown code blocks', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'check_status',
         confidence: 0.9,
         rawTranscript: 'Estado de la orden',
@@ -125,7 +128,7 @@ describe('executeVoiceCommand', () => {
       const result = await executeVoiceCommand('Estado de la orden');
 
       expect(result.success).toBe(true);
-      if (result.success) {
+      if (result.success && result.command) {
         expect(result.command.action).toBe('check_status');
       }
     });
@@ -134,6 +137,7 @@ describe('executeVoiceCommand', () => {
   describe('Confidence Threshold', () => {
     it('should return LOW_CONFIDENCE error when below default threshold', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'create_work_order',
         confidence: 0.5, // Below default 0.7
         rawTranscript: 'Test',
@@ -154,6 +158,7 @@ describe('executeVoiceCommand', () => {
 
     it('should respect custom minConfidence option', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'create_work_order',
         confidence: 0.8,
         rawTranscript: 'Test',
@@ -174,6 +179,7 @@ describe('executeVoiceCommand', () => {
 
     it('should succeed when confidence meets threshold', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'create_work_order',
         confidence: 0.75,
         rawTranscript: 'Test',
@@ -240,6 +246,7 @@ describe('executeVoiceCommand', () => {
   describe('Context Option', () => {
     it('should include context in prompt when provided', async () => {
       const mockResponse = {
+        type: 'work_order',
         action: 'create_work_order',
         confidence: 0.9,
         rawTranscript: 'Test',

@@ -2,22 +2,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDataSnapshots } from '../use-data-snapshots';
 
-// Mock localStorage inline
-const localStorageMock = {
-  store: {} as Record<string, string>,
-  getItem: vi.fn(function (key: string) {
-    return this.store[key] || null;
-  }),
-  setItem: vi.fn(function (key: string, value: string) {
-    this.store[key] = value;
-  }),
-  removeItem: vi.fn(function (key: string) {
-    delete this.store[key];
-  }),
-  clear: vi.fn(function () {
-    this.store = {};
-  }),
+// Mock localStorage with properly typed this
+const createLocalStorageMock = () => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value;
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+  };
 };
+
+const localStorageMock = createLocalStorageMock();
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 

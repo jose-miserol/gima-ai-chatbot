@@ -31,6 +31,7 @@ describe('Voice Hooks Integration', () => {
       act(() => {
         result.current.navigate({
           type: 'navigation',
+          action: 'navigate',
           screen: 'home',
           confidence: 0.9,
           rawTranscript: 'ir a inicio',
@@ -45,6 +46,7 @@ describe('Voice Hooks Integration', () => {
       act(() => {
         result.current.navigate({
           type: 'navigation',
+          action: 'navigate',
           screen: 'herramientas',
           confidence: 0.9,
           rawTranscript: 'ir a herramientas',
@@ -59,6 +61,7 @@ describe('Voice Hooks Integration', () => {
       act(() => {
         result.current.navigate({
           type: 'navigation',
+          action: 'navigate',
           screen: 'checklist',
           confidence: 0.9,
           rawTranscript: 'crear lista',
@@ -70,10 +73,11 @@ describe('Voice Hooks Integration', () => {
     it('should handle unknown screens gracefully', () => {
       const { result } = renderHook(() => useVoiceNavigation());
 
-      let response;
+      let response: { success: boolean; message: string } | undefined;
       act(() => {
         response = result.current.navigate({
           type: 'navigation',
+          action: 'navigate',
           screen: 'unknown_screen',
           confidence: 0.9,
           rawTranscript: 'ir a lugar desconocido',
@@ -92,7 +96,7 @@ describe('Voice Hooks Integration', () => {
       act(() => {
         result.current.executeSystem({
           type: 'system',
-          action: 'toggle_theme',
+          action: 'theme_mode',
           confidence: 0.9,
           rawTranscript: 'cambiar tema',
         });
@@ -104,7 +108,7 @@ describe('Voice Hooks Integration', () => {
     it('should handle logout', () => {
       const { result } = renderHook(() => useVoiceSystem());
 
-      let response;
+      let response: { success: boolean; message: string } | undefined;
       act(() => {
         response = result.current.executeSystem({
           type: 'system',

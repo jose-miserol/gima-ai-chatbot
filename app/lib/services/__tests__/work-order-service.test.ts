@@ -92,6 +92,7 @@ const createMockAbortFactory = () => {
 
 // Comando válido para tests
 const validCommand: VoiceWorkOrderCommand = {
+  type: 'work_order',
   action: 'create_work_order',
   equipment: 'Bomba #3',
   location: 'Sala de Máquinas',

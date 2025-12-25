@@ -10,7 +10,7 @@ export function useVoiceSystem() {
 
   const executeSystem = useCallback(
     (command: VoiceSystemCommand) => {
-      if (command.action === 'toggle_theme') {
+      if (command.action === 'theme_mode') {
         // Si no hay theme definido (system), asumir light o dark based system query?
         // next-themes maneja esto, pero toggling desde 'system' es tricky.
         // Asumiremos toggle explicito entre light y dark.
