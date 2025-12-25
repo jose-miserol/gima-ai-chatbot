@@ -7,11 +7,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/app/components/ui/button';
-import { Select } from '@/app/components/ui/select';
-import { Textarea } from '@/app/components/ui/textarea';
 import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+import { useChecklistGenerator } from './hooks';
 import type { Checklist } from './types';
 
 interface ChecklistBuilderFormProps {
@@ -25,22 +24,22 @@ export function ChecklistBuilderForm({ onChecklistGenerated }: ChecklistBuilderF
   const [assetType, setAssetType] = useState<string>(ASSET_TYPES[0]);
   const [taskType, setTaskType] = useState<string>(TASK_TYPES[0]);
   const [customInstructions, setCustomInstructions] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { generate, isGenerating, checklist, error } = useChecklistGenerator();
+
+  // Notificar cuando el checklist esté listo
+  useEffect(() => {
+    if (checklist) {
+      onChecklistGenerated(checklist);
+    }
+  }, [checklist, onChecklistGenerated]);
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
-
-    try {
-      // TODO: Implementar llamada al servicio de IA
-      console.log('Generating checklist for:', { assetType, taskType, customInstructions });
-
-      // Mock por ahora
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    } catch (error) {
-      console.error('Error generating checklist:', error);
-    } finally {
-      setIsGenerating(false);
-    }
+    await generate({
+      assetType: assetType as any,
+      taskType: taskType as any,
+      customInstructions: customInstructions || undefined,
+    });
   };
 
   return (
@@ -101,6 +100,14 @@ export function ChecklistBuilderForm({ onChecklistGenerated }: ChecklistBuilderF
         <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
           {isGenerating ? 'Generando...' : 'Generar Checklist con IA'}
         </Button>
+
+        {/* Mensaje de Error */}
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 border border-red-200">
+            <p className="font-medium">Error al generar checklist</p>
+            <p className="mt-1">{error.message}</p>
+          </div>
+        )}
       </div>
     </div>
   );

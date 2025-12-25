@@ -5,4 +5,4 @@
  */
 
 export { useChecklistTemplates } from './use-checklist-templates';
-// export { useChecklistGenerator } from './use-checklist-generator'; // TODO: Sprint 1.3
+export { useChecklistGenerator } from './use-checklist-generator';
