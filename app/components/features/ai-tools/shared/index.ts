@@ -21,3 +21,4 @@ export { AIUsageStats } from './ai-usage-stats';
 
 // Types
 export type * from './types';
+export type { HistoryItem } from './ai-history-list';

@@ -23,7 +23,7 @@ import type {
   Checklist,
   ChecklistGenerationRequest,
 } from '@/app/components/features/checklist-builder/types';
-import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/hooks/use-toast';
 
 const checklistService = new ChecklistAIService();
@@ -88,8 +88,8 @@ export function ChecklistBuilderClient() {
 
     try {
       const request: ChecklistGenerationRequest = {
-        assetType: data.assetType as string,
-        taskType: data.taskType as string,
+        assetType: data.assetType as AssetType,
+        taskType: data.taskType as TaskType,
         customInstructions: data.customInstructions as string | undefined,
         context: data.context as string | undefined,
       };
@@ -156,7 +156,7 @@ export function ChecklistBuilderClient() {
     }
   };
 
-  const handleHistoryItemClick = (item: HistoryItem) => {
+  const handleHistoryItemClick = () => {
     // Cargar checklist del historial
     toast({
       title: 'Función en desarrollo',

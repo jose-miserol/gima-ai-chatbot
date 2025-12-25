@@ -25,7 +25,7 @@ import type {
   SummaryStyle,
   DetailLevel,
 } from '@/app/components/features/activity-summary/types';
-import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/hooks/use-toast';
 
 const summaryService = new ActivitySummaryAIService();
@@ -118,8 +118,8 @@ export function ActivitySummariesClient() {
 
     try {
       const request: ActivitySummaryRequest = {
-        assetType: data.assetType as string,
-        taskType: data.taskType as string,
+        assetType: data.assetType as AssetType,
+        taskType: data.taskType as TaskType,
         activities: data.activities as string,
         style: data.style as SummaryStyle,
         detailLevel: data.detailLevel as DetailLevel,
@@ -194,7 +194,7 @@ export function ActivitySummariesClient() {
     }
   };
 
-  const handleHistoryItemClick = (item: HistoryItem) => {
+  const handleHistoryItemClick = () => {
     toast({
       title: 'Función en desarrollo',
       description: 'Pronto podrás cargar resúmenes del historial',
@@ -251,15 +251,7 @@ export function ActivitySummariesClient() {
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {section.content}
                     </p>
-                    {section.items && section.items.length > 0 && (
-                      <ul className="mt-2 space-y-1">
-                        {section.items.map((item, idx) => (
-                          <li key={idx} className="text-sm text-muted-foreground ml-4">
-                            • {item}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    {/* Items removed - not in SummarySection type */}
                   </div>
                 ))}
               </div>
