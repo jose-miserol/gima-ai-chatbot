@@ -6,8 +6,7 @@ import { VOICE_PROMPT } from '@/app/config';
 import { MAX_AUDIO_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
 import { getBase64Size } from '@/app/utils/base64';
-import { WORK_ORDER_VOICE_PROMPT } from '@/app/config/voice-command-prompt';
-import { VoiceWorkOrderCommandSchema } from '@/app/types/voice-commands';
+import { VoiceCommandParserService } from '@/app/lib/services/voice-command-parser';
 
 /**
  * Transcribe un archivo de audio usando el modelo Gemini Flash Lite.
@@ -105,127 +104,37 @@ export async function transcribeAudio(
  * }
  * ```
  */
+
+/**
+ * Ejecuta un comando de voz parseando la transcripción y validando el resultado.
+ * Delega la inteligencia al VoiceCommandParserService.
+ */
 export async function executeVoiceCommand(
   transcript: string,
   options?: { minConfidence?: number; context?: string }
-): Promise<
-  | {
-      success: true;
-      command: {
-        action: string;
-        equipment?: string;
-        location?: string;
-        priority?: string;
-        description?: string;
-        assignee?: string;
-        confidence: number;
-        rawTranscript: string;
-      };
-    }
-  | {
-      success: false;
-      error: string;
-      code?: string;
-      recoverable?: boolean;
-    }
-> {
+) {
   try {
-    if (!transcript || transcript.trim().length < 3) {
-      return {
-        success: false,
-        error: 'Transcripción vacía o demasiado corta',
-        code: 'EMPTY_TRANSCRIPT',
-        recoverable: true,
-      };
-    }
-
-    const minConfidence = options?.minConfidence ?? 0.7;
-
-    // Construir prompt con contexto opcional
-    const contextPrompt = options?.context ? `\n\nCONTEXTO ADICIONAL: ${options.context}` : '';
-
-    const result = await generateText({
-      model: google('gemini-2.5-flash-lite'),
-      temperature: 0, // Determinístico para parsing
-      messages: [
-        {
-          role: 'system',
-          content: WORK_ORDER_VOICE_PROMPT + contextPrompt,
-        },
-        {
-          role: 'user',
-          content: transcript,
-        },
-      ],
+    const parser = VoiceCommandParserService.getInstance();
+    const result = await parser.parseCommand(transcript, {
+      minConfidence: options?.minConfidence ?? 0.7,
+      context: options?.context,
+      language: 'es-ES',
     });
 
-    // Parsear JSON de la respuesta
-    let parsed: unknown;
-    try {
-      // Limpiar posibles backticks de markdown
-      const cleanJson = result.text
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-      parsed = JSON.parse(cleanJson);
-    } catch {
-      logger.warn('JSON inválido del modelo', {
-        component: 'actions',
-        action: 'executeVoiceCommand',
-        rawResponse: result.text.slice(0, 200),
-      });
+    if (result.success && result.command) {
       return {
-        success: false,
-        error: 'No se pudo interpretar el comando de voz',
-        code: 'PARSE_ERROR',
-        recoverable: true,
-      };
+        success: true,
+        command: result.command, // Ahora devuelve VoiceCommand (Union)
+      } as const;
     }
-
-    // Validar con Zod
-    const validation = VoiceWorkOrderCommandSchema.safeParse(parsed);
-
-    if (!validation.success) {
-      const errors = validation.error.issues
-        .map((e: { path: PropertyKey[]; message: string }) => `${e.path.join('.')}: ${e.message}`)
-        .join(', ');
-
-      logger.warn('Validación Zod falló', {
-        component: 'actions',
-        action: 'executeVoiceCommand',
-        errors,
-      });
-
-      return {
-        success: false,
-        error: `Comando inválido: ${errors}`,
-        code: 'VALIDATION_ERROR',
-        recoverable: true,
-      };
-    }
-
-    // Verificar confianza mínima
-    if (validation.data.confidence < minConfidence) {
-      return {
-        success: false,
-        error: `Confianza insuficiente (${(validation.data.confidence * 100).toFixed(0)}% < ${(minConfidence * 100).toFixed(0)}%)`,
-        code: 'LOW_CONFIDENCE',
-        recoverable: true,
-      };
-    }
-
-    logger.info('Comando de voz parseado', {
-      component: 'actions',
-      action: 'executeVoiceCommand',
-      commandAction: validation.data.action,
-      confidence: validation.data.confidence,
-    });
 
     return {
-      success: true,
-      command: validation.data,
+      success: false,
+      error: result.error || 'No se pudo procesar el comando',
+      code: 'PARSING_FAILED',
+      recoverable: true,
     };
-  } catch (error: unknown) {
+  } catch (error) {
     logger.error(
       'Error ejecutando comando de voz',
       error instanceof Error ? error : new Error(String(error)),

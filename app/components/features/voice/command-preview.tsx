@@ -10,7 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
-import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+import type { VoiceCommand } from '@/app/types/voice-commands';
 import { formatCommandSummary, requiresConfirmation } from '@/app/types/voice-commands';
 
 /**
@@ -18,7 +18,7 @@ import { formatCommandSummary, requiresConfirmation } from '@/app/types/voice-co
  */
 interface CommandPreviewProps {
   /** Parsed voice command to display */
-  command: VoiceWorkOrderCommand;
+  command: VoiceCommand;
   /** Callback when user confirms the command */
   onConfirm: () => void;
   /** Callback when user cancels the command */
@@ -68,7 +68,7 @@ export function CommandPreview({
   };
 
   const getPriorityBadge = () => {
-    if (!command.priority) return null;
+    if (command.type !== 'work_order' || !command.priority) return null;
     const colors = {
       urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
       normal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -99,27 +99,40 @@ export function CommandPreview({
 
       {/* Extracted fields */}
       <div className="space-y-2 mb-4">
-        {command.equipment && (
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <Package className="size-4" />
-            <span>Equipo: {command.equipment}</span>
-          </div>
+        {command.type === 'work_order' && (
+          <>
+            {command.equipment && (
+              <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <Package className="size-4" />
+                <span>Equipo: {command.equipment}</span>
+              </div>
+            )}
+            {command.location && (
+              <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <MapPin className="size-4" />
+                <span>Ubicación: {command.location}</span>
+              </div>
+            )}
+            {command.assignee && (
+              <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                <Users className="size-4" />
+                <span>Asignar a: {command.assignee}</span>
+              </div>
+            )}
+            {command.description && (
+              <div className="text-sm text-zinc-600 dark:text-zinc-400 italic">
+                &ldquo;{command.description}&rdquo;
+              </div>
+            )}
+          </>
         )}
-        {command.location && (
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <MapPin className="size-4" />
-            <span>Ubicación: {command.location}</span>
-          </div>
-        )}
-        {command.assignee && (
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <Users className="size-4" />
-            <span>Asignar a: {command.assignee}</span>
-          </div>
-        )}
-        {command.description && (
-          <div className="text-sm text-zinc-600 dark:text-zinc-400 italic">
-            &ldquo;{command.description}&rdquo;
+
+        {command.type === 'navigation' && (
+          <div className="text-sm text-zinc-600 dark:text-zinc-400">
+            Ruta:{' '}
+            <span className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
+              {command.path || command.screen}
+            </span>
           </div>
         )}
       </div>

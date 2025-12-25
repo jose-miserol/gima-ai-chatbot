@@ -76,6 +76,7 @@ describe('VoiceWorkOrderCommandSchema', () => {
       assignee: 'Juan Pérez',
       confidence: 0.95,
       rawTranscript: 'Crear orden urgente para la UMA del sector 3',
+      type: 'work_order',
     };
 
     const result = VoiceWorkOrderCommandSchema.safeParse(validCommand);
@@ -91,6 +92,7 @@ describe('VoiceWorkOrderCommandSchema', () => {
       action: 'list_pending',
       confidence: 0.9,
       rawTranscript: 'Listar órdenes pendientes',
+      type: 'work_order',
     };
 
     const result = VoiceWorkOrderCommandSchema.safeParse(minimalCommand);
@@ -112,6 +114,7 @@ describe('VoiceWorkOrderCommandSchema', () => {
       action: 'list_pending',
       confidence: 1.5, // Invalid
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const result = VoiceWorkOrderCommandSchema.safeParse(invalidConfidence);
@@ -123,6 +126,7 @@ describe('VoiceWorkOrderCommandSchema', () => {
       action: 'list_pending',
       confidence: 0.9,
       rawTranscript: '', // Invalid - min 1 char
+      type: 'work_order',
     };
 
     const result = VoiceWorkOrderCommandSchema.safeParse(emptyTranscript);
@@ -135,6 +139,7 @@ describe('VoiceWorkOrderCommandSchema', () => {
       equipment: 'A', // Too short (min 2)
       confidence: 0.9,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const result = VoiceWorkOrderCommandSchema.safeParse(tooShort);
@@ -150,6 +155,7 @@ describe('VoiceCommandResultSchema (Discriminated Union)', () => {
         action: 'create_work_order',
         confidence: 0.9,
         rawTranscript: 'Test command',
+        type: 'work_order',
       },
     };
 
@@ -212,6 +218,7 @@ describe('validateVoiceCommand', () => {
       action: 'create_work_order',
       confidence: 0.9,
       rawTranscript: 'Crear orden de trabajo',
+      type: 'work_order',
     };
 
     const result = validateVoiceCommand(validData);
@@ -257,6 +264,7 @@ describe('requiresConfirmation', () => {
       priority: 'urgent',
       confidence: 0.95,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     expect(requiresConfirmation(urgentCommand)).toBe(true);
@@ -268,6 +276,7 @@ describe('requiresConfirmation', () => {
       assignee: 'Juan',
       confidence: 0.95,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     expect(requiresConfirmation(assignCommand)).toBe(true);
@@ -278,6 +287,7 @@ describe('requiresConfirmation', () => {
       action: 'list_pending',
       confidence: 0.75, // Below 0.85 threshold
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     expect(requiresConfirmation(lowConfidence)).toBe(true);
@@ -289,6 +299,7 @@ describe('requiresConfirmation', () => {
       priority: 'normal',
       confidence: 0.95,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     expect(requiresConfirmation(normalCommand)).toBe(false);
@@ -304,6 +315,7 @@ describe('formatCommandSummary', () => {
       priority: 'urgent',
       confidence: 0.9,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const summary = formatCommandSummary(command);
@@ -319,6 +331,7 @@ describe('formatCommandSummary', () => {
       action: 'list_pending',
       confidence: 0.95,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const summary = formatCommandSummary(command);
@@ -331,6 +344,7 @@ describe('formatCommandSummary', () => {
       equipment: 'BCA-002',
       confidence: 0.9,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const summary = formatCommandSummary(command);
@@ -344,6 +358,7 @@ describe('formatCommandSummary', () => {
       priority: 'low',
       confidence: 0.9,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const summary = formatCommandSummary(command);
@@ -357,6 +372,7 @@ describe('formatCommandSummary', () => {
       assignee: 'Carlos',
       confidence: 0.9,
       rawTranscript: 'Test',
+      type: 'work_order',
     };
 
     const summary = formatCommandSummary(command);

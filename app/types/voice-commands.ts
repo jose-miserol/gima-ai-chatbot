@@ -29,6 +29,17 @@ export const VoiceCommandAction = z.enum([
   'assign_technician', // Asignar técnico a orden
 ]);
 
+export const VoiceNavigationAction = z.enum([
+  'navigate', // Navegar a una ruta
+  'go_back', // Volver atrás
+]);
+
+export const VoiceSystemAction = z.enum([
+  'theme_mode', // Cambiar tema
+  'logout', // Cerrar sesión
+  'summarize', // Resumen de actividad
+]);
+
 /**
  * Niveles de prioridad para órdenes de trabajo
  */
@@ -76,19 +87,59 @@ export const VoiceWorkOrderCommandSchema = z.object({
 
   /** Metadata adicional del procesamiento */
   metadata: z.record(z.string(), z.unknown()).optional(),
+
+  /** Tipo discriminador */
+  type: z.literal('work_order').default('work_order'),
+});
+
+export const VoiceNavigationCommandSchema = z.object({
+  action: VoiceNavigationAction,
+
+  /** Ruta destino (ej: /dashboard, /settings) */
+  path: z.string().optional(),
+
+  /** Nombre de pantalla amigable */
+  screen: z.string().optional(),
+
+  params: z.record(z.string(), z.string()).optional(),
+
+  confidence: z.number().min(0).max(1),
+  rawTranscript: z.string().min(1),
+  type: z.literal('navigation').default('navigation'),
+});
+
+export const VoiceSystemCommandSchema = z.object({
+  action: VoiceSystemAction,
+
+  /** Parámetro de acción (ej: 'dark' para theme) */
+  value: z.string().optional(),
+
+  confidence: z.number().min(0).max(1),
+  rawTranscript: z.string().min(1),
+  type: z.literal('system').default('system'),
 });
 
 /**
  * Tipo inferido del schema de comando de voz
  */
 export type VoiceWorkOrderCommand = z.infer<typeof VoiceWorkOrderCommandSchema>;
+export type VoiceNavigationCommand = z.infer<typeof VoiceNavigationCommandSchema>;
+export type VoiceSystemCommand = z.infer<typeof VoiceSystemCommandSchema>;
+
+export const VoiceCommandSchema = z.discriminatedUnion('type', [
+  VoiceWorkOrderCommandSchema,
+  VoiceNavigationCommandSchema,
+  VoiceSystemCommandSchema,
+]);
+
+export type VoiceCommand = z.infer<typeof VoiceCommandSchema>;
 
 /**
  * Schema para resultado exitoso de parsing de comando
  */
 const VoiceCommandSuccessSchema = z.object({
   success: z.literal(true),
-  command: VoiceWorkOrderCommandSchema,
+  command: VoiceCommandSchema,
 });
 
 /**
@@ -220,15 +271,14 @@ export function createEmptyCommand(): Partial<VoiceWorkOrderCommand> {
  * Helper: Verifica si un comando requiere confirmación del usuario
  * Comandos destructivos o de alta importancia requieren confirmación
  */
-export function requiresConfirmation(command: VoiceWorkOrderCommand): boolean {
-  // Crear órdenes urgentes requiere confirmación
-  if (command.priority === 'urgent') {
-    return true;
+export function requiresConfirmation(command: VoiceCommand): boolean {
+  if (command.type === 'work_order') {
+    // Work order logic
+    if (command.priority === 'urgent' || command.action === 'assign_technician') return true;
   }
 
-  // Asignar técnico requiere confirmación
-  if (command.action === 'assign_technician') {
-    return true;
+  if (command.type === 'system') {
+    if (command.action === 'logout') return true;
   }
 
   // Confidence bajo requiere confirmación
@@ -242,7 +292,15 @@ export function requiresConfirmation(command: VoiceWorkOrderCommand): boolean {
 /**
  * Helper: Genera resumen legible del comando para mostrar al usuario
  */
-export function formatCommandSummary(command: VoiceWorkOrderCommand): string {
+export function formatCommandSummary(command: VoiceCommand): string {
+  if (command.type === 'navigation') {
+    return `Navegar a ${command.screen || command.path || 'destino'}`;
+  }
+
+  if (command.type === 'system') {
+    return `Sistema: ${command.action}`;
+  }
+
   const parts: string[] = [];
 
   switch (command.action) {
