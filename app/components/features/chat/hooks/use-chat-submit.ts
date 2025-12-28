@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
+
 import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+
 import { CHAT_CONFIG } from '../constants';
 
 interface FileAttachment {
@@ -8,8 +10,14 @@ interface FileAttachment {
   name?: string;
 }
 
+interface SendMessageOptions {
+  body?: {
+    model?: string;
+  };
+}
+
 interface UseChatSubmitParams {
-  sendMessage: (message: { text: string; files?: FileAttachment[] }, options?: any) => void;
+  sendMessage: (message: { text: string; files?: FileAttachment[] }, options?: SendMessageOptions) => void;
   isListening: boolean;
   toggleListening: () => void;
   model: string;
@@ -26,36 +34,16 @@ interface UseChatSubmitParams {
  * - Control de voz: Detiene grabación si está activa al enviar
  * - Detección de imágenes: Identifica imágenes adjuntas automáticamente
  * - Análisis automático: Si imagen con menos de 10 caracteres de texto, delega a Gemini Vision
- * - Envío normal: Mensajes de texto van directamente a GROQ
  *
- * Flujo de Decisión:
- * 1. Hay imagen con poco texto (menos de 10 chars)? -> Analizar con Gemini Vision
- * 2. Solo texto o imagen con contexto? -> Enviar a GROQ
- *
- * @param sendMessage - Función para enviar mensaje a la API de chat
- * @param isListening - Estado de grabación de voz (se detiene automáticamente al enviar)
- * @param toggleListening - Función para toggle de grabación de voz
- * @param model - Modelo de AI a usar (GROQ)
- * @param setInput - Setter para limpiar el input después de enviar
- * @param analyzeImage - Función async para analizar imagen con Gemini Vision
- * @param setIsAnalyzingImage - Setter para estado de análisis de imagen
- *
- * @returns Objeto con función handleSubmit para manejar envío
- *
- * @example
- * ```tsx
- * const { handleSubmit } = useChatSubmit({
- *   sendMessage,
- *   isListening,
- *   toggleListening,
- *   model: DEFAULT_MODEL,
- *   setInput,
- *   analyzeImage,
- *  setIsAnalyzingImage
- * });
- *
- * <PromptInput onSubmit={handleSubmit} />
- * ```
+ * @param params - Parámetros del hook
+ * @param params.sendMessage - Función para enviar mensaje a la API
+ * @param params.isListening - Estado de grabación de voz
+ * @param params.toggleListening - Toggle grabación de voz
+ * @param params.model - Modelo de AI a usar
+ * @param params.setInput - Setter para limpiar input
+ * @param params.analyzeImage - Función para analizar imagen con Gemini
+ * @param params.setIsAnalyzingImage - Setter para estado de análisis
+ * @returns Objeto con función handleSubmit
  */
 export function useChatSubmit({
   sendMessage,

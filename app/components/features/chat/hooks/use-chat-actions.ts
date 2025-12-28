@@ -18,25 +18,11 @@ interface UseChatActionsParams {
  * - Regenerar: Vuelve a generar la última respuesta del asistente
  * - Limpiar: Borra todo el historial y resetea el input
  * - Copiar: Copia un mensaje al portapapeles y muestra toast
- *
- * @param regenerate - Función para regenerar la última respuesta
- * @param clearHistory - Función para borrar todo el historial
- * @param setInput - Setter para limpiar el input
- *
+ * @param params - Parámetros del hook
+ * @param params.regenerate - Función para regenerar la última respuesta
+ * @param params.clearHistory - Función para borrar todo el historial
+ * @param params.setInput - Setter para limpiar el input
  * @returns Objeto con funciones handleRegenerate, handleClear, handleCopyMessage
- *
- * @example
- * ```tsx
- * const { handleRegenerate, handleClear, handleCopyMessage } = useChatActions({
- *   regenerate,
- *   clearHistory,
- *   setInput
- * });
- *
- * <MessageAction onClick={handleRegenerate} />
- * <Button onClick={handleClear} />
- * <MessageAction onClick={() => handleCopyMessage(text, toast)} />
- * ```
  */
 export function useChatActions({ regenerate, clearHistory, setInput }: UseChatActionsParams) {
   const handleRegenerate = useCallback(() => {
@@ -48,9 +34,13 @@ export function useChatActions({ regenerate, clearHistory, setInput }: UseChatAc
     setInput('');
   }, [clearHistory, setInput]);
 
-  const handleCopyMessage = useCallback((text: string, toast: ToastFunctions) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copiado', 'Mensaje copiado al portapapeles');
+  const handleCopyMessage = useCallback(async (text: string, toast: ToastFunctions) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copiado', 'Mensaje copiado al portapapeles');
+    } catch {
+      toast.error('Error', 'No se pudo copiar el mensaje');
+    }
   }, []);
 
   return {

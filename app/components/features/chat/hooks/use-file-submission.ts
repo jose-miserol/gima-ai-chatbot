@@ -1,13 +1,15 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import type { UIMessage, ChatRequestOptions } from 'ai';
+
 import { analyzePartImage, analyzePdf } from '@/app/actions';
+import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
 import { useToast } from '@/app/components/ui/toast';
 import { DEFAULT_MODEL } from '@/app/config';
 import { MAX_IMAGE_SIZE_BYTES, MAX_PDF_SIZE_BYTES, bytesToMB } from '@/app/config/limits';
+
 import type { MessagePart } from '../types';
-import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+import type { UIMessage, ChatRequestOptions } from 'ai';
 
 /**
  * Parámetros para el hook useFileSubmission
@@ -16,7 +18,7 @@ export interface UseFileSubmissionParams {
   /** Función para actualizar el array de mensajes */
   setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void;
   /** Función para enviar mensajes regulares (sin archivos) */
-  sendMessage: (message: any, options?: ChatRequestOptions) => Promise<string | null | undefined>;
+  sendMessage: (message: { role: 'user'; content: string } | string, options?: ChatRequestOptions) => Promise<string | null | undefined>;
   /** Si el modo de voz está escuchando activamente */
   isListening: boolean;
   /** Función para alternar el estado de escucha de voz */
@@ -43,6 +45,7 @@ export interface UseFileSubmissionReturn {
  * - Convierte URLs blob a base64
  * - Llama a las server actions apropiadas (Gemini Vision o análisis PDF)
  * - Gestiona estado de análisis e indicadores de carga
+ * @param params - Parámetros del hook
  */
 export function useFileSubmission({
   setMessages,
@@ -182,7 +185,7 @@ export function useFileSubmission({
               parts: [{ type: 'text', text: errorMsg }],
               createdAt: new Date(),
             } as UIMessage,
-          ]);
+            ]);
 
           toast.error(`Error al procesar ${fileTypeLabel}`, errorMessage);
         } finally {

@@ -5,13 +5,15 @@
  * Organizado por componente para fácil mantenimiento.
  */
 
+import type { UIMessage } from 'ai';
+import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+
 import type { VoiceButtonProps } from './voice-props.types';
 
 /**
  * Props para el componente ChatEmptyState
  *
  * Define la interfaz para el estado vacío mostrado cuando no hay mensajes.
- *
  * @property isVoiceSupported - Si la entrada de voz está disponible en el navegador
  * @property voiceMode - Modo actual de reconocimiento de voz (Gemini AI o nativo)
  */
@@ -24,13 +26,12 @@ export interface ChatEmptyStateProps {
  * Props para el componente ChatMessage
  *
  * Define la interfaz para renderizar mensajes individuales del chat con acciones.
- *
  * @property message - Datos del mensaje a mostrar (UIMessage de AI SDK)
  * @property onRegenerate - Callback para regenerar la respuesta del asistente
  * @property onCopy - Callback para copiar el texto del mensaje al portapapeles
  */
 export interface ChatMessageProps {
-  message: any; // UIMessage from AI SDK
+  message: UIMessage;
   onRegenerate: () => void;
   onCopy: (text: string) => void;
 }
@@ -39,7 +40,6 @@ export interface ChatMessageProps {
  * Props para el componente ChatConversation
  *
  * Define la interfaz para el área de conversación que muestra todos los mensajes.
- *
  * @property messages - Array de todos los mensajes en la conversación (UIMessage de AI SDK)
  * @property status - Estado actual del chat (listo, transmitiendo, enviado, error)
  * @property isVoiceSupported - Si la entrada de voz está disponible
@@ -48,7 +48,7 @@ export interface ChatMessageProps {
  * @property onCopyMessage - Callback para copiar un mensaje al portapapeles
  */
 export interface ChatConversationProps {
-  messages: any[]; // UIMessage from AI SDK
+  messages: UIMessage[];
   status: 'ready' | 'streaming' | 'submitted' | 'error';
   isVoiceSupported: boolean;
   voiceMode: 'gemini' | 'native';
@@ -60,7 +60,6 @@ export interface ChatConversationProps {
  * Props para el componente ChatInputArea
  *
  * Define la interfaz para el área de input del usuario con adjuntos y voz.
- *
  * @property textareaRef - Referencia al elemento textarea para control programático
  * @property input - Valor actual del input
  * @property onInputChange - Callback al cambiar el texto del input
@@ -73,7 +72,7 @@ export interface ChatInputAreaProps {
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onSubmit: (message: any) => void; // PromptInputMessage from ai-elements
+  onSubmit: (message: PromptInputMessage) => void;
   canSend: boolean;
   status: 'ready' | 'streaming' | 'submitted' | 'error';
   isAnalyzingFile: boolean;

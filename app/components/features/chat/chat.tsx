@@ -1,22 +1,25 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+
+import { executeVoiceCommand } from '@/app/actions';
+import { VoiceCommandMode } from '@/app/components/features/voice';
+import { ConfirmDialog } from '@/app/components/shared/confirm-dialog';
+import { useToast } from '@/app/components/ui/toast';
 import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useWorkOrderCommands } from '@/app/hooks/use-work-order-commands';
-import { executeVoiceCommand } from '@/app/actions';
-import { useToast } from '@/app/components/ui/toast';
-import { ConfirmDialog } from '@/app/components/shared/confirm-dialog';
-import { ChatHeader } from './chat-header';
+import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+
 import { ChatConversation } from './chat-conversation';
-import { ChatStatusIndicators } from './chat-status-bar';
+import { ChatHeader } from './chat-header';
 import { ChatInputArea } from './chat-input-area';
+import { ChatStatusIndicators } from './chat-status-bar';
 import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
 import { useFileSubmission } from './hooks/use-file-submission';
-import { VoiceCommandMode } from '@/app/components/features/voice';
-import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+
 
 /**
  * Chat - Componente principal del sistema de chat inteligente de GIMA
@@ -47,7 +50,6 @@ import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
  * - useVoiceInput: Transcripción de voz (Gemini/Native)
  * - useChatKeyboard: Atajos de teclado
  * - useChatActions: Acciones (regenerate, clear, copy)
- *
  * @example
  * ```tsx
  * // Uso en page.tsx
@@ -180,7 +182,7 @@ export function Chat() {
         }
       };
 
-      checkCommand();
+      void checkCommand();
     }
 
     prevIsListening.current = isListening;

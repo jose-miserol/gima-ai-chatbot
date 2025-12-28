@@ -10,6 +10,10 @@ import {
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import type { ChatMessageProps } from './types';
 
+// Definición de tipos para las partes del mensaje
+interface TextPart { type: 'text'; text: string; }
+interface ImagePart { type: 'image'; imageUrl: string; mimeType?: string; }
+
 /**
  * ChatMessage - Mensaje individual del chat con acciones
  *
@@ -21,9 +25,10 @@ import type { ChatMessageProps } from './types';
  *
  * Usa componentes de AI SDK Elements (Message, MessageContent, MessageActions).
  *
- * @param message - Datos del mensaje a mostrar
- * @param onRegenerate - Callback para regenerar la respuesta
- * @param onCopy - Callback para copiar el texto
+ * @param props - Props del componente
+ * @param props.message - Datos del mensaje a mostrar
+ * @param props.onRegenerate - Callback para regenerar la respuesta
+ * @param props.onCopy - Callback para copiar el texto
  *
  * @example
  * ```tsx
@@ -56,17 +61,17 @@ export function ChatMessage({ message, onRegenerate, onCopy }: ChatMessageProps)
     );
   }
 
-  // Renderizar usando parts
-  const textParts = message.parts.filter((part: any) => part.type === 'text');
-  const imageParts = message.parts.filter((part: any) => part.type === 'image');
-  const textContent = textParts.map((part: any) => part.text).join('\n\n');
+  // Renderizar usando parts con tipos seguros
+  const textParts = message.parts.filter((part): part is TextPart => part.type === 'text');
+  const imageParts = message.parts.filter((part): part is ImagePart => part.type === 'image');
+  const textContent = textParts.map((part) => part.text).join('\n\n');
 
   return (
     <Message key={message.id} from={message.role}>
       {/* Mostrar imágenes primero si existen */}
       {imageParts.length > 0 && (
         <MessageAttachments>
-          {imageParts.map((part: any, i: number) => (
+          {imageParts.map((part, i) => (
             <MessageAttachment
               key={`${message.id}-img-${i}`}
               data={{
