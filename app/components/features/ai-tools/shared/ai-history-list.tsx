@@ -6,12 +6,14 @@
 
 'use client';
 
+import { Clock, Trash2, Search, Star, StarOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
+
 import { Badge } from '@/app/components/ui/badge';
-import { Input } from '@/app/components/ui/input';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Checkbox } from '@/app/components/ui/checkbox';
+import { Input } from '@/app/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -19,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select';
-import { Clock, Trash2, Search, Star, StarOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
+
 import type { ReactNode } from 'react';
 
 /** Número de items por página */
@@ -83,6 +85,18 @@ export interface AIHistoryListProps<T extends HistoryItem = HistoryItem> {
  * - Bulk delete con selección múltiple
  * - Toggle favoritos
  * - Paginación
+ * @param root0
+ * @param root0.items
+ * @param root0.renderItem
+ * @param root0.onItemClick
+ * @param root0.onItemDelete
+ * @param root0.onBulkDelete
+ * @param root0.onToggleFavorite
+ * @param root0.emptyState
+ * @param root0.title
+ * @param root0.showSearch
+ * @param root0.showFilters
+ * @param root0.className
  */
 export function AIHistoryList<T extends HistoryItem = HistoryItem>({
   items,

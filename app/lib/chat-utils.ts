@@ -5,9 +5,10 @@
  * Separado del API route para mejor testabilidad y reutilización.
  */
 
-import type { UIMessage } from 'ai';
 import type { MessagePart } from '@/app/types/chat.types';
+
 import type { Message } from './schemas/chat';
+import type { UIMessage } from 'ai';
 
 /**
  * Extrae el contenido de texto de un mensaje
@@ -16,7 +17,6 @@ import type { Message } from './schemas/chat';
  * - String directo
  * - Objeto con propiedad `text`
  * - Objeto con array de `parts` que contiene partes de texto
- *
  * @param content - El contenido del mensaje en cualquier formato válido
  * @param parts - Array opcional de partes del mensaje
  * @returns El texto extraído o string vacío si no se encuentra
@@ -67,7 +67,6 @@ function extractTextContent(
  * - Extrae texto de objetos con parts si es necesario
  * - Normaliza el campo createdAt a Date o undefined
  * - Preserva las parts originales para futuro soporte multimodal
- *
  * @param rawMessages - Mensajes validados por Zod pero potencialmente con contenido mixto
  * @returns Array de mensajes sanitizados compatibles con UIMessage
  */
@@ -87,7 +86,6 @@ export function sanitizeMessages(rawMessages: Message[]): UIMessage[] {
 
 /**
  * Valida que un mensaje tenga contenido no vacío
- *
  * @param message - Mensaje a validar
  * @returns true si el mensaje tiene contenido válido
  */
@@ -103,7 +101,6 @@ export function hasValidContent(message: UIMessage): boolean {
 
 /**
  * Filtra mensajes vacíos de un array
- *
  * @param messages - Array de mensajes
  * @returns Array con solo mensajes que tienen contenido
  */

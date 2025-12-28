@@ -5,8 +5,9 @@
  * Verifica estados iniciales y funciones disponibles.
  */
 
-import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+
 import { useSummaryGenerator } from '@/app/components/features/activity-summary/hooks/use-summary-generator';
 
 describe('useSummaryGenerator', () => {

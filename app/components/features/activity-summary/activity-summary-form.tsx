@@ -8,10 +8,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { Button } from '@/app/components/ui/button';
 import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+
 import { SUMMARY_STYLES, DETAIL_LEVELS, SUMMARY_LIMITS } from './constants';
 import { useSummaryGenerator } from './hooks';
+
 import type { ActivitySummary } from './types';
 
 interface ActivitySummaryFormProps {
@@ -21,6 +24,11 @@ interface ActivitySummaryFormProps {
   onSummaryGenerated: (summary: ActivitySummary) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onSummaryGenerated
+ */
 export function ActivitySummaryForm({ onSummaryGenerated }: ActivitySummaryFormProps) {
   const [assetType, setAssetType] = useState<string>(ASSET_TYPES[0]);
   const [taskType, setTaskType] = useState<string>(TASK_TYPES[0]);

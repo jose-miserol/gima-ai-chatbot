@@ -99,7 +99,6 @@ export const MAX_STORED_MESSAGES = 100;
 
 /**
  * bytesToMB - Convierte bytes a megabytes
- *
  * @param bytes - Cantidad de bytes
  * @returns Tamaño en megabytes (redondeado a 1 decimal)
  */

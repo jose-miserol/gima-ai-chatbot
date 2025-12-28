@@ -1,12 +1,15 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { compress, decompress } from 'lz-string';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { compress, decompress } from 'lz-string';
-import type { UIMessage } from 'ai';
+
+
 import { MAX_STORED_MESSAGES } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
+
+import type { UIMessage } from 'ai';
 
 // Version del formato de storage para futuras migraciones
 // TODO: Usar STORAGE_VERSION cuando guardemos datos con versionado
@@ -101,17 +104,14 @@ function loadMessagesFromStorage(storageKey: string): UIMessage[] {
  * - Support for vision response persistence
  * - Backward compatibility with non-compressed format
  * - Proper AI SDK v5 pattern with initialMessages
- *
  * @param options - Configuration options
  * @param options.storageKey - LocalStorage key prefix (default: 'gima-chat-history')
  * @param options.debounceMs - Debounce delay in ms for writes (default: 500)
- *
  * @returns Extended chat state and methods from AI SDK
  * @returns.visionResponse - Currently stored vision analysis response
  * @returns.setVisionResponse - Function to update vision response
  * @returns.clearHistory - Function to clear all chat history and vision data
  * @returns...rest - All properties from AI SDK's useChat hook
- *
  * @example
  * ```tsx
  * function ChatComponent() {
@@ -138,7 +138,6 @@ function loadMessagesFromStorage(storageKey: string): UIMessage[] {
  *   );
  * }
  * ```
- *
  * @see {@link https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat | AI SDK useChat}
  */
 export function usePersistentChat(options: UsePersistentChatOptions = {}) {

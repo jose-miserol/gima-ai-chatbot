@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+
 import { ThemeToggle } from '@/app/components/features/theme';
 
 interface ChatHeaderProps {
@@ -14,10 +15,10 @@ interface ChatHeaderProps {
  * - Botón de limpieza: Borrar todo el historial de conversación
  *
  * El botón para limpiar historial solo aparece cuando hay mensajes.
- *
  * @param hasMessages - Indica si hay mensajes en la conversación (muestra botón de clear)
+ * @param hasMessages.hasMessages
  * @param onClearHistory - Callback ejecutado al solicitar limpiar historial (abre confirmación)
- *
+ * @param hasMessages.onClearHistory
  * @example
  * ```tsx
  * <ChatHeader

@@ -4,8 +4,10 @@ import {
   ConversationScrollButton,
 } from '@/app/components/ai-elements/conversation';
 import { Loader } from '@/app/components/ai-elements/loader';
+
 import { ChatEmptyState } from './chat-empty-state';
 import { ChatMessage } from './chat-message';
+
 import type { ChatConversationProps } from './types';
 
 /**
@@ -19,14 +21,18 @@ import type { ChatConversationProps } from './types';
  * - Botón de scroll to bottom
  *
  * Usa componentes de AI SDK Elements (Conversation, ConversationContent, ConversationScrollButton).
- *
  * @param messages - Array de mensajes a mostrar
+ * @param messages.messages
  * @param status - Estado actual del chat ('ready', 'streaming', etc.)
+ * @param messages.status
  * @param isVoiceSupported - Si voz está disponible
+ * @param messages.isVoiceSupported
  * @param voiceMode - Modo de voz actual
+ * @param messages.voiceMode
  * @param onRegenerate - Callback para regenerar respuesta
+ * @param messages.onRegenerate
  * @param onCopyMessage - Callback para copiar mensaje
- *
+ * @param messages.onCopyMessage
  * @example
  * ```tsx
  * <ChatConversation

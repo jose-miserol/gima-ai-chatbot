@@ -10,6 +10,9 @@ interface AudioWaveformProps {
 /**
  * Componente de visualización de forma de onda de audio animada
  * Muestra barras animadas cuando el estado está activo
+ * @param root0
+ * @param root0.active
+ * @param root0.className
  */
 export function AudioWaveform({ active = false, className }: AudioWaveformProps) {
   return (

@@ -8,12 +8,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { STORAGE_KEYS, CHECKLIST_LIMITS } from '../constants';
+
 import type { ChecklistTemplate, Checklist } from '../types';
 
 /**
  * Hook para gestionar templates de checklists
- *
  * @returns Estado y funciones para templates
  */
 export function useChecklistTemplates() {
@@ -39,7 +40,6 @@ export function useChecklistTemplates() {
 
   /**
    * Guarda un checklist como template
-   *
    * @param name - Nombre del template
    * @param checklist - Checklist a guardar
    */
@@ -72,7 +72,6 @@ export function useChecklistTemplates() {
 
   /**
    * Elimina un template
-   *
    * @param templateId - ID del template a eliminar
    */
   const deleteTemplate = (templateId: string): void => {
@@ -88,7 +87,6 @@ export function useChecklistTemplates() {
 
   /**
    * Incrementa el contador de uso de un template
-   *
    * @param templateId - ID del template
    */
   const incrementUsage = (templateId: string): void => {
@@ -105,7 +103,6 @@ export function useChecklistTemplates() {
 
   /**
    * Obtiene un template por ID
-   *
    * @param templateId - ID del template
    * @returns Template o undefined si no existe
    */

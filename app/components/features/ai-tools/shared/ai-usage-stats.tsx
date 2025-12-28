@@ -7,12 +7,14 @@
 /* eslint-disable react-hooks/purity -- Date.now() en render es necesario para countdown */
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
-import { Progress } from '@/app/components/ui/progress';
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Zap } from 'lucide-react';
-import { cn } from '@/app/lib/utils';
 import { useEffect, useMemo, useState } from 'react';
+
+import { Badge } from '@/app/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Progress } from '@/app/components/ui/progress';
+import { cn } from '@/app/lib/utils';
+
 
 /** Threshold para mostrar warning (80%) */
 const WARNING_THRESHOLD = 80;
@@ -56,6 +58,12 @@ export interface AIUsageStatsProps {
  * - Indicador de tendencia (up/down/stable)
  * - Countdown para reset de cuota
  * - Persistencia en localStorage
+ * @param root0
+ * @param root0.storageKey
+ * @param root0.features
+ * @param root0.resetDate
+ * @param root0.showTitle
+ * @param root0.className
  */
 export function AIUsageStats({
   storageKey = 'ai-usage-stats',

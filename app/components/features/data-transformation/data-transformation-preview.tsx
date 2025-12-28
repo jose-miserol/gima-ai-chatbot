@@ -1,9 +1,11 @@
 'use client';
 
+import { Check, X } from 'lucide-react';
+
+import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { ScrollArea } from '@/app/components/ui/scroll-area';
-import { Badge } from '@/app/components/ui/badge';
-import { Check, X } from 'lucide-react';
+
 import type { TransformationResult } from './types';
 
 /**
@@ -27,6 +29,12 @@ interface DataTransformationPreviewProps {
  *
  * Muestra una comparación side-by-side de los datos originales y transformados.
  * Incluye métricas (tamaño, items procesados) y botones de acción.
+ * @param root0
+ * @param root0.originalData
+ * @param root0.result
+ * @param root0.onApply
+ * @param root0.onReject
+ * @param root0.isApplying
  */
 export function DataTransformationPreview({
   originalData,

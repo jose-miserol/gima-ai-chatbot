@@ -8,8 +8,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
+
 import type { CloseoutNotesRequest } from '@/app/lib/schemas/work-order-closeout.schema';
+import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
+
 import type { CloseoutNotes } from '../types';
 
 /**
@@ -30,6 +32,7 @@ export function useCloseoutGenerator() {
 
   /**
    * Genera notas de cierre
+   * @param request
    */
   const generate = async (request: CloseoutNotesRequest) => {
     setIsGenerating(true);

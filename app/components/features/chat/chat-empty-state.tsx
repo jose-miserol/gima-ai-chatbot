@@ -10,10 +10,10 @@ interface ChatEmptyStateProps {
  * - Título de bienvenida
  * - Descripción de funcionalidades
  * - Indicador de voz disponible (si aplica)
- *
  * @param isVoiceSupported - Si el reconocimiento de voz está disponible
+ * @param isVoiceSupported.isVoiceSupported
  * @param voiceMode - Modo de voz actual ('gemini' o 'native')
- *
+ * @param isVoiceSupported.voiceMode
  * @example
  * ```tsx
  * <ChatEmptyState

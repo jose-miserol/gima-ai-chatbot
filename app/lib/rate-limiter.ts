@@ -14,11 +14,18 @@ interface RequestRecord {
   timestamps: number[];
 }
 
+/**
+ *
+ */
 export class RateLimiter {
   private requests: Map<string, RequestRecord>;
   private config: RateLimitConfig;
   private cleanupInterval: NodeJS.Timeout;
 
+  /**
+   *
+   * @param config
+   */
   constructor(config: RateLimitConfig) {
     this.requests = new Map();
     this.config = config;
@@ -57,6 +64,7 @@ export class RateLimiter {
 
   /**
    * Obtiene las solicitudes restantes para un identificador
+   * @param identifier
    */
   getRemaining(identifier: string): number {
     const now = Date.now();
@@ -75,6 +83,7 @@ export class RateLimiter {
 
   /**
    * Obtiene el tiempo hasta que se permita la siguiente solicitud (en ms)
+   * @param identifier
    */
   getRetryAfter(identifier: string): number {
     const record = this.requests.get(identifier);

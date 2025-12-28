@@ -34,6 +34,7 @@ FORMATO DE SALIDA (JSON estricto):
 
 /**
  * Obtiene instrucciones específicas por estilo
+ * @param style
  */
 export function getCloseoutStyleInstructions(style: CloseoutStyle): string {
   const styles = {
@@ -64,6 +65,19 @@ export function getCloseoutStyleInstructions(style: CloseoutStyle): string {
 
 /**
  * Construye el prompt completo para generación de notas
+ * @param params
+ * @param params.workOrderId
+ * @param params.title
+ * @param params.description
+ * @param params.assetType
+ * @param params.taskType
+ * @param params.priority
+ * @param params.activities
+ * @param params.materialsUsed
+ * @param params.timeSpent
+ * @param params.issues
+ * @param params.style
+ * @param params.includeRecommendations
  */
 export function buildCloseoutPrompt(params: {
   workOrderId: string;

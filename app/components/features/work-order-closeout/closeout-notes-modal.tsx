@@ -7,7 +7,21 @@
 
 'use client';
 
+import { FileText } from 'lucide-react';
 import { useState } from 'react';
+
+import {
+  AIGenerationForm,
+  AIPreviewCard,
+  type FormField,
+} from '@/app/components/features/ai-tools/shared';
+import type {
+  CloseoutNotesRequest,
+  CloseoutNotes,
+  CloseoutStyle,
+  WorkOrderSummary,
+} from '@/app/components/features/work-order-closeout/types';
+import { Button } from '@/app/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,21 +29,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
-import {
-  AIGenerationForm,
-  AIPreviewCard,
-  type FormField,
-} from '@/app/components/features/ai-tools/shared';
-import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
-import type {
-  CloseoutNotesRequest,
-  CloseoutNotes,
-  CloseoutStyle,
-  WorkOrderSummary,
-} from '@/app/components/features/work-order-closeout/types';
 import { useToast } from '@/app/hooks/use-toast';
-import { Button } from '@/app/components/ui/button';
-import { FileText } from 'lucide-react';
+import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
 
 const closeoutService = new WorkOrderCloseoutAIService();
 
@@ -83,6 +84,11 @@ export interface CloseoutNotesModalProps {
 
 /**
  * Modal para generar notas de cierre con IA
+ * @param root0
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.workOrderData
+ * @param root0.onNotesAccepted
  */
 export function CloseoutNotesModal({
   open,

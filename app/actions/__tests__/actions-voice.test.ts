@@ -8,7 +8,11 @@
  * - Manejo de errores y códigos
  */
 
+import { generateText } from 'ai';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+// Import después de los mocks
+import { executeVoiceCommand } from '../voice';
 
 // Mock del módulo ai antes de importar
 vi.mock('ai', () => ({
@@ -19,10 +23,6 @@ vi.mock('ai', () => ({
 vi.mock('@/app/config/voice-command-prompt', () => ({
   WORK_ORDER_VOICE_PROMPT: 'Test prompt for voice commands',
 }));
-
-// Import después de los mocks
-import { generateText } from 'ai';
-import { executeVoiceCommand } from '../voice';
 
 const mockGenerateText = vi.mocked(generateText);
 

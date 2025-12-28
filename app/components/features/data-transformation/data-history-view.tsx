@@ -1,9 +1,11 @@
 'use client';
 
 import { Clock, RotateCcw, Trash2, X } from 'lucide-react';
-import { ScrollArea } from '@/app/components/ui/scroll-area';
-import { Button } from '@/app/components/ui/button';
+
 import { Badge } from '@/app/components/ui/badge';
+import { Button } from '@/app/components/ui/button';
+import { ScrollArea } from '@/app/components/ui/scroll-area';
+
 import type { DataSnapshot } from './types';
 
 interface DataHistoryViewProps {
@@ -17,6 +19,13 @@ interface DataHistoryViewProps {
 
 /**
  * Panel lateral para mostrar y gestionar el historial de snapshots.
+ * @param root0
+ * @param root0.snapshots
+ * @param root0.onRestore
+ * @param root0.onDelete
+ * @param root0.onClear
+ * @param root0.isOpen
+ * @param root0.onClose
  */
 export function DataHistoryView({
   snapshots,

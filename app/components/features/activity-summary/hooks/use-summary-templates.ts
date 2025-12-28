@@ -8,12 +8,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { STORAGE_KEYS, SUMMARY_LIMITS } from '../constants';
+
 import type { SummaryTemplate, ActivitySummary } from '../types';
 
 /**
  * Hook para gestionar templates de resúmenes
- *
  * @returns Estado y funciones de gestión de templates
  */
 export function useSummaryTemplates() {
@@ -48,7 +49,6 @@ export function useSummaryTemplates() {
 
   /**
    * Guarda templates en localStorage
-   *
    * @param newTemplates - Templates a guardar
    */
   const saveToStorage = (newTemplates: SummaryTemplate[]) => {
@@ -61,7 +61,6 @@ export function useSummaryTemplates() {
 
   /**
    * Guarda un nuevo template
-   *
    * @param name - Nombre del template
    * @param summary - Resumen a guardar
    */
@@ -88,7 +87,6 @@ export function useSummaryTemplates() {
 
   /**
    * Elimina un template
-   *
    * @param id - ID del template a eliminar
    */
   const deleteTemplate = (id: string) => {
@@ -99,7 +97,6 @@ export function useSummaryTemplates() {
 
   /**
    * Incrementa el contador de uso de un template
-   *
    * @param id - ID del template
    */
   const incrementUsage = (id: string) => {
@@ -119,7 +116,6 @@ export function useSummaryTemplates() {
 
   /**
    * Obtiene un template por ID
-   *
    * @param id - ID del template
    * @returns Template encontrado o undefined
    */

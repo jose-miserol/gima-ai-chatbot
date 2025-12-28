@@ -3,7 +3,6 @@
  *
  * Proporciona funciones para validar formatos de IP y extraer
  * la dirección del cliente desde headers HTTP.
- *
  * @module ip-utils
  */
 
@@ -33,10 +32,8 @@ const IPV6_REGEX =
 
 /**
  * Valida si un string es una dirección IP válida (IPv4 o IPv6)
- *
  * @param ip - String a validar
  * @returns true si es una IP válida
- *
  * @example
  * isValidIP('192.168.1.1')     // true
  * isValidIP('::1')             // true
@@ -66,11 +63,9 @@ export interface ExtractIPOptions {
  * Busca en los headers estándar de proxy:
  * 1. x-forwarded-for (primera IP de la lista)
  * 2. x-real-ip
- *
  * @param req - Request HTTP entrante
  * @param options - Opciones de extracción
  * @returns IP del cliente o null si no se puede determinar o es inválida
- *
  * @example
  * // En producción
  * const ip = extractClientIP(req);
@@ -103,7 +98,6 @@ export function extractClientIP(req: Request, options?: ExtractIPOptions): strin
 
 /**
  * Crea respuesta de error por IP inválida o no proporcionada
- *
  * @returns NextResponse con status 400
  */
 export function createInvalidIPResponse(): NextResponse {

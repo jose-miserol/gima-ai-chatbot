@@ -6,6 +6,8 @@
 
 'use client';
 
+import { Loader2, CheckCircle2, XCircle, Sparkles, AlertTriangle, Clock } from 'lucide-react';
+
 import { Badge } from '@/app/components/ui/badge';
 import {
   Tooltip,
@@ -13,8 +15,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/app/components/ui/tooltip';
-import { Loader2, CheckCircle2, XCircle, Sparkles, AlertTriangle, Clock } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
+
 import type { AIGenerationStatus } from './types';
 
 /**
@@ -92,6 +94,11 @@ const STATUS_CONFIG = {
  * - Tooltip con detalles adicionales
  * - Modo compacto (solo icono)
  * - Animación para estado generating
+ * @param root0
+ * @param root0.status
+ * @param root0.details
+ * @param root0.compact
+ * @param root0.className
  */
 export function AIStatusBadge({
   status,

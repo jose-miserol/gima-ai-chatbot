@@ -8,6 +8,7 @@
 'use client';
 
 import { Button } from '@/app/components/ui/button';
+
 import type { Checklist } from './types';
 
 interface ChecklistBuilderPreviewProps {
@@ -27,6 +28,13 @@ interface ChecklistBuilderPreviewProps {
   onSave: (checklist: Checklist) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.checklist
+ * @param root0.onClose
+ * @param root0.onSave
+ */
 export function ChecklistBuilderPreview({
   checklist,
   onClose,

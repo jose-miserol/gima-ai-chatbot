@@ -1,18 +1,21 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+
+import { executeVoiceCommand } from '@/app/actions';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useWorkOrderCommands } from '@/app/hooks/use-work-order-commands';
-import { useVoiceNavigation } from './use-voice-navigation';
-import { useVoiceSystem } from './use-voice-system';
-import { executeVoiceCommand } from '@/app/actions';
+import { logger } from '@/app/lib/logger';
 import type {
   VoiceCommand,
   VoiceWorkOrderCommand,
   VoiceNavigationCommand,
   VoiceSystemCommand,
 } from '@/app/types/voice-commands';
-import { logger } from '@/app/lib/logger';
+
+import { useVoiceNavigation } from './use-voice-navigation';
+import { useVoiceSystem } from './use-voice-system';
+
 
 export type CommandFlowState =
   | 'idle'
@@ -29,6 +32,14 @@ interface UseVoiceCommandFlowProps {
   context?: string;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onCommandExecuted
+ * @param root0.onError
+ * @param root0.minConfidence
+ * @param root0.context
+ */
 export function useVoiceCommandFlow({
   onCommandExecuted,
   onError,

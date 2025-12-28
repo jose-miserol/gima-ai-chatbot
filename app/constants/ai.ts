@@ -26,7 +26,6 @@ export const AI_MODELS = {
  *
  * Define qué modelo de IA se usa para cada funcionalidad del sistema.
  * Basado en la implementación actual en app/api/chat y app/actions.
- *
  * @example
  * ```typescript
  * const config = AI_TASK_MODELS.CHECKLIST_GENERATION;

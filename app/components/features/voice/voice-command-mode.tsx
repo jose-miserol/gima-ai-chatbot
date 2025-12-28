@@ -1,10 +1,11 @@
 'use client';
 
-import { VoiceButton } from './voice-button';
+import { cn } from '@/app/lib/utils';
+
 import { CommandPreview } from './command-preview';
 import { CommandStatusIndicator } from './command-status-indicator';
-import { cn } from '@/app/lib/utils';
 import { useVoiceCommandFlow } from './hooks/use-voice-command-flow';
+import { VoiceButton } from './voice-button';
 
 /**
  * VoiceCommandModeProps - Props para el componente de modo comando de voz
@@ -33,6 +34,12 @@ interface VoiceCommandModeProps {
  * - Muestra estado de ejecución con CommandStatusIndicator
  *
  * Componente refactorizado para usar `useVoiceCommandFlow` y cumplir con reglas de tamaño (<200 líneas).
+ * @param root0
+ * @param root0.onCommandExecuted
+ * @param root0.onError
+ * @param root0.minConfidence
+ * @param root0.context
+ * @param root0.className
  */
 export function VoiceCommandMode({
   onCommandExecuted,

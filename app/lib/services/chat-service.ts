@@ -1,12 +1,13 @@
 import { createGroq } from '@ai-sdk/groq';
 import { streamText, type LanguageModel } from 'ai';
+
+import { sanitizeForModel } from '@/app/components/features/chat/utils';
 import { SYSTEM_PROMPT } from '@/app/config';
 import { env } from '@/app/config/env';
-import { chatRateLimiter } from '@/app/lib/rate-limiter';
-import { logger } from '@/app/lib/logger';
-import { chatRequestSchema } from '@/app/lib/schemas';
-import { sanitizeForModel } from '@/app/components/features/chat/utils';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
+import { logger } from '@/app/lib/logger';
+import { chatRateLimiter } from '@/app/lib/rate-limiter';
+import { chatRequestSchema } from '@/app/lib/schemas';
 
 // Define dependencies for injection
 export interface ChatServiceDependencies {
@@ -15,9 +16,16 @@ export interface ChatServiceDependencies {
   modelProvider: (modelId: string) => LanguageModel;
 }
 
+/**
+ *
+ */
 export class ChatService {
   private deps: ChatServiceDependencies;
 
+  /**
+   *
+   * @param dependencies
+   */
   constructor(dependencies: Partial<ChatServiceDependencies> = {}) {
     this.deps = {
       logger: dependencies.logger || logger,
@@ -72,14 +80,28 @@ export class ChatService {
 }
 
 // Custom Errors
+/**
+ *
+ */
 export class RateLimitError extends Error {
+  /**
+   *
+   * @param retryAfter
+   */
   constructor(public retryAfter: number) {
     super(ERROR_MESSAGES.RATE_LIMIT);
     this.name = 'RateLimitError';
   }
 }
 
+/**
+ *
+ */
 export class ValidationError extends Error {
+  /**
+   *
+   * @param details
+   */
   constructor(public details: unknown) {
     super(ERROR_MESSAGES.INVALID_REQUEST);
     this.name = 'ValidationError';

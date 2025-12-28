@@ -7,6 +7,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import type { ChecklistGenerationRequest } from '@/app/lib/schemas/checklist.schema';
+import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
+
 // Mock del módulo 'env' para evitar validación de API keys en tests
 vi.mock('@/app/config/env', () => ({
   env: {
@@ -15,9 +18,6 @@ vi.mock('@/app/config/env', () => ({
     NODE_ENV: 'test',
   },
 }));
-
-import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
-import type { ChecklistGenerationRequest } from '@/app/lib/schemas/checklist.schema';
 
 describe('ChecklistAIService', () => {
   let service: ChecklistAIService;

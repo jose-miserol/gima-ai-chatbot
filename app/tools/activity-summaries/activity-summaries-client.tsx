@@ -7,7 +7,15 @@
 
 'use client';
 
+import { FileText } from 'lucide-react';
 import { useState, useMemo } from 'react';
+
+import type {
+  ActivitySummaryRequest,
+  ActivitySummary,
+  SummaryStyle,
+  DetailLevel,
+} from '@/app/components/features/activity-summary/types';
 import {
   AIToolLayout,
   AIGenerationForm,
@@ -18,16 +26,9 @@ import {
   type HistoryItem,
   type FeatureUsage,
 } from '@/app/components/features/ai-tools/shared';
-import { FileText } from 'lucide-react';
-import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
-import type {
-  ActivitySummaryRequest,
-  ActivitySummary,
-  SummaryStyle,
-  DetailLevel,
-} from '@/app/components/features/activity-summary/types';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/hooks/use-toast';
+import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
 
 const summaryService = new ActivitySummaryAIService();
 
@@ -107,6 +108,9 @@ const formFields: FormField[] = [
   },
 ];
 
+/**
+ *
+ */
 export function ActivitySummariesClient() {
   const { toast } = useToast();
   const [summary, setSummary] = useState<ActivitySummary | null>(null);

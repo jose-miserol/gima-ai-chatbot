@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+
 import { STREAM_CONFIG } from '@/app/config';
 import { env } from '@/app/config/env';
-import { logger } from '@/app/lib/logger';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
 import { extractClientIP, createInvalidIPResponse } from '@/app/lib/ip-utils';
+import { logger } from '@/app/lib/logger';
 import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
 
 // ===========================================
@@ -22,7 +23,6 @@ export const maxDuration = 30;
 
 /**
  * Crea respuesta de rate limit excedido
- *
  * @param retryAfterSeconds - Segundos hasta que se pueda reintentar
  * @returns NextResponse con status 429
  */
@@ -45,7 +45,6 @@ function createRateLimitResponse(retryAfterSeconds: number): NextResponse {
 
 /**
  * Crea respuesta de error de validación
- *
  * @param details - Detalles del error (issues de Zod)
  * @returns NextResponse con status 400
  */
@@ -65,12 +64,9 @@ function createValidationErrorResponse(details: unknown): NextResponse {
 
 /**
  * Procesa mensajes de chat y retorna respuesta streamed de IA
- *
  * @param req - Request HTTP con body JSON conteniendo messages y model opcional
  * @returns Stream de respuesta de IA o error JSON
- *
  * @throws {Error} Si hay error de procesamiento interno
- *
  * @example
  * ```bash
  * curl -X POST /api/chat \

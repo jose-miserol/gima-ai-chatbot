@@ -1,21 +1,20 @@
 'use server';
 
-import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
+
 import { VOICE_PROMPT } from '@/app/config';
 import { MAX_AUDIO_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-import { getBase64Size } from '@/app/utils/base64';
 import { VoiceCommandParserService } from '@/app/lib/services/voice-command-parser';
+import { getBase64Size } from '@/app/utils/base64';
 
 /**
  * Transcribe un archivo de audio usando el modelo Gemini Flash Lite.
  * Utiliza prompting específico para limpiar timestamps y muletillas.
- *
  * @param audioDataUrl - String codificado en base64 del audio (data:audio/...)
  * @param mimeType - Tipo MIME del audio (default: 'audio/webm' para backward compatibility)
  * @returns Objeto con el texto transcrito y estado de éxito
- *
  * @example
  * ```typescript
  * const result = await transcribeAudio("data:audio/webm;base64,...");
@@ -91,11 +90,9 @@ export async function transcribeAudio(
 /**
  * Ejecuta un comando de voz parseando la transcripción y validando el resultado.
  * Usa Gemini para interpretar el comando y Zod para validar la estructura.
- *
  * @param transcript - Texto transcrito del audio de voz
  * @param options - Opciones de parsing (idioma, confianza mínima, contexto)
  * @returns Resultado discriminado con comando parseado o error
- *
  * @example
  * ```typescript
  * const result = await executeVoiceCommand("Crear orden urgente para la UMA");
@@ -108,6 +105,10 @@ export async function transcribeAudio(
 /**
  * Ejecuta un comando de voz parseando la transcripción y validando el resultado.
  * Delega la inteligencia al VoiceCommandParserService.
+ * @param transcript
+ * @param options
+ * @param options.minConfidence
+ * @param options.context
  */
 export async function executeVoiceCommand(
   transcript: string,

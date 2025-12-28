@@ -7,6 +7,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import type { ActivitySummaryRequest } from '@/app/lib/schemas/activity-summary.schema';
+import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
+
 // Mock del módulo 'env' para evitar validación de API keys en tests
 vi.mock('@/app/config/env', () => ({
   env: {
@@ -15,9 +18,6 @@ vi.mock('@/app/config/env', () => ({
     NODE_ENV: 'test',
   },
 }));
-
-import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
-import type { ActivitySummaryRequest } from '@/app/lib/schemas/activity-summary.schema';
 
 describe('ActivitySummaryAIService', () => {
   let service: ActivitySummaryAIService;

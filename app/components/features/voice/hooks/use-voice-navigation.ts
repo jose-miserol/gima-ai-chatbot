@@ -2,9 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback } from 'react';
-import type { VoiceNavigationCommand } from '@/app/types/voice-commands';
-import { logger } from '@/app/lib/logger';
 
+import { logger } from '@/app/lib/logger';
+import type { VoiceNavigationCommand } from '@/app/types/voice-commands';
+
+/**
+ *
+ */
 export function useVoiceNavigation() {
   const router = useRouter();
 

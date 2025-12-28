@@ -2,8 +2,9 @@
  * useCloseoutGenerator - Unit Tests
  */
 
-import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+
 import { useCloseoutGenerator } from '@/app/components/features/work-order-closeout/hooks/use-closeout-generator';
 
 describe('useCloseoutGenerator', () => {

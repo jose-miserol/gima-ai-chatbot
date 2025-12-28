@@ -2,9 +2,13 @@
 
 import { useTheme } from 'next-themes';
 import { useCallback } from 'react';
-import type { VoiceSystemCommand } from '@/app/types/voice-commands';
-import { logger } from '@/app/lib/logger';
 
+import { logger } from '@/app/lib/logger';
+import type { VoiceSystemCommand } from '@/app/types/voice-commands';
+
+/**
+ *
+ */
 export function useVoiceSystem() {
   const { setTheme, theme } = useTheme();
 

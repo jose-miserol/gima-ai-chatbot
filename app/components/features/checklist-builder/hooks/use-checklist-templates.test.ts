@@ -5,8 +5,9 @@
  * Verifica localStorage, CRUD operations y límites.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { useChecklistTemplates } from '@/app/components/features/checklist-builder/hooks/use-checklist-templates';
 import type { Checklist } from '@/app/components/features/checklist-builder/types';
 

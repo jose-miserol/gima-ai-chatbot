@@ -6,11 +6,12 @@
  */
 
 import { z } from 'zod';
-import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+
 import {
   CHECKLIST_CATEGORIES,
   CHECKLIST_LIMITS,
 } from '@/app/components/features/checklist-builder/constants';
+import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
 
 /**
  * Schema para request de generación de checklist

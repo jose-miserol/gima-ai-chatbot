@@ -18,13 +18,16 @@ interface UseChatKeyboardParams {
  *
  * Los shortcuts se deshabilitan automáticamente si el chat está en un estado
  * que no permite interacción (ej: durante análisis de imagen).
- *
  * @param onSubmit - Callback para enviar el mensaje actual
+ * @param onSubmit.onSubmit
  * @param onCancelVoice - Callback para cancelar la grabación de voz
+ * @param onSubmit.onCancelVoice
  * @param onFocusInput - Callback para hacer focus en el textarea
+ * @param onSubmit.onFocusInput
  * @param canSubmit - Si el mensaje actual puede enviarse
+ * @param onSubmit.canSubmit
  * @param isListening - Si está grabando voz actualmente
- *
+ * @param onSubmit.isListening
  * @example
  * ```tsx
  * useChatKeyboard({

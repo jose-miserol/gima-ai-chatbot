@@ -14,20 +14,21 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 
-// Mock environment variables ANTES de importar el servicio
-beforeAll(() => {
-  vi.stubEnv('NEXT_PUBLIC_BACKEND_API_URL', 'https://api.mock.com');
-  vi.stubEnv('BACKEND_API_KEY', 'mock-api-key-123');
-});
+import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 
-import { WorkOrderService } from '../work-order-service';
 import {
   WorkOrderError,
   RateLimitError,
   TimeoutError,
   ServiceUnavailableError,
 } from '../contracts/work-order-service.contracts';
-import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+import { WorkOrderService } from '../work-order-service';
+
+// Mock environment variables ANTES de importar el servicio
+beforeAll(() => {
+  vi.stubEnv('NEXT_PUBLIC_BACKEND_API_URL', 'https://api.mock.com');
+  vi.stubEnv('BACKEND_API_KEY', 'mock-api-key-123');
+});
 
 // Mock factory para logger
 const createMockLogger = () => ({
@@ -55,7 +56,7 @@ const createMockTimer = () => ({
   setTimeout: vi.fn((cb: () => void, ms: number) => {
     return setTimeout(cb, ms); // Usa el setTimeout mockeado por Vitest
   }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   clearTimeout: vi.fn((id: any) => {
     clearTimeout(id);
   }),

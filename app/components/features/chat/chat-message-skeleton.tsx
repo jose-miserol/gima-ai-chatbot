@@ -12,6 +12,9 @@ interface MessageSkeletonProps {
  *
  * Muestra un estado de carga animado que imita la estructura de un mensaje.
  * Se usa mientras se reciben o generan mensajes.
+ * @param root0
+ * @param root0.role
+ * @param root0.className
  */
 export function ChatMessageSkeleton({ role = 'assistant', className }: MessageSkeletonProps) {
   return (
@@ -44,6 +47,8 @@ export function ChatMessageSkeleton({ role = 'assistant', className }: MessageSk
  * Contenedor de skeletons para la carga inicial del chat
  *
  * Muestra múltiples mensajes de skeleton para simular un historial cargando.
+ * @param root0
+ * @param root0.messageCount
  */
 export function ChatSkeleton({ messageCount = 3 }: { messageCount?: number }) {
   return (

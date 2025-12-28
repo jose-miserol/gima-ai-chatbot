@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+
 import { analyzePartImage } from '@/app/actions';
 
 interface FileAttachment {
@@ -49,14 +50,13 @@ interface UseImageAnalysisParams {
  *
  * Este análisis fue generado automáticamente...
  * ```
- *
  * @param setMessages - Función para actualizar array de mensajes del chat
+ * @param setMessages.setMessages
  * @param toast - Sistema de notificaciones toast (success/error)
- *
+ * @param setMessages.toast
  * @returns Objeto con función analyzeImage que retorna Promise<boolean>
  *   - true: Análisis exitoso
  *   - false: Error en análisis
- *
  * @example
  * ```tsx
  * const { analyzeImage } = useImageAnalysis({

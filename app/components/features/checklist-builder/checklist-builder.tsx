@@ -8,11 +8,16 @@
 'use client';
 
 import { useState } from 'react';
+
 import { ChecklistBuilderForm } from './checklist-builder-form';
-import { ChecklistBuilderPreview } from './checklist-builder-preview';
 import { ChecklistBuilderList } from './checklist-builder-list';
+import { ChecklistBuilderPreview } from './checklist-builder-preview';
+
 import type { Checklist } from './types';
 
+/**
+ *
+ */
 export function ChecklistBuilder() {
   const [activeChecklist, setActiveChecklist] = useState<Checklist | null>(null);
   const [view, setView] = useState<'form' | 'preview' | 'templates'>('form');

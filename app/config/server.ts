@@ -23,7 +23,6 @@ const ACRONYMS_GLOSSARY: Record<string, string> = {
  * formatGlossary - Formatea el glosario para inyección en prompts
  *
  * Convierte el objeto de glosario en una cadena de texto con formato de lista Markdown.
- *
  * @returns Cadena formateada con las definiciones del glosario
  */
 export const formatGlossary = (): string => {

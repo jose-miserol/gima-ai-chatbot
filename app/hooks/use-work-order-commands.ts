@@ -3,7 +3,6 @@
  *
  * Gestiona la ejecución de comandos de voz para Work Orders
  * con state machine, tracking de progreso y cancelación.
- *
  * @example
  * ```tsx
  * const { executeCommand, state, reset, cancel, isExecuting } = useWorkOrderCommands();
@@ -19,8 +18,9 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { getWorkOrderService } from '@/app/lib/services/work-order-service';
+
 import type { WorkOrderExecutionResult } from '@/app/lib/services/contracts/work-order-service.contracts';
+import { getWorkOrderService } from '@/app/lib/services/work-order-service';
 import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 
 // ============================================

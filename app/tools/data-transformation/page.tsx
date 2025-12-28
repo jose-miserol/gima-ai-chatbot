@@ -5,6 +5,7 @@
  */
 
 import { DataTransformation } from '@/app/components/features/data-transformation';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Transforma y limpia datos usando instrucciones en lenguaje natural',
 };
 
+/**
+ *
+ */
 export default function DataTransformationPage() {
   return (
     <div className="container mx-auto py-8">

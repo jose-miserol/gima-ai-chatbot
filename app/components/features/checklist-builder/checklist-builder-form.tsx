@@ -8,9 +8,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { Button } from '@/app/components/ui/button';
 import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
+
 import { useChecklistGenerator } from './hooks';
+
 import type { Checklist } from './types';
 
 interface ChecklistBuilderFormProps {
@@ -20,6 +23,11 @@ interface ChecklistBuilderFormProps {
   onChecklistGenerated: (checklist: Checklist) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onChecklistGenerated
+ */
 export function ChecklistBuilderForm({ onChecklistGenerated }: ChecklistBuilderFormProps) {
   const [assetType, setAssetType] = useState<string>(ASSET_TYPES[0]);
   const [taskType, setTaskType] = useState<string>(TASK_TYPES[0]);

@@ -1,7 +1,8 @@
 'use server';
 
-import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
+
 import { INVENTORY_PROMPT } from '@/app/config';
 import { MAX_IMAGE_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
@@ -10,12 +11,10 @@ import { getBase64Size } from '@/app/utils/base64';
 /**
  * Analiza una imagen de una pieza industrial para inventario.
  * Utiliza Gemini Vision para identificar, describir y evaluar el estado de la pieza.
- *
  * @param imageDataUrl - String codificado en base64 de la imagen
  * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
  * @param customPrompt - Prompt personalizado del usuario (opcional, usa INVENTORY_PROMPT por defecto)
  * @returns Descripción detallada generada por la IA
- *
  * @example
  * ```typescript
  * const result = await analyzePartImage("data:image/jpeg;base64,...");

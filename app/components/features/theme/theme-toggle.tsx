@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useCallback, useSyncExternalStore, useLayoutEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { useState, useCallback, useSyncExternalStore, useLayoutEffect } from 'react';
+
 import { cn } from '@/app/lib/utils';
-import type { Theme } from './types';
+
 import { THEME_CONFIG } from './constants';
+
+import type { Theme } from './types';
 
 /**
  * Obtiene el tema actual de localStorage o preferencias del sistema
@@ -26,12 +29,18 @@ function getServerSnapshot(): Theme {
 
 /**
  * Suscribirse a eventos de storage para sincronización entre pestañas
+ * @param callback
  */
 function subscribe(callback: () => void): () => void {
   window.addEventListener('storage', callback);
   return () => window.removeEventListener('storage', callback);
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 export function ThemeToggle({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
   const storedTheme = useSyncExternalStore(subscribe, getThemeSnapshot, getServerSnapshot);

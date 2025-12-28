@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+
 import { Geist, Geist_Mono } from 'next/font/google';
+
 import './globals.css';
-import { ToastProvider } from '@/app/components/ui/toast';
 import { ErrorBoundary } from '@/app/components/shared/error-boundary';
+import { ToastProvider } from '@/app/components/ui/toast';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -38,6 +40,11 @@ export const viewport = {
   themeColor: '#1e40af',
 };
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

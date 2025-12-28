@@ -4,7 +4,6 @@
  * Define interfaces, tipos y errores personalizados para el
  * WorkOrderService. Permite inyección completa de dependencias
  * para testing y provee error handling tipado.
- *
  * @example
  * ```typescript
  * import type {
@@ -156,6 +155,14 @@ export type ErrorCode =
  * Provee contexto estructurado para logging y debugging
  */
 export class WorkOrderError extends Error {
+  /**
+   *
+   * @param message
+   * @param code
+   * @param recoverable
+   * @param statusCode
+   * @param correlationId
+   */
   constructor(
     message: string,
     /** Código de error estandarizado */
@@ -181,6 +188,11 @@ export class WorkOrderError extends Error {
  * Incluye tiempo de espera recomendado
  */
 export class RateLimitError extends WorkOrderError {
+  /**
+   *
+   * @param message
+   * @param retryAfter
+   */
   constructor(
     message: string,
     /** Segundos a esperar antes de reintentar */
@@ -196,6 +208,10 @@ export class RateLimitError extends WorkOrderError {
  * Ocurre cuando el request excede timeoutMs
  */
 export class TimeoutError extends WorkOrderError {
+  /**
+   *
+   * @param message
+   */
   constructor(message: string) {
     super(message, 'TIMEOUT', true);
     this.name = 'TimeoutError';
@@ -207,6 +223,10 @@ export class TimeoutError extends WorkOrderError {
  * Indica mantenimiento o sobrecarga temporal
  */
 export class ServiceUnavailableError extends WorkOrderError {
+  /**
+   *
+   * @param message
+   */
   constructor(message: string) {
     super(message, 'SERVICE_UNAVAILABLE', true, 503);
     this.name = 'ServiceUnavailableError';
@@ -218,6 +238,11 @@ export class ServiceUnavailableError extends WorkOrderError {
  * Datos del request no cumplen con schema
  */
 export class ValidationError extends WorkOrderError {
+  /**
+   *
+   * @param message
+   * @param fieldErrors
+   */
   constructor(
     message: string,
     /** Errores de validación específicos por campo */
@@ -233,6 +258,10 @@ export class ValidationError extends WorkOrderError {
  * Problemas de conectividad, DNS, etc.
  */
 export class NetworkError extends WorkOrderError {
+  /**
+   *
+   * @param message
+   */
   constructor(message: string) {
     super(message, 'NETWORK_ERROR', true);
     this.name = 'NetworkError';

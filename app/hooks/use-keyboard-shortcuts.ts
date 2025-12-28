@@ -11,6 +11,11 @@ interface KeyboardShortcut {
   description: string;
 }
 
+/**
+ *
+ * @param shortcuts
+ * @param enabled
+ */
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = true) {
   useEffect(() => {
     if (!enabled) return;

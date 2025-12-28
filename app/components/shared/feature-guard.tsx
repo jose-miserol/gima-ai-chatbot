@@ -5,7 +5,6 @@
  *
  * Componente de React para mostrar/ocultar features basado en feature flags
  * Útil para rollout gradual y A/B testing
- *
  * @example
  * ```tsx
  * <FeatureGuard feature="voiceCommands">
@@ -15,6 +14,7 @@
  */
 
 import { type ReactNode } from 'react';
+
 import { isFeatureEnabled, type FeatureName } from '@/app/config/features';
 
 interface FeatureGuardProps {
@@ -35,7 +35,12 @@ interface FeatureGuardProps {
  *
  * Esconde el contenido si la feature no está habilitada para el usuario.
  * Opcionalmente muestra un fallback en su lugar.
- *
+ * @param root0
+ * @param root0.feature
+ * @param root0.userId
+ * @param root0.fallback
+ * @param root0.children
+ * @param root0.onFeatureUnavailable
  * @example
  * ```tsx
  * // Básico: mostrar u ocultar
@@ -81,7 +86,8 @@ export function FeatureGuard({
 /**
  * Hook personalizado para verificar feature flags
  * Útil cuando no quieres usar el componente guard
- *
+ * @param feature
+ * @param userId
  * @example
  * ```tsx
  * function MyComponent() {
@@ -102,6 +108,8 @@ export function useFeature(feature: FeatureName, userId?: string): boolean {
 /**
  * Componente de badge para features "Coming Soon"
  * Útil como fallback en FeatureGuard
+ * @param root0
+ * @param root0.feature
  */
 export function ComingSoonBadge({ feature }: { feature: FeatureName }) {
   return (
@@ -117,6 +125,8 @@ export function ComingSoonBadge({ feature }: { feature: FeatureName }) {
 
 /**
  * Componente de tooltip para features bloqueadas
+ * @param root0
+ * @param root0.message
  */
 export function FeatureLockedMessage({
   message = 'Esta funcionalidad no está disponible para tu cuenta',

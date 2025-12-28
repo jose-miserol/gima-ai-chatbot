@@ -6,6 +6,7 @@
  */
 
 import { ActivitySummariesClient } from './activity-summaries-client';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
   description: 'Genera resúmenes profesionales de actividades de mantenimiento',
 };
 
+/**
+ *
+ */
 export default function ActivitySummariesPage() {
   return <ActivitySummariesClient />;
 }

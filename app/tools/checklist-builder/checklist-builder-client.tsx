@@ -7,7 +7,10 @@
 
 'use client';
 
+import { CheckCircle2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
+
+import { generateChecklist } from '@/app/actions/checklist';
 import {
   AIToolLayout,
   AIGenerationForm,
@@ -18,8 +21,6 @@ import {
   type HistoryItem,
   type FeatureUsage,
 } from '@/app/components/features/ai-tools/shared';
-import { CheckCircle2 } from 'lucide-react';
-import { generateChecklist } from '@/app/actions/checklist';
 import type {
   Checklist,
   ChecklistGenerationRequest,
@@ -75,6 +76,9 @@ const formFields: FormField[] = [
   },
 ];
 
+/**
+ *
+ */
 export function ChecklistBuilderClient() {
   const { toast } = useToast();
   const [checklist, setChecklist] = useState<Checklist | null>(null);

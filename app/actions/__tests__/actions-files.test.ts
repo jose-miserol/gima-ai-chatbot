@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { analyzePdf } from '../files';
-import { MockAiSdk } from '@/tests/mocks/ai-sdk';
+
 import { MAX_PDF_SIZE_MB } from '@/app/config/limits';
+import { MockAiSdk } from '@/tests/mocks/ai-sdk';
+
+import { analyzePdf } from '../files';
 
 // Mock dependencies
 vi.mock('ai', () => ({

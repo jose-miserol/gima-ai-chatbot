@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useFileSubmission } from '@/app/components/features/chat/hooks/use-file-submission';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import * as actions from '@/app/actions';
+import { useFileSubmission } from '@/app/components/features/chat/hooks/use-file-submission';
 import { useToast } from '@/app/components/ui/toast';
 import { MAX_PDF_SIZE_BYTES } from '@/app/config/limits';
 
@@ -27,7 +28,7 @@ class MockFileReader {
   }
   result = 'data:application/pdf;base64,mockbase64data';
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 global.FileReader = MockFileReader as any;
 
 describe('useFileSubmission', () => {
@@ -46,9 +47,9 @@ describe('useFileSubmission', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (useToast as any).mockReturnValue(mockToast);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (global.fetch as any).mockResolvedValue({
       blob: () => Promise.resolve({ size: 1024, type: 'application/pdf' }),
     });
@@ -65,7 +66,7 @@ describe('useFileSubmission', () => {
   });
 
   it('should handle PDF submission correctly', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (actions.analyzePdf as any).mockResolvedValue({
       success: true,
       text: 'PDF analyzed',
@@ -81,7 +82,7 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/123',
           mediaType: 'application/pdf',
           type: 'text', // AI SDK type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
         } as any,
       ],
     };
@@ -100,7 +101,7 @@ describe('useFileSubmission', () => {
 
   it('should validate PDF size limit', async () => {
     // Mock large file
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (global.fetch as any).mockResolvedValue({
       blob: () => Promise.resolve({ size: MAX_PDF_SIZE_BYTES + 1, type: 'application/pdf' }),
     });
@@ -115,7 +116,7 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/large',
           mediaType: 'application/pdf',
           type: 'text',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
         } as any,
       ],
     };
@@ -132,7 +133,7 @@ describe('useFileSubmission', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (actions.analyzePdf as any).mockResolvedValue({
       success: false,
       error: 'API Error',
@@ -148,7 +149,7 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/error',
           mediaType: 'application/pdf',
           type: 'text',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
         } as any,
       ],
     };

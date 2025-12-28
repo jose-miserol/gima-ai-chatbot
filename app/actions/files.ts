@@ -1,7 +1,8 @@
 'use server';
 
-import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
+
 import { MAX_PDF_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
 import { getBase64Size } from '@/app/utils/base64';
@@ -9,11 +10,9 @@ import { getBase64Size } from '@/app/utils/base64';
 /**
  * Analiza un documento PDF.
  * Utiliza Gemini para leer y analizar el contenido del documento.
- *
  * @param pdfDataUrl - String codificado en base64 del PDF
  * @param prompt - Prompt para el análisis (opcional)
  * @returns Análisis generado por la IA
- *
  * @example
  * ```typescript
  * const result = await analyzePdf("data:application/pdf;base64,...", "Resumir este contrato");

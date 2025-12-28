@@ -8,15 +8,15 @@
 'use client';
 
 import { useState } from 'react';
-import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
+
 import type { ChecklistGenerationRequest, Checklist } from '@/app/lib/schemas/checklist.schema';
+import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
+
 import type { ChecklistGenerationState } from '../types';
 
 /**
  * Hook para generar checklists con IA
- *
  * @returns Estado y función de generación
- *
  * @example
  * ```typescript
  * const { generate, isGenerating, checklist, error } = useChecklistGenerator();
@@ -44,7 +44,6 @@ export function useChecklistGenerator() {
 
   /**
    * Genera un checklist con IA
-   *
    * @param request - Parámetros de generación
    */
   const generate = async (request: ChecklistGenerationRequest): Promise<void> => {

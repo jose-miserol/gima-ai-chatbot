@@ -7,6 +7,13 @@
  * Úsala para errores de llamadas a APIs externas (GROQ, Gemini, etc.)
  */
 export class APIError extends Error {
+  /**
+   *
+   * @param message
+   * @param statusCode
+   * @param provider
+   * @param originalError
+   */
   constructor(
     message: string,
     public readonly statusCode: number,
@@ -43,6 +50,12 @@ export class APIError extends Error {
  * Error para fallos de validación (Zod, validación de inputs, etc.)
  */
 export class ValidationError extends Error {
+  /**
+   *
+   * @param message
+   * @param field
+   * @param details
+   */
   constructor(
     message: string,
     public readonly field?: string,
@@ -53,6 +66,9 @@ export class ValidationError extends Error {
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 
+  /**
+   *
+   */
   get userMessage(): string {
     if (this.field) {
       return `Error de validación en ${this.field}: ${this.message}`;
@@ -65,6 +81,11 @@ export class ValidationError extends Error {
  * Error para límite de tasa (rate limiting)
  */
 export class RateLimitError extends Error {
+  /**
+   *
+   * @param message
+   * @param retryAfter
+   */
   constructor(
     message: string,
     public readonly retryAfter: number // seconds
@@ -74,6 +95,9 @@ export class RateLimitError extends Error {
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 
+  /**
+   *
+   */
   get userMessage(): string {
     const minutes = Math.ceil(this.retryAfter / 60);
     if (minutes > 1) {
@@ -87,6 +111,11 @@ export class RateLimitError extends Error {
  * Error para problemas de cuota de almacenamiento (localStorage, etc.)
  */
 export class StorageQuotaError extends Error {
+  /**
+   *
+   * @param message
+   * @param storageType
+   */
   constructor(
     message: string,
     public readonly storageType: 'localStorage' | 'sessionStorage' = 'localStorage'
@@ -96,6 +125,9 @@ export class StorageQuotaError extends Error {
     Object.setPrototypeOf(this, StorageQuotaError.prototype);
   }
 
+  /**
+   *
+   */
   get userMessage(): string {
     return 'Almacenamiento lleno. Se ha reducido el historial guardado.';
   }
@@ -103,6 +135,7 @@ export class StorageQuotaError extends Error {
 
 /**
  * Guarda de tipo para verificar si el error es un APIError
+ * @param error
  */
 export function isAPIError(error: unknown): error is APIError {
   return error instanceof APIError;
@@ -110,6 +143,7 @@ export function isAPIError(error: unknown): error is APIError {
 
 /**
  * Guarda de tipo para verificar si el error es un ValidationError
+ * @param error
  */
 export function isValidationError(error: unknown): error is ValidationError {
   return error instanceof ValidationError;
@@ -117,6 +151,7 @@ export function isValidationError(error: unknown): error is ValidationError {
 
 /**
  * Guarda de tipo para verificar si el error es un RateLimitError
+ * @param error
  */
 export function isRateLimitError(error: unknown): error is RateLimitError {
   return error instanceof RateLimitError;
@@ -124,6 +159,7 @@ export function isRateLimitError(error: unknown): error is RateLimitError {
 
 /**
  * Guarda de tipo para verificar si el error es un StorageQuotaError
+ * @param error
  */
 export function isStorageQuotaError(error: unknown): error is StorageQuotaError {
   return error instanceof StorageQuotaError;
@@ -131,6 +167,7 @@ export function isStorageQuotaError(error: unknown): error is StorageQuotaError 
 
 /**
  * Convierte un error desconocido a un tipo de error conocido
+ * @param error
  */
 export function normalizeError(error: unknown): Error {
   if (error instanceof Error) {
@@ -155,6 +192,12 @@ export class VoiceCommandError extends Error {
     SANITIZATION_FAILED: 'VOICE_CMD_SANITIZATION_FAILED',
   } as const;
 
+  /**
+   *
+   * @param message
+   * @param code
+   * @param metadata
+   */
   constructor(
     message: string,
     public readonly code: keyof typeof VoiceCommandError.CODES,
@@ -165,6 +208,9 @@ export class VoiceCommandError extends Error {
     Object.setPrototypeOf(this, VoiceCommandError.prototype);
   }
 
+  /**
+   *
+   */
   get userMessage(): string {
     switch (this.code) {
       case 'CONFIDENCE_TOO_LOW':
@@ -195,6 +241,12 @@ export class PDFError extends Error {
     ANALYSIS_FAILED: 'PDF_ANALYSIS_FAILED',
   } as const;
 
+  /**
+   *
+   * @param message
+   * @param code
+   * @param metadata
+   */
   constructor(
     message: string,
     public readonly code: keyof typeof PDFError.CODES,
@@ -205,6 +257,9 @@ export class PDFError extends Error {
     Object.setPrototypeOf(this, PDFError.prototype);
   }
 
+  /**
+   *
+   */
   get userMessage(): string {
     switch (this.code) {
       case 'INVALID_FILE':
@@ -225,6 +280,7 @@ export class PDFError extends Error {
 
 /**
  * Guarda de tipo para verificar si el error es un VoiceCommandError
+ * @param error
  */
 export function isVoiceCommandError(error: unknown): error is VoiceCommandError {
   return error instanceof VoiceCommandError;
@@ -232,6 +288,7 @@ export function isVoiceCommandError(error: unknown): error is VoiceCommandError 
 
 /**
  * Guarda de tipo para verificar si el error es un PDFError
+ * @param error
  */
 export function isPDFError(error: unknown): error is PDFError {
   return error instanceof PDFError;
@@ -239,6 +296,7 @@ export function isPDFError(error: unknown): error is PDFError {
 
 /**
  * Obtiene un mensaje amigable para el usuario de cualquier error (ACTUALIZADO)
+ * @param error
  */
 export function getUserMessage(error: unknown): string {
   if (isAPIError(error)) return error.userMessage;

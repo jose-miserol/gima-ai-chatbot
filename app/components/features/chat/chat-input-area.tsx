@@ -14,6 +14,7 @@ import {
   PromptInputHeader,
 } from '@/app/components/ai-elements/prompt-input';
 import { VoiceButton } from '@/app/components/features/voice';
+
 import type { ChatInputAreaProps } from './types';
 
 /**
@@ -26,15 +27,21 @@ import type { ChatInputAreaProps } from './types';
  * - Botón de envío
  *
  * Usa componentes de AI SDK Elements (PromptInput, PromptInputTextarea, etc).
- *
  * @param textareaRef - Ref del textarea para control programático
+ * @param textareaRef.textareaRef
  * @param input - Valor actual del input
+ * @param textareaRef.input
  * @param onInputChange - Callback al cambiar el input
+ * @param textareaRef.onInputChange
  * @param onSubmit - Callback al enviar mensaje
+ * @param textareaRef.onSubmit
  * @param canSend - Si se puede enviar (estado del chat)
+ * @param textareaRef.canSend
  * @param status - Estado actual del chat
+ * @param textareaRef.status
+ * @param textareaRef.isAnalyzingFile
  * @param voiceProps - Props para el botón de voz customizado
- *
+ * @param textareaRef.voiceProps
  * @example
  * ```tsx
  * <ChatInputArea

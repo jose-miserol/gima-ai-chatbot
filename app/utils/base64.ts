@@ -9,10 +9,8 @@
  *
  * Útil para validar límites de tamaño antes de enviar archivos a APIs
  * como Gemini Vision o transcripción de audio.
- *
  * @param base64 - String en formato base64 (puede incluir data URL prefix)
  * @returns Tamaño aproximado en bytes
- *
  * @example
  * ```typescript
  * const sizeBytes = getBase64Size("data:image/jpeg;base64,/9j/4AAQ...");

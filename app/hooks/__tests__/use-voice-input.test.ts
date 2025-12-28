@@ -8,8 +8,8 @@
  * - Modos (gemini, native)
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock the entire module to avoid browser API issues
 vi.mock('@/app/actions', () => ({

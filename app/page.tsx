@@ -10,6 +10,9 @@ const Chat = dynamic(
   }
 );
 
+/**
+ *
+ */
 export default function ChatPage() {
   return <Chat />;
 }

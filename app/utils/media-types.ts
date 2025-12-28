@@ -8,10 +8,8 @@
 /**
  * Determina el MIME type de audio soportado por el navegador actual
  * con priorización para mejor calidad y compatibilidad
- *
  * @returns MIME type soportado (ej: 'audio/webm;codecs=opus', 'audio/mp4')
  * @throws Error si ningún formato está soportado o MediaRecorder no disponible
- *
  * @example
  * ```typescript
  * try {
@@ -48,10 +46,8 @@ export function getSupportedAudioMimeType(): string {
 
 /**
  * Obtiene la extensión de archivo basada en MIME type
- *
  * @param mimeType - MIME type del audio (ej: 'audio/webm;codecs=opus')
  * @returns Extensión de archivo sin punto (ej: 'webm', 'mp4')
- *
  * @example
  * ```typescript
  * const ext = getAudioExtension('audio/webm;codecs=opus');
@@ -68,7 +64,6 @@ export function getAudioExtension(mimeType: string): string {
 
 /**
  * Verifica si el navegador soporta MediaRecorder
- *
  * @returns true si MediaRecorder está disponible
  */
 export function isMediaRecorderSupported(): boolean {

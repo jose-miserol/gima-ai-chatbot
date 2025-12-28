@@ -4,7 +4,6 @@
  * Schemas Zod para validación y sanitización de payloads
  * de creación de Work Orders. Garantiza que los datos
  * enviados al backend cumplan con el contrato esperado.
- *
  * @example
  * ```typescript
  * import {
@@ -17,6 +16,7 @@
  */
 
 import { z } from 'zod';
+
 import type { VoiceWorkOrderCommand } from './voice-commands';
 
 /**
@@ -84,7 +84,6 @@ export type UpdateWorkOrderPayload = z.infer<typeof UpdateWorkOrderPayloadSchema
  * - Aplicación de defaults
  * - Validación de schema
  * - Generación de metadata de voz
- *
  * @param command - Comando de voz parseado por Gemini
  * @param _userId - ID del usuario (para futuras expansiones)
  * @returns Payload validado listo para enviar al backend
@@ -111,6 +110,7 @@ export function sanitizeWorkOrderCommand(
 /**
  * Mapea prioridad del comando de voz al formato del backend
  * El schema de voz usa 'urgent' pero el backend podría esperar 'high'
+ * @param priority
  */
 function mapPriorityToPayload(
   priority: VoiceWorkOrderCommand['priority']
@@ -122,7 +122,6 @@ function mapPriorityToPayload(
 
 /**
  * Valida un payload de creación con mensajes de error en español
- *
  * @param data - Datos a validar
  * @returns Resultado de validación con errores formateados
  */

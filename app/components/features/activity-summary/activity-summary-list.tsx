@@ -9,6 +9,7 @@
 
 import { SUMMARY_MESSAGES } from './constants';
 import { useSummaryTemplates } from './hooks';
+
 import type { SummaryTemplate } from './types';
 
 interface ActivitySummaryListProps {
@@ -18,6 +19,11 @@ interface ActivitySummaryListProps {
   onTemplateSelected: (template: SummaryTemplate) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onTemplateSelected
+ */
 export function ActivitySummaryList({ onTemplateSelected }: ActivitySummaryListProps) {
   const { templates, isLoading } = useSummaryTemplates();
 

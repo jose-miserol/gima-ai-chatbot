@@ -8,7 +8,6 @@
  * - Validación con Zod
  * - Logging estructurado
  * - Error handling tipado
- *
  * @example
  * ```typescript
  * export class ChecklistAIService extends BaseAIService {
@@ -28,8 +27,9 @@
  * ```
  */
 
-import { logger } from '@/app/lib/logger';
 import { z } from 'zod';
+
+import { logger } from '@/app/lib/logger';
 
 /**
  * Configuración base para servicios de IA
@@ -81,6 +81,13 @@ export interface AIServiceDeps {
  * Error personalizado para servicios de IA
  */
 export class AIServiceError extends Error {
+  /**
+   *
+   * @param message
+   * @param serviceName
+   * @param recoverable
+   * @param originalError
+   */
   constructor(
     message: string,
     public readonly serviceName: string,
@@ -96,6 +103,11 @@ export class AIServiceError extends Error {
  * Error de timeout en llamada a IA
  */
 export class AITimeoutError extends AIServiceError {
+  /**
+   *
+   * @param serviceName
+   * @param timeoutMs
+   */
   constructor(serviceName: string, timeoutMs: number) {
     super(
       `AI request timed out after ${timeoutMs}ms`,
@@ -110,6 +122,11 @@ export class AITimeoutError extends AIServiceError {
  * Error de validación de schema
  */
 export class AIValidationError extends AIServiceError {
+  /**
+   *
+   * @param serviceName
+   * @param zodError
+   */
   constructor(serviceName: string, zodError: z.ZodError) {
     super(
       `Validation failed: ${zodError.message}`,
@@ -127,6 +144,11 @@ export abstract class BaseAIService {
   protected config: Required<AIServiceConfig>;
   protected deps: AIServiceDeps;
 
+  /**
+   *
+   * @param config
+   * @param deps
+   */
   constructor(config: AIServiceConfig, deps?: AIServiceDeps) {
     this.config = {
       serviceName: config.serviceName,
@@ -144,7 +166,8 @@ export abstract class BaseAIService {
 
   /**
    * Valida datos con un schema Zod
-   *
+   * @param schema
+   * @param data
    * @throws AIValidationError si la validación falla
    */
   protected validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
@@ -165,6 +188,8 @@ export abstract class BaseAIService {
    * - Timeouts
    * - Errores de red
    * - Errores 5xx del server
+   * @param fn
+   * @param correlationId
    */
   protected async executeWithRetry<T>(fn: () => Promise<T>, correlationId?: string): Promise<T> {
     let lastError: Error | undefined;
@@ -204,6 +229,7 @@ export abstract class BaseAIService {
 
   /**
    * Verifica cache (solo si caching está habilitado)
+   * @param key
    */
   protected async checkCache<T>(key: string): Promise<T | null> {
     if (!this.config.enableCaching || !this.deps.cache) {
@@ -232,6 +258,8 @@ export abstract class BaseAIService {
 
   /**
    * Guarda en cache
+   * @param key
+   * @param value
    */
   protected async setCache(key: string, value: unknown): Promise<void> {
     if (!this.config.enableCaching || !this.deps.cache) {
@@ -257,6 +285,7 @@ export abstract class BaseAIService {
 
   /**
    * Genera clave de cache consistente
+   * @param parts
    */
   protected buildCacheKey(parts: Array<string | number>): string {
     return `${this.config.serviceName}:${parts.join(':')}`;
@@ -264,6 +293,7 @@ export abstract class BaseAIService {
 
   /**
    * Sleep helper
+   * @param ms
    */
   protected sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));

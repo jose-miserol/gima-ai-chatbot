@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+
 import { cn } from '@/app/lib/utils';
 
 interface ChatStatusIndicatorsProps {
@@ -20,14 +21,18 @@ interface ChatStatusIndicatorsProps {
  * - Errores: Mensajes de error de voz o conexión
  *
  * Solo un indicador se muestra a la vez (prioridad: error > procesando > analizando > escuchando).
- *
  * @param voiceError - Mensaje de error del sistema de voz (si existe)
+ * @param voiceError.voiceError
  * @param isListening - Si está grabando voz activamente
+ * @param voiceError.isListening
  * @param isProcessing - Si está procesando/transcribiendo audio con IA
+ * @param voiceError.isProcessing
  * @param isAnalyzingImage - Si está analizando una imagen con Gemini Vision
+ * @param voiceError.isAnalyzingImage
  * @param chatError - Error de conexión o API del chat
+ * @param voiceError.chatError
  * @param mode - Modo de reconocimiento de voz ('gemini' para IA, 'native' para Web Speech API)
- *
+ * @param voiceError.mode
  * @example
  * ```tsx
  * <ChatStatusIndicators

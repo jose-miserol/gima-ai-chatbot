@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+
 import { transcribeAudio } from '@/app/actions';
-import { getSupportedAudioMimeType } from '@/app/utils/media-types';
-import { logger } from '@/app/lib/logger';
 import { VOICE_MESSAGES, MAX_ERROR_MESSAGE_LENGTH } from '@/app/constants/messages';
+import { logger } from '@/app/lib/logger';
+import { getSupportedAudioMimeType } from '@/app/utils/media-types';
 
 interface UseVoiceInputOptions {
   onTranscript?: (text: string) => void;
@@ -148,13 +149,11 @@ const simplifyGeminiError = (error?: string): string => {
  * - Fallback mode: Native Web Speech API when Gemini is unavailable
  * - Automatic mode switching based on errors and network status
  * - User-friendly error messages with emoji indicators
- *
  * @param options - Configuration options for voice input
  * @param options.onTranscript - Callback invoked when transcription is complete
  * @param options.onError - Callback invoked when an error occurs
  * @param options.onStateChange - Callback invoked when the listening state changes
  * @param options.language - BCP 47 language code for recognition (default: 'es-ES')
- *
  * @returns Voice input state and control methods
  * @returns.isListening - Whether voice recording is currently active
  * @returns.isProcessing - Whether audio is being processed/transcribed
@@ -164,7 +163,6 @@ const simplifyGeminiError = (error?: string): string => {
  * @returns.toggleListening - Function to start/stop voice recording
  * @returns.resetTranscript - Function to clear the current transcript
  * @returns.error - Current error message, if any
- *
  * @example
  * ```tsx
  * function VoiceInputComponent() {
@@ -197,7 +195,6 @@ const simplifyGeminiError = (error?: string): string => {
  *   );
  * }
  * ```
- *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API | Web Speech API}
  * @see {@link https://ai.google.dev/gemini-api/docs | Gemini API}
  */

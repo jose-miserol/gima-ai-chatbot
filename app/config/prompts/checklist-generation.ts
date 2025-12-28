@@ -49,7 +49,6 @@ IMPORTANTE: Responde SOLO con el JSON, sin texto adicional.`;
 
 /**
  * Genera prompt específico para un tipo de activo y tarea
- *
  * @param assetType - Tipo de activo
  * @param taskType - Tipo de tarea de mantenimiento
  * @param customInstructions - Instrucciones adicionales del usuario
@@ -82,6 +81,8 @@ El checklist debe contener entre 8 y 15 items.`;
 
 /**
  * Retorna guidance específico por tipo de activo
+ * @param assetType
+ * @param taskType
  */
 function getAssetSpecificGuidance(assetType: AssetType, taskType: TaskType): string {
   const guidance: Record<AssetType, string> = {

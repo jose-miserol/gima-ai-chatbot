@@ -1,8 +1,9 @@
 'use client';
 
 import { Loader2, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { cn } from '@/app/lib/utils';
+
 import type { CommandStatus } from '@/app/hooks/use-work-order-commands';
+import { cn } from '@/app/lib/utils';
 
 /**
  * Configuración visual para cada estado
@@ -69,6 +70,12 @@ interface CommandStatusIndicatorProps {
  *
  * Visualiza el progreso del comando con iconos animados y mensajes
  * contextuales según el estado actual.
+ * @param root0
+ * @param root0.status
+ * @param root0.message
+ * @param root0.duration
+ * @param root0.className
+ * @param root0.compact
  */
 export function CommandStatusIndicator({
   status,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -28,7 +29,16 @@ interface ConfirmDialogProps {
  *
  * Reemplaza el window.confirm() nativo con un diálogo accesible adecuado
  * que soporta navegación por teclado y lectores de pantalla.
- *
+ * @param root0
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.title
+ * @param root0.description
+ * @param root0.confirmLabel
+ * @param root0.cancelLabel
+ * @param root0.onConfirm
+ * @param root0.variant
+ * @param root0.loading
  * @example
  * ```tsx
  * const [open, setOpen] = useState(false);
@@ -119,7 +129,6 @@ export function ConfirmDialog({
 
 /**
  * Hook para gestionar el estado de ConfirmDialog
- *
  * @example
  * ```tsx
  * const confirmDelete = useConfirmDialog();

@@ -7,12 +7,13 @@
 
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
-import { BaseAIService } from '@/app/lib/ai/base-ai-service';
-import { AI_TASK_MODELS } from '@/app/constants/ai';
+
 import {
   SUMMARY_SYSTEM_PROMPT,
   buildSummaryPrompt,
 } from '@/app/config/prompts/activity-summary-generation';
+import { AI_TASK_MODELS } from '@/app/constants/ai';
+import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import {
   activitySummaryRequestSchema,
   aiSummaryResponseSchema,
@@ -37,6 +38,9 @@ export interface SummaryGenerationResult {
 export class ActivitySummaryAIService extends BaseAIService {
   private groq: ReturnType<typeof createGroq>;
 
+  /**
+   *
+   */
   constructor() {
     super({
       serviceName: 'ActivitySummaryAIService',
@@ -51,7 +55,6 @@ export class ActivitySummaryAIService extends BaseAIService {
 
   /**
    * Genera un resumen de actividades con IA
-   *
    * @param request - Parámetros de generación
    * @returns Resultado con resumen generado
    */
@@ -124,7 +127,6 @@ export class ActivitySummaryAIService extends BaseAIService {
 
   /**
    * Llama a la IA para generar el resumen
-   *
    * @param request - Request validado
    * @returns Resumen generado
    */
@@ -193,7 +195,6 @@ export class ActivitySummaryAIService extends BaseAIService {
 
   /**
    * Parsea la respuesta de la IA
-   *
    * @param rawResponse - Respuesta cruda de la IA
    * @returns Objeto parseado y validado
    */
@@ -230,7 +231,6 @@ export class ActivitySummaryAIService extends BaseAIService {
 
   /**
    * Genera cache key única para el request
-   *
    * @param request - Request de generación
    * @returns Cache key
    */
@@ -249,7 +249,6 @@ export class ActivitySummaryAIService extends BaseAIService {
 
   /**
    * Cuenta palabras en un texto
-   *
    * @param text - Texto a analizar
    * @returns Número de palabras
    */

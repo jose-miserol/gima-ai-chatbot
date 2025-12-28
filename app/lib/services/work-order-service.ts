@@ -4,7 +4,6 @@
  * Cliente HTTP para el API REST de Work Orders del backend.
  * Implementa inyección de dependencias completa para testing,
  * retry logic con backoff exponencial, y error handling tipado.
- *
  * @example
  * ```typescript
  * import { workOrderService } from '@/app/lib/services/work-order-service';
@@ -26,18 +25,20 @@ import {
   sanitizeWorkOrderCommand,
   type CreateWorkOrderPayload,
 } from '@/app/types/work-order-validation';
-import type {
-  WorkOrderServiceConfig,
-  WorkOrderServiceDeps,
-  RequestContext,
-  WorkOrderExecutionResult,
-} from './contracts/work-order-service.contracts';
+
 import {
   WorkOrderError,
   RateLimitError,
   TimeoutError,
   ServiceUnavailableError,
   NetworkError,
+} from './contracts/work-order-service.contracts';
+
+import type {
+  WorkOrderServiceConfig,
+  WorkOrderServiceDeps,
+  RequestContext,
+  WorkOrderExecutionResult,
 } from './contracts/work-order-service.contracts';
 
 /**
@@ -57,7 +58,6 @@ export class WorkOrderService {
 
   /**
    * Crea una instancia del servicio
-   *
    * @param config - Configuración del servicio
    * @param deps - Dependencias inyectables (para testing)
    * @throws Error si la configuración es inválida
@@ -110,7 +110,6 @@ export class WorkOrderService {
    * 2. Generar correlation ID si no existe
    * 3. Intentar request con retry logic
    * 4. Loggear resultado con contexto completo
-   *
    * @param command - Comando de voz parseado por Gemini
    * @param context - Contexto del usuario actual
    * @returns Resultado con resourceId para navegación
@@ -209,6 +208,8 @@ export class WorkOrderService {
   /**
    * Request interno con timeout TESTEABLE
    * Usa deps inyectadas en lugar de globals
+   * @param payload
+   * @param correlationId
    */
   private async requestCreate(
     payload: CreateWorkOrderPayload,
@@ -261,6 +262,8 @@ export class WorkOrderService {
   /**
    * Parsea respuestas de error del backend
    * Convierte HTTP status codes a errores tipados
+   * @param response
+   * @param correlationId
    */
   private async parseErrorResponse(
     response: Response,
@@ -326,6 +329,7 @@ export class WorkOrderService {
 
   /**
    * Normaliza respuesta exitosa del backend
+   * @param data
    */
   private normalizeSuccessResponse(data: Record<string, unknown>): WorkOrderExecutionResult {
     return {
@@ -345,6 +349,8 @@ export class WorkOrderService {
    * - 503 Service Unavailable
    * - Timeouts
    * - Errores de red
+   * @param fn
+   * @param correlationId
    */
   private async executeWithRetry<T>(fn: () => Promise<T>, correlationId: string): Promise<T> {
     let lastError: Error | undefined;
@@ -392,6 +398,8 @@ export class WorkOrderService {
 
   /**
    * Consulta estado de una orden existente
+   * @param orderId
+   * @param context
    */
   async checkStatus(orderId: string, context: RequestContext): Promise<WorkOrderExecutionResult> {
     const correlationId = context.correlationId || this.deps.cryptoImpl.randomUUID();
@@ -435,6 +443,7 @@ export class WorkOrderService {
 
   /**
    * Lista órdenes pendientes
+   * @param context
    */
   async listPending(context: RequestContext): Promise<WorkOrderExecutionResult> {
     const correlationId = context.correlationId || this.deps.cryptoImpl.randomUUID();
@@ -484,6 +493,7 @@ export class WorkOrderService {
   /**
    * Sleep helper TESTEABLE
    * Usa timer inyectado (respeta fake timers)
+   * @param ms
    */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {

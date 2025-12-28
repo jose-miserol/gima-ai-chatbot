@@ -12,6 +12,9 @@ export interface ToastOptions {
   variant?: 'default' | 'destructive';
 }
 
+/**
+ *
+ */
 export function useToast() {
   return {
     toast: ({ title, description, variant }: ToastOptions) => {

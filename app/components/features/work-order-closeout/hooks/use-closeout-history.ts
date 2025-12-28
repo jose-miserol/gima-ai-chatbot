@@ -8,7 +8,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { STORAGE_KEYS, CLOSEOUT_LIMITS } from '../constants';
+
 import type { CloseoutHistory, CloseoutNotes } from '../types';
 
 /**
@@ -45,6 +47,7 @@ export function useCloseoutHistory() {
 
   /**
    * Guarda historial en localStorage
+   * @param newHistory
    */
   const saveToStorage = (newHistory: CloseoutHistory[]) => {
     try {
@@ -56,6 +59,8 @@ export function useCloseoutHistory() {
 
   /**
    * Guarda notas en historial
+   * @param name
+   * @param notes
    */
   const saveToHistory = (name: string, notes: CloseoutNotes) => {
     const newEntry: CloseoutHistory = {
@@ -79,6 +84,7 @@ export function useCloseoutHistory() {
 
   /**
    * Elimina del historial
+   * @param id
    */
   const deleteFromHistory = (id: string) => {
     const updatedHistory = history.filter((h) => h.id !== id);
@@ -88,6 +94,7 @@ export function useCloseoutHistory() {
 
   /**
    * Incrementa contador de uso
+   * @param id
    */
   const incrementUsage = (id: string) => {
     const updatedHistory = history.map((h) =>
@@ -106,6 +113,7 @@ export function useCloseoutHistory() {
 
   /**
    * Obtiene entrada del historial
+   * @param id
    */
   const getFromHistory = (id: string): CloseoutHistory | undefined => {
     return history.find((h) => h.id === id);

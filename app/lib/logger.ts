@@ -18,6 +18,7 @@ interface LogContext {
 class Logger {
   /**
    * Determina si un nivel de log debería registrarse basado en el entorno
+   * @param level
    */
   private shouldLog(level: LogLevel): boolean {
     if (typeof window === 'undefined') return true; // Always log on server
@@ -31,6 +32,9 @@ class Logger {
 
   /**
    * Función central de logging
+   * @param level
+   * @param message
+   * @param context
    */
   private log(level: LogLevel, message: string, context?: LogContext) {
     if (!this.shouldLog(level)) return;
@@ -56,6 +60,8 @@ class Logger {
 
   /**
    * Registra información de debug (solo en desarrollo)
+   * @param message
+   * @param context
    */
   debug(message: string, context?: LogContext) {
     this.log('debug', message, context);
@@ -63,6 +69,8 @@ class Logger {
 
   /**
    * Registra mensajes informativos
+   * @param message
+   * @param context
    */
   info(message: string, context?: LogContext) {
     this.log('info', message, context);
@@ -70,6 +78,8 @@ class Logger {
 
   /**
    * Registra mensajes de advertencia
+   * @param message
+   * @param context
    */
   warn(message: string, context?: LogContext) {
     this.log('warn', message, context);
@@ -77,6 +87,9 @@ class Logger {
 
   /**
    * Registra mensajes de error con objeto Error opcional
+   * @param message
+   * @param error
+   * @param context
    */
   error(message: string, error?: Error, context?: LogContext) {
     this.log('error', message, {

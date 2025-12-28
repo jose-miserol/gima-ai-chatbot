@@ -7,21 +7,6 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Badge } from '@/app/components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/app/components/ui/tooltip';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/app/components/ui/collapsible';
 import {
   CheckCircle,
   XCircle,
@@ -34,8 +19,25 @@ import {
   FileJson,
   FileText,
 } from 'lucide-react';
+import { useState, useCallback } from 'react';
+
+import { Badge } from '@/app/components/ui/badge';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/app/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/app/components/ui/collapsible';
 import { Skeleton } from '@/app/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/app/components/ui/tooltip';
 import { cn } from '@/app/lib/utils';
+
 import type { AIPreviewActions, AIGenerationMetadata } from './types';
 import type { ReactNode } from 'react';
 
@@ -74,6 +76,17 @@ export interface AIPreviewCardProps {
  * - Metadata collapsible
  * - aria-live para accesibilidad
  * - Skeleton loader durante carga
+ * @param root0
+ * @param root0.title
+ * @param root0.content
+ * @param root0.metadata
+ * @param root0.actions
+ * @param root0.isLoading
+ * @param root0.className
+ * @param root0.onCopy
+ * @param root0.onExportJson
+ * @param root0.onExportMarkdown
+ * @param root0.exportData
  */
 export function AIPreviewCard({
   title,

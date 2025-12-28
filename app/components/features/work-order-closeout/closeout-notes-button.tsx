@@ -6,10 +6,13 @@
 
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/app/components/ui/button';
 import { FileText } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/app/components/ui/button';
+
 import { CloseoutNotesModal } from './closeout-notes-modal';
+
 import type { WorkOrderSummary, CloseoutNotes } from './types';
 
 export interface CloseoutNotesButtonProps {
@@ -36,6 +39,11 @@ export interface CloseoutNotesButtonProps {
 
 /**
  * Botón para abrir modal de generación de notas de cierre
+ * @param root0
+ * @param root0.workOrderData
+ * @param root0.onNotesAccepted
+ * @param root0.variant
+ * @param root0.className
  */
 export function CloseoutNotesButton({
   workOrderData,

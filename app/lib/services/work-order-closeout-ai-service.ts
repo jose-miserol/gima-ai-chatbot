@@ -7,19 +7,20 @@
 
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
-import { BaseAIService } from '@/app/lib/ai/base-ai-service';
-import { AI_TASK_MODELS } from '@/app/constants/ai';
+
+import type { CloseoutNotes } from '@/app/components/features/work-order-closeout/types';
 import {
   CLOSEOUT_SYSTEM_PROMPT,
   buildCloseoutPrompt,
 } from '@/app/config/prompts/closeout-generation';
+import { AI_TASK_MODELS } from '@/app/constants/ai';
+import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import {
   closeoutNotesRequestSchema,
   aiCloseoutNotesSchema,
   type CloseoutNotesRequest,
   type AICloseoutNotes,
 } from '@/app/lib/schemas/work-order-closeout.schema';
-import type { CloseoutNotes } from '@/app/components/features/work-order-closeout/types';
 
 /**
  * Resultado de generación de notas de cierre
@@ -37,6 +38,9 @@ export interface CloseoutGenerationResult {
 export class WorkOrderCloseoutAIService extends BaseAIService {
   private groq: ReturnType<typeof createGroq>;
 
+  /**
+   *
+   */
   constructor() {
     super({
       serviceName: 'WorkOrderCloseoutAIService',
@@ -51,7 +55,6 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
   /**
    * Genera notas de cierre para un Work Order
-   *
    * @param request - Parámetros de generación
    * @returns Resultado con notas generadas
    */
@@ -102,6 +105,7 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
   /**
    * Llama a la IA para generar las notas
+   * @param request
    */
   private async callAI(request: CloseoutNotesRequest): Promise<CloseoutNotes> {
     const modelConfig = AI_TASK_MODELS.CHAT;
@@ -166,6 +170,7 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
   /**
    * Parsea la respuesta de la IA
+   * @param rawResponse
    */
   private parseAIResponse(rawResponse: string): AICloseoutNotes {
     try {
@@ -199,6 +204,7 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
   /**
    * Genera cache key única
+   * @param request
    */
   private getCacheKey(request: CloseoutNotesRequest): string {
     const parts = [
@@ -214,6 +220,7 @@ export class WorkOrderCloseoutAIService extends BaseAIService {
 
   /**
    * Cuenta palabras en un texto
+   * @param text
    */
   private countWords(text: string): number {
     return text.trim().split(/\s+/).length;

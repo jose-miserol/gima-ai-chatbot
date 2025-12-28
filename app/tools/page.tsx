@@ -5,6 +5,7 @@
  */
 
 import { AIToolsDashboardClient } from './ai-tools-dashboard-client';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Herramientas de inteligencia artificial para mantenimiento',
 };
 
+/**
+ *
+ */
 export default function AIToolsPage() {
   return <AIToolsDashboardClient />;
 }

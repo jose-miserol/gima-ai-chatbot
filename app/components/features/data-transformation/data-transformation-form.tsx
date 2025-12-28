@@ -1,7 +1,8 @@
 'use client';
 
-import { AIGenerationForm } from '../ai-tools/shared/ai-generation-form';
 import { ALLOWED_OPERATIONS } from './constants';
+import { AIGenerationForm } from '../ai-tools/shared/ai-generation-form';
+
 import type { TransformationRequest } from './types';
 
 /**
@@ -21,6 +22,10 @@ interface DataTransformationFormProps {
  *
  * Reutiliza AIGenerationForm para proporcionar inputs de datos y texto.
  * Configurado específicamente para manejar instrucciones de transformación y datos crudos.
+ * @param root0
+ * @param root0.onSubmit
+ * @param root0.isProcessing
+ * @param root0.initialSourceData
  */
 export function DataTransformationForm({
   onSubmit,

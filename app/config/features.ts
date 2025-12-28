@@ -3,7 +3,6 @@
  *
  * Controla el rollout gradual de nuevas funcionalidades
  * Permite A/B testing y activación por usuario
- *
  * @example
  * ```typescript
  * import { isFeatureEnabled, FEATURE_FLAGS } from '@/app/config/features';
@@ -92,7 +91,6 @@ export type FeatureName = keyof typeof FEATURE_FLAGS;
 /**
  * Genera un hash numérico simple de un string
  * Usado para distribución consistente de rollout
- *
  * @param str - String a hashear (ej: email de usuario)
  * @returns Número hash positivo
  */
@@ -113,11 +111,9 @@ function simpleHash(str: string): number {
  * 2. Si usuario está en allowlist → true
  * 3. Si rollout percentage cubre al usuario (por hash) → true
  * 4. De lo contrario → false
- *
  * @param feature - Nombre de la feature
  * @param userId - Identificador del usuario (email, ID, etc.)
  * @returns true si la feature debe mostrarse al usuario
- *
  * @example
  * ```typescript
  * const canUseVoice = isFeatureEnabled('voiceCommands', 'user@example.com');
@@ -159,7 +155,6 @@ export function isFeatureEnabled(feature: FeatureName, userId?: string): boolean
 
 /**
  * Obtiene la configuración completa de una feature
- *
  * @param feature - Nombre de la feature
  * @returns Configuración de la feature
  */
@@ -169,11 +164,9 @@ export function getFeatureConfig(feature: FeatureName): FeatureConfig {
 
 /**
  * Verifica si todas las features especificadas están habilitadas
- *
  * @param features - Array de nombres de features
  * @param userId - Identificador del usuario
  * @returns true solo si TODAS las features están habilitadas
- *
  * @example
  * ```typescript
  * const canUseBoth = areAllFeaturesEnabled(['voiceCommands', 'pdfReader'], userId);
@@ -185,7 +178,6 @@ export function areAllFeaturesEnabled(features: FeatureName[], userId?: string):
 
 /**
  * Verifica si al menos una de las features está habilitada
- *
  * @param features - Array de nombres de features
  * @param userId - Identificador del usuario
  * @returns true si AL MENOS UNA feature está habilitada
@@ -197,7 +189,6 @@ export function isAnyFeatureEnabled(features: FeatureName[], userId?: string): b
 /**
  * Hook para React Server Components
  * Obtiene el estado de una feature en servidor
- *
  * @param feature - Nombre de la feature
  * @param userId - Identificador del usuario
  * @returns Estado de la feature

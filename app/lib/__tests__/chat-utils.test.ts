@@ -1,12 +1,12 @@
 /**
  * Tests for chat-utils.ts
- *
  * @vitest-environment jsdom
  */
 
 /// <reference types="vitest/globals" />
 
 import { sanitizeMessages, hasValidContent, filterEmptyMessages } from '../chat-utils';
+
 import type { Message } from '../schemas/chat';
 import type { UIMessage } from 'ai';
 
@@ -87,7 +87,7 @@ describe('sanitizeMessages', () => {
     const result = sanitizeMessages(messages);
 
     // Access via any since UIMessage type doesn't include createdAt
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     expect((result[0] as any).createdAt).toEqual(date);
   });
 

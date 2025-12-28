@@ -9,6 +9,7 @@ import {
   MapPin,
   Users,
 } from 'lucide-react';
+
 import { cn } from '@/app/lib/utils';
 import type { VoiceCommand } from '@/app/types/voice-commands';
 import { formatCommandSummary, requiresConfirmation } from '@/app/types/voice-commands';
@@ -39,7 +40,13 @@ interface CommandPreviewProps {
  * - Equipo, ubicación, prioridad si están presentes
  * - Indicador de confianza
  * - Botones de Confirmar/Cancelar/Reintentar
- *
+ * @param root0
+ * @param root0.command
+ * @param root0.onConfirm
+ * @param root0.onCancel
+ * @param root0.onRetry
+ * @param root0.isConfirming
+ * @param root0.className
  * @example
  * ```tsx
  * <CommandPreview

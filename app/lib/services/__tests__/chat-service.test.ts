@@ -1,4 +1,9 @@
+import { streamText } from 'ai';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Importar después de los mocks
+import type { Message } from '@/app/lib/schemas/chat';
+import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
 
 // Mock del módulo 'ai' ANTES de importar ChatService
 vi.mock('ai', () => ({
@@ -13,11 +18,6 @@ vi.mock('@/app/config/env', () => ({
     NODE_ENV: 'test',
   },
 }));
-
-// Importar después de los mocks
-import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
-import type { Message } from '@/app/lib/schemas/chat';
-import { streamText } from 'ai';
 
 // Mocks con implementaciones fake
 const createMockLogger = () => ({

@@ -1,13 +1,17 @@
-import { BaseAIService } from '@/app/lib/ai/base-ai-service';
-import { generateText, type LanguageModel } from 'ai';
 import { google } from '@ai-sdk/google';
+import { generateText, type LanguageModel } from 'ai';
+
 import { MASTER_VOICE_PROMPT } from '@/app/config/voice-master-prompt';
+import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import {
   VoiceCommandSchema,
   type VoiceCommand,
   type VoiceParserOptions,
 } from '@/app/types/voice-commands';
 
+/**
+ *
+ */
 export class VoiceCommandParserService extends BaseAIService {
   private static instance: VoiceCommandParserService;
   private model: LanguageModel;
@@ -19,6 +23,9 @@ export class VoiceCommandParserService extends BaseAIService {
     this.model = google('gemini-2.5-flash-lite');
   }
 
+  /**
+   *
+   */
   public static getInstance(): VoiceCommandParserService {
     if (!VoiceCommandParserService.instance) {
       VoiceCommandParserService.instance = new VoiceCommandParserService();
@@ -28,6 +35,8 @@ export class VoiceCommandParserService extends BaseAIService {
 
   /**
    * Parsea texto libre a comando estructurado
+   * @param transcript
+   * @param options
    */
   public async parseCommand(
     transcript: string,

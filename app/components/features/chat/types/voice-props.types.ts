@@ -9,7 +9,6 @@
  * Props para el componente VoiceButton
  *
  * Define la interfaz para la configuración del botón de entrada de voz.
- *
  * @property isListening - Si la grabación de voz está actualmente activa
  * @property isProcessing - Si la voz está siendo procesada por IA
  * @property isSupported - Si la entrada de voz está soportada en el navegador

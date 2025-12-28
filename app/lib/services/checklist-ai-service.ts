@@ -7,12 +7,15 @@
 
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
-import { BaseAIService } from '@/app/lib/ai/base-ai-service';
-import { AI_TASK_MODELS, AI_CACHE_TTL, AI_TIMEOUTS } from '@/app/constants/ai';
+
+import { env } from '@/app/config/env';
 import {
   CHECKLIST_SYSTEM_PROMPT,
   buildChecklistPrompt,
 } from '@/app/config/prompts/checklist-generation';
+import { AI_TASK_MODELS, AI_CACHE_TTL, AI_TIMEOUTS } from '@/app/constants/ai';
+import type { AssetType, TaskType } from '@/app/constants/ai';
+import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import {
   checklistGenerationRequestSchema,
   checklistSchema,
@@ -20,8 +23,6 @@ import {
   type ChecklistGenerationRequest,
   type Checklist,
 } from '@/app/lib/schemas/checklist.schema';
-import { env } from '@/app/config/env';
-import type { AssetType, TaskType } from '@/app/constants/ai';
 
 /**
  * Resultado de generación de checklist
@@ -35,7 +36,6 @@ export interface ChecklistGenerationResult {
 
 /**
  * Servicio para generar checklists con IA
- *
  * @example
  * ```typescript
  * const service = new ChecklistAIService();
@@ -49,6 +49,9 @@ export interface ChecklistGenerationResult {
 export class ChecklistAIService extends BaseAIService {
   private groq: ReturnType<typeof createGroq>;
 
+  /**
+   *
+   */
   constructor() {
     super({
       serviceName: 'ChecklistAIService',
@@ -63,7 +66,6 @@ export class ChecklistAIService extends BaseAIService {
 
   /**
    * Genera un checklist de mantenimiento con IA
-   *
    * @param request - Parámetros de generación
    * @returns Resultado con checklist generado
    */
@@ -121,6 +123,9 @@ export class ChecklistAIService extends BaseAIService {
 
   /**
    * Llama a la API de GROQ para generar checklist
+   * @param assetType
+   * @param taskType
+   * @param customInstructions
    */
   private async callAI(
     assetType: AssetType,
@@ -160,6 +165,9 @@ export class ChecklistAIService extends BaseAIService {
 
   /**
    * Parsea y valida la respuesta de la IA
+   * @param rawText
+   * @param assetType
+   * @param taskType
    */
   private parseAIResponse(rawText: string, assetType: AssetType, taskType: TaskType): Checklist {
     try {

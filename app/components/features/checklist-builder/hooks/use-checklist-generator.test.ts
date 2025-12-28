@@ -5,8 +5,9 @@
  * Verifica estados iniciales y funciones disponibles.
  */
 
-import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+
 import { useChecklistGenerator } from '@/app/components/features/checklist-builder/hooks/use-checklist-generator';
 
 describe('useChecklistGenerator', () => {

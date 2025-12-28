@@ -5,8 +5,9 @@
  * Verifica localStorage y operaciones CRUD.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { useSummaryTemplates } from '@/app/components/features/activity-summary/hooks/use-summary-templates';
 import type { ActivitySummary } from '@/app/components/features/activity-summary/types';
 

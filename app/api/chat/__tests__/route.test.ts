@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { POST } from '../route';
+
 import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services/chat-service';
+
+import { POST } from '../route';
 
 // Mock ChatService but keep Error classes
 vi.mock('@/app/lib/services/chat-service', async (importOriginal) => {

@@ -11,10 +11,14 @@
  * - Propiedades derivadas (isExecuting, hasError, etc.)
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useWorkOrderCommands } from '../use-work-order-commands';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+import { getWorkOrderService } from '@/app/lib/services/work-order-service';
 import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+
+import { useWorkOrderCommands } from '../use-work-order-commands';
+
 
 // Mock del servicio
 vi.mock('@/app/lib/services/work-order-service', () => ({
@@ -22,8 +26,6 @@ vi.mock('@/app/lib/services/work-order-service', () => ({
     create: vi.fn(),
   })),
 }));
-
-import { getWorkOrderService } from '@/app/lib/services/work-order-service';
 
 const mockService = {
   create: vi.fn(),

@@ -1,12 +1,15 @@
 'use client';
 
-import { forwardRef } from 'react';
-import { Mic, Square, Loader2 } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Mic, Square, Loader2 } from 'lucide-react';
+import { forwardRef } from 'react';
+
 import { cn } from '@/app/lib/utils';
+
 import { AudioWaveform } from './audio-waveform';
-import type { VoiceButtonProps as BaseVoiceButtonProps } from './types';
 import { VOICE_LABELS } from './constants';
+
+import type { VoiceButtonProps as BaseVoiceButtonProps } from './types';
 
 /**
  * Variantes del botón de voz usando CVA para gestión de estilos declarativa y type-safe

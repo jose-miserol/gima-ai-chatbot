@@ -8,6 +8,7 @@
 'use client';
 
 import { Button } from '@/app/components/ui/button';
+
 import type { ActivitySummary } from './types';
 
 interface ActivitySummaryPreviewProps {
@@ -27,6 +28,13 @@ interface ActivitySummaryPreviewProps {
   onSave: (summary: ActivitySummary) => void;
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.summary
+ * @param root0.onClose
+ * @param root0.onSave
+ */
 export function ActivitySummaryPreview({ summary, onClose, onSave }: ActivitySummaryPreviewProps) {
   const readingTime = summary.metadata?.readingTime || 0;
   const wordCount = summary.metadata?.wordCount || 0;

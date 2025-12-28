@@ -6,19 +6,6 @@
 
 'use client';
 
-import { useMemo } from 'react';
-import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
-import { Badge } from '@/app/components/ui/badge';
-import { Progress } from '@/app/components/ui/progress';
 import {
   CheckCircle2,
   FileText,
@@ -29,6 +16,21 @@ import {
   TrendingUp,
   Lightbulb,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo } from 'react';
+
+import { Badge } from '@/app/components/ui/badge';
+import { Button } from '@/app/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/app/components/ui/card';
+import { Progress } from '@/app/components/ui/progress';
+
 
 interface AITool {
   id: string;
@@ -132,6 +134,9 @@ function getGreeting(): string {
   return '¡Buenas noches!';
 }
 
+/**
+ *
+ */
 export function AIToolsDashboardClient() {
   // Greeting personalizado según hora
   const greeting = useMemo(() => getGreeting(), []);

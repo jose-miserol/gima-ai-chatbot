@@ -6,6 +6,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import type { CloseoutNotesRequest } from '@/app/lib/schemas/work-order-closeout.schema';
+import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
+
 // Mock del módulo 'env'
 vi.mock('@/app/config/env', () => ({
   env: {
@@ -14,9 +17,6 @@ vi.mock('@/app/config/env', () => ({
     NODE_ENV: 'test',
   },
 }));
-
-import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
-import type { CloseoutNotesRequest } from '@/app/lib/schemas/work-order-closeout.schema';
 
 describe('WorkOrderCloseoutAIService', () => {
   let service: WorkOrderCloseoutAIService;

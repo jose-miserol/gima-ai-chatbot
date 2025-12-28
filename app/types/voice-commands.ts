@@ -3,7 +3,6 @@
  *
  * Define tipos TypeScript y schemas Zod para comandos de voz
  * Valida estructura y contenido en runtime
- *
  * @example
  * ```typescript
  * import { VoiceWorkOrderCommandSchema } from '@/app/types/voice-commands';
@@ -234,7 +233,6 @@ export type CommandExecutionResult = z.infer<typeof CommandExecutionResultSchema
 
 /**
  * Helper: Valida comando de voz con error handling mejorado
- *
  * @param data - Datos a validar
  * @returns Resultado de validación con mensajes de error claros
  */
@@ -270,6 +268,7 @@ export function createEmptyCommand(): Partial<VoiceWorkOrderCommand> {
 /**
  * Helper: Verifica si un comando requiere confirmación del usuario
  * Comandos destructivos o de alta importancia requieren confirmación
+ * @param command
  */
 export function requiresConfirmation(command: VoiceCommand): boolean {
   if (command.type === 'work_order') {
@@ -291,6 +290,7 @@ export function requiresConfirmation(command: VoiceCommand): boolean {
 
 /**
  * Helper: Genera resumen legible del comando para mostrar al usuario
+ * @param command
  */
 export function formatCommandSummary(command: VoiceCommand): string {
   if (command.type === 'navigation') {

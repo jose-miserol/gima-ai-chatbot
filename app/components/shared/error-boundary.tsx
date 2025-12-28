@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -28,7 +28,6 @@ interface State {
  * - Restablecimiento automático cuando cambian las resetKeys
  * - UI mejorada con contador de reintentos y detalles del error
  * - Capacidades de reporte de errores en producción
- *
  * @example
  * ```tsx
  * <ErrorBoundary
@@ -43,6 +42,10 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   private resetTimeout: NodeJS.Timeout | null = null;
 
+  /**
+   *
+   * @param props
+   */
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -51,10 +54,19 @@ export class ErrorBoundary extends Component<Props, State> {
     };
   }
 
+  /**
+   *
+   * @param error
+   */
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
+  /**
+   *
+   * @param error
+   * @param errorInfo
+   */
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const { maxRetries = 3 } = this.props;
     const { retryCount } = this.state;
@@ -96,6 +108,10 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  /**
+   *
+   * @param prevProps
+   */
   componentDidUpdate(prevProps: Props) {
     // Automatically reset error state when resetKeys change
     // This allows parent components to trigger a reset by changing these keys
@@ -108,6 +124,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  /**
+   *
+   */
   componentWillUnmount() {
     if (this.resetTimeout) {
       clearTimeout(this.resetTimeout);
@@ -138,6 +157,8 @@ export class ErrorBoundary extends Component<Props, State> {
   /**
    * Compara arrays para igualdad de resetKeys
    * Usado para detectar cuando resetKeys cambian y disparar auto-reset
+   * @param a
+   * @param b
    */
   private areArraysEqual(a?: Array<string | number>, b?: Array<string | number>): boolean {
     if (!a || !b) return a === b;
@@ -148,6 +169,14 @@ export class ErrorBoundary extends Component<Props, State> {
   /**
    * Envía detalles del error a un servicio de monitoreo externo
    * En producción, esto debería integrarse con servicios como Sentry o LogRocket
+   * @param errorDetails
+   * @param errorDetails.message
+   * @param errorDetails.stack
+   * @param errorDetails.componentStack
+   * @param errorDetails.timestamp
+   * @param errorDetails.userAgent
+   * @param errorDetails.url
+   * @param errorDetails.retryCount
    */
   private async reportErrorToService(errorDetails: {
     message: string;
@@ -169,6 +198,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  /**
+   *
+   */
   render() {
     const { hasError, error, retryCount } = this.state;
     const { children, fallback, maxRetries = 3 } = this.props;

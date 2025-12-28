@@ -6,6 +6,7 @@
  */
 
 import { ChecklistBuilderClient } from './checklist-builder-client';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
   description: 'Genera checklists de mantenimiento con inteligencia artificial',
 };
 
+/**
+ *
+ */
 export default function ChecklistBuilderPage() {
   return <ChecklistBuilderClient />;
 }

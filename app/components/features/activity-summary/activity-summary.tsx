@@ -8,11 +8,16 @@
 'use client';
 
 import { useState } from 'react';
+
 import { ActivitySummaryForm } from './activity-summary-form';
-import { ActivitySummaryPreview } from './activity-summary-preview';
 import { ActivitySummaryList } from './activity-summary-list';
+import { ActivitySummaryPreview } from './activity-summary-preview';
+
 import type { ActivitySummary as Summary } from './types';
 
+/**
+ *
+ */
 export function ActivitySummary() {
   const [activeSummary, setActiveSummary] = useState<Summary | null>(null);
   const [view, setView] = useState<'form' | 'preview' | 'templates'>('form');

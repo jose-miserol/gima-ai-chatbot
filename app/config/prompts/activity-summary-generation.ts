@@ -37,7 +37,6 @@ FORMATO DE SALIDA (JSON estricto):
 
 /**
  * Obtiene instrucciones específicas por estilo
- *
  * @param style - Estilo del resumen
  * @returns Instrucciones específicas
  */
@@ -70,7 +69,6 @@ export function getStyleSpecificInstructions(style: 'ejecutivo' | 'tecnico' | 'n
 
 /**
  * Obtiene instrucciones específicas por nivel de detalle
- *
  * @param detailLevel - Nivel de detalle
  * @returns Instrucciones específicas
  */
@@ -100,8 +98,13 @@ export function getDetailLevelInstructions(detailLevel: 'alto' | 'medio' | 'bajo
 
 /**
  * Construye el prompt completo para generación de resumen
- *
  * @param params - Parámetros de generación
+ * @param params.assetType
+ * @param params.taskType
+ * @param params.activities
+ * @param params.style
+ * @param params.detailLevel
+ * @param params.context
  * @returns Prompt completo
  */
 export function buildSummaryPrompt(params: {

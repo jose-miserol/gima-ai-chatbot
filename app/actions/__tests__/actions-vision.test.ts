@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { analyzePartImage } from '../vision';
-import { MockAiSdk } from '@/tests/mocks/ai-sdk';
+
 import { MAX_IMAGE_SIZE_MB } from '@/app/config/limits';
+import { MockAiSdk } from '@/tests/mocks/ai-sdk';
+
+import { analyzePartImage } from '../vision';
 
 // Mock dependencies
 vi.mock('ai', () => ({

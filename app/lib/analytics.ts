@@ -3,7 +3,6 @@
  *
  * Sistema de tracking para métricas de negocio y uso de features
  * Integra con logger estructurado y puede extenderse con servicios externos
- *
  * @example
  * ```typescript
  * import { trackVoiceCommandUsage, trackPDFAnalysis } from '@/app/lib/analytics';
@@ -76,11 +75,14 @@ interface FeatureUsageMetrics {
  * - Tipos de comandos más usados
  * - Calidad de transcripción
  * - Tiempos de procesamiento
- *
  * @param command - Comando de voz parseado
+ * @param command.action
+ * @param command.confidence
+ * @param command.equipment
+ * @param command.priority
+ * @param command.assignee
  * @param success - Si el comando se ejecutó correctamente
  * @param startTime - Timestamp de inicio (Date.now())
- *
  * @example
  * ```typescript
  * const startTime = Date.now();
@@ -134,12 +136,13 @@ export function trackVoiceCommandUsage(
  * - Tiempos de procesamiento
  * - Tasa de éxito
  * - Modos de análisis más usados
- *
  * @param pageCount - Número de páginas del PDF
  * @param textLength - Caracteres de texto extraído
  * @param analysisTimeMs - Tiempo de análisis en ms
  * @param success - Si el análisis fue exitoso
  * @param options - Opciones de análisis usadas
+ * @param options.mode
+ * @param options.query
  */
 export function trackPDFAnalysis(
   pageCount: number,
@@ -179,7 +182,6 @@ export function trackPDFAnalysis(
  * Trackea uso general de features
  *
  * Para tracking de features que no tienen métricas específicas
- *
  * @param feature - Nombre de la feature
  * @param action - Acción realizada
  * @param metadata - Datos adicionales
@@ -213,7 +215,6 @@ export function trackFeatureUsage(
  * Trackea errores de usuario
  *
  * Útil para identificar puntos de fricción en UX
- *
  * @param feature - Feature donde ocurrió el error
  * @param errorCode - Código de error
  * @param errorMessage - Mensaje de error
@@ -239,7 +240,6 @@ export function trackUserError(feature: string, errorCode: string, errorMessage:
  * Trackea tiempo de carga de features
  *
  * Para medir performance de features pesadas
- *
  * @param feature - Nombre de la feature
  * @param loadTimeMs - Tiempo de carga en ms
  */
@@ -260,11 +260,9 @@ export function trackFeatureLoadTime(feature: string, loadTimeMs: number): void 
 
 /**
  * Helper para medir tiempo de ejecución de una función
- *
  * @param fn - Función a medir
  * @param onComplete - Callback con tiempo de ejecución
  * @returns Resultado de la función
- *
  * @example
  * ```typescript
  * const result = await measureExecutionTime(
