@@ -17,10 +17,10 @@ import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
  * Schema para request de generación de checklist
  */
 export const checklistGenerationRequestSchema = z.object({
-  assetType: z.enum(ASSET_TYPES, {
+  assetType: z.enum(ASSET_TYPES as any, {
     errorMap: () => ({ message: 'Tipo de activo inválido' }),
   }),
-  taskType: z.enum(TASK_TYPES, {
+  taskType: z.enum(TASK_TYPES as any, {
     errorMap: () => ({ message: 'Tipo de tarea inválido' }),
   }),
   customInstructions: z
@@ -39,7 +39,7 @@ export const checklistItemSchema = z.object({
     .string()
     .min(5, 'Descripción muy corta')
     .max(CHECKLIST_LIMITS.MAX_ITEM_DESCRIPTION_LENGTH, 'Descripción muy larga'),
-  category: z.enum(CHECKLIST_CATEGORIES, {
+  category: z.enum(CHECKLIST_CATEGORIES as any, {
     errorMap: () => ({ message: 'Categoría inválida' }),
   }),
   order: z.number().int().nonnegative(),
@@ -57,8 +57,8 @@ export const checklistSchema = z.object({
     .min(5, 'Título muy corto')
     .max(CHECKLIST_LIMITS.MAX_TITLE_LENGTH, 'Título muy largo'),
   description: z.string().min(10).max(500),
-  assetType: z.enum(ASSET_TYPES),
-  taskType: z.enum(TASK_TYPES),
+  assetType: z.enum(ASSET_TYPES as any),
+  taskType: z.enum(TASK_TYPES as any),
   items: z
     .array(checklistItemSchema)
     .min(CHECKLIST_LIMITS.MIN_ITEMS, `Mínimo ${CHECKLIST_LIMITS.MIN_ITEMS} items requeridos`)

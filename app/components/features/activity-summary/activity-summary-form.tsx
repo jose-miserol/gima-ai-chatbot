@@ -54,8 +54,8 @@ export function ActivitySummaryForm({ onSummaryGenerated }: ActivitySummaryFormP
     if (!isValidLength) return;
 
     await generate({
-      assetType,
-      taskType,
+      assetType: assetType as any,
+      taskType: taskType as any,
       activities,
       style: style as any,
       detailLevel: detailLevel as any,
@@ -112,9 +112,8 @@ export function ActivitySummaryForm({ onSummaryGenerated }: ActivitySummaryFormP
           />
           <div className="flex justify-between items-center mt-1">
             <p
-              className={`text-xs ${
-                !isValidLength && activitiesLength > 0 ? 'text-red-600' : 'text-muted-foreground'
-              }`}
+              className={`text-xs ${!isValidLength && activitiesLength > 0 ? 'text-red-600' : 'text-muted-foreground'
+                }`}
             >
               {activitiesLength}/{SUMMARY_LIMITS.MAX_ACTIVITIES_LENGTH} caracteres
               {activitiesLength > 0 && activitiesLength < SUMMARY_LIMITS.MIN_ACTIVITIES_LENGTH && (
