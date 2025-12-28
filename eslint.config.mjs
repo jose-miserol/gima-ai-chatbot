@@ -65,6 +65,7 @@ export default tseslint.config(
     rules: {
       ...tseslint.configs.strictTypeChecked.rules,
       ...tseslint.configs.stylisticTypeChecked.rules,
+      'no-unused-vars': 'off', // Desactivar regla base para evitar duplicados/conflictos
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unused-vars': ['error', {
@@ -167,22 +168,31 @@ export default tseslint.config(
     settings: {
       'boundaries/include': ['app/**/*.{ts,tsx}'],
       'boundaries/elements': [
+        // Páginas y layouts de Next.js
         { type: 'pages', pattern: 'app/**/page.tsx' },
+        { type: 'layout', pattern: 'app/**/layout.tsx' },
+        // API routes
         { type: 'api', pattern: 'app/api/**/*' },
+        // Components
         { type: 'feature', pattern: 'app/components/features/**/*' },
         { type: 'ui', pattern: 'app/components/ui/**/*' },
         { type: 'shared', pattern: 'app/components/shared/**/*' },
+        { type: 'ai-elements', pattern: 'app/components/ai-elements/**/*' },
+        // Core modules
         { type: 'lib', pattern: 'app/lib/**/*' },
         { type: 'hooks', pattern: 'app/hooks/**/*' },
         { type: 'types', pattern: 'app/types/**/*' },
         { type: 'config', pattern: 'app/config/**/*' },
         { type: 'actions', pattern: 'app/actions/**/*' },
+        { type: 'utils', pattern: 'app/utils/**/*' },
+        { type: 'constants', pattern: 'app/constants/**/*' },
+        { type: 'tools', pattern: 'app/tools/**/*' },
       ],
     },
     rules: {
-      ...boundaries.configs.strict.rules,
-      'boundaries/no-unknown-files': 'error',
-      'boundaries/no-unknown': 'error',
+      // Usar warn para adopción gradual (cambiar a error cuando esté limpio)
+      'boundaries/no-unknown-files': 'warn',
+      'boundaries/no-unknown': 'warn',
 
       // Reglas de dependencias entre capas (alineadas con RULES.md V5)
       'boundaries/element-types': ['error', {
@@ -212,7 +222,7 @@ export default tseslint.config(
             disallow: ['pages'], 
             message: 'Features no dependen de paginas.' 
           },
-          // Features aislados: no importar otro feature directamente
+          // Features aislados: no importar otro feature directamente (warn para adopción gradual)
           { 
             from: ['feature'], 
             disallow: ['feature'], 
