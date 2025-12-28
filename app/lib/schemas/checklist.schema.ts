@@ -18,10 +18,10 @@ import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
  */
 export const checklistGenerationRequestSchema = z.object({
   assetType: z.enum(ASSET_TYPES as any, {
-    errorMap: () => ({ message: 'Tipo de activo inválido' }),
+    error: 'Tipo de activo inválido',
   }),
   taskType: z.enum(TASK_TYPES as any, {
-    errorMap: () => ({ message: 'Tipo de tarea inválido' }),
+    error: 'Tipo de tarea inválido',
   }),
   customInstructions: z
     .string()
@@ -40,7 +40,7 @@ export const checklistItemSchema = z.object({
     .min(5, 'Descripción muy corta')
     .max(CHECKLIST_LIMITS.MAX_ITEM_DESCRIPTION_LENGTH, 'Descripción muy larga'),
   category: z.enum(CHECKLIST_CATEGORIES as any, {
-    errorMap: () => ({ message: 'Categoría inválida' }),
+    error: 'Categoría inválida',
   }),
   order: z.number().int().nonnegative(),
   required: z.boolean(),

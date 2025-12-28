@@ -15,6 +15,15 @@ interface TextPart { type: 'text'; text: string; }
 interface ImagePart { type: 'image'; imageUrl: string; mimeType?: string; }
 
 /**
+ * Extrae el contenido de texto de las partes del mensaje
+ */
+function getTextContent(parts: unknown[] | undefined): string {
+  if (!parts || parts.length === 0) return '';
+  const textParts = parts.filter((part: any): part is TextPart => part?.type === 'text');
+  return textParts.map((part) => part.text).join('\n\n');
+}
+
+/**
  * ChatMessage - Mensaje individual del chat con acciones
  *
  * Renderiza un mensaje de usuario o asistente con:
@@ -40,31 +49,18 @@ interface ImagePart { type: 'image'; imageUrl: string; mimeType?: string; }
  * ```
  */
 export function ChatMessage({ message, onRegenerate, onCopy }: ChatMessageProps) {
-  // Si parts está vacío o no existe, renderizar usando content directamente
-  if (!message.parts || message.parts.length === 0) {
-    return (
-      <Message key={message.id} from={message.role}>
-        <MessageContent>
-          <MessageResponse>{message.content}</MessageResponse>
-        </MessageContent>
-        {message.role === 'assistant' && (
-          <MessageActions>
-            <MessageAction onClick={onRegenerate} label="Reintentar">
-              <RefreshCcwIcon className="size-3" />
-            </MessageAction>
-            <MessageAction onClick={() => onCopy(message.content)} label="Copiar">
-              <CopyIcon className="size-3" />
-            </MessageAction>
-          </MessageActions>
-        )}
-      </Message>
-    );
-  }
+  // Extraer contenido de texto de las partes
+  const textContent = getTextContent(message.parts as unknown[]);
 
-  // Renderizar usando parts con tipos seguros
-  const textParts = message.parts.filter((part): part is TextPart => part.type === 'text');
-  const imageParts = message.parts.filter((part): part is ImagePart => part.type === 'image');
-  const textContent = textParts.map((part) => part.text).join('\n\n');
+  // Extraer partes de imagen si existen
+  const imageParts = (message.parts as unknown[] || []).filter(
+    (part: any): part is ImagePart => part?.type === 'image'
+  );
+
+  // Si no hay contenido, no renderizar nada
+  if (!textContent && imageParts.length === 0) {
+    return null;
+  }
 
   return (
     <Message key={message.id} from={message.role}>
@@ -106,3 +102,4 @@ export function ChatMessage({ message, onRegenerate, onCopy }: ChatMessageProps)
     </Message>
   );
 }
+

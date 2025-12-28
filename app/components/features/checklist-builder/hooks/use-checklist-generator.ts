@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 
-import type { ChecklistGenerationRequest, Checklist } from '@/app/lib/schemas/checklist.schema';
+import type { ChecklistGenerationRequest } from '@/app/lib/schemas/checklist.schema';
 import { ChecklistAIService } from '@/app/lib/services/checklist-ai-service';
 
 import type { ChecklistGenerationState } from '../types';

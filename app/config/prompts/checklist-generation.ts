@@ -84,7 +84,7 @@ El checklist debe contener entre 8 y 15 items.`;
  * @param assetType
  * @param taskType
  */
-function getAssetSpecificGuidance(assetType: AssetType, taskType: TaskType): string {
+function getAssetSpecificGuidance(assetType: AssetType, _taskType: TaskType): string {
   const guidance: Record<AssetType, string> = {
     'unidad-hvac': `- Verificar filtros de aire
 - Revisar niveles de refrigerante

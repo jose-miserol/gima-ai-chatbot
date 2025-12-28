@@ -11,7 +11,7 @@ import { DataTransformationPreview } from './data-transformation-preview';
 import { useDataSnapshots } from './hooks/use-data-snapshots';
 import { useDataTransformation } from './hooks/use-data-transformation';
 
-import type { DataSnapshot } from './types';
+import type { DataSnapshot, TransformationRequest } from './types';
 
 /**
  * Componente principal de Data Transformation
@@ -31,11 +31,11 @@ export function DataTransformation() {
   const { status, result, processTransformation, applyTransformation, reset } =
     useDataTransformation();
 
-  const { snapshots, createSnapshot, restoreSnapshot, deleteSnapshot, clearHistory } =
+  const { snapshots, createSnapshot, deleteSnapshot, clearHistory } =
     useDataSnapshots();
 
   const handleAnalyze = useCallback(
-    async (data: { sourceData: string }) => {
+    async (data: TransformationRequest) => {
       setOriginalData(data.sourceData);
       setRestoredData(undefined); // Clear restored on new analysis
       await processTransformation(data);
