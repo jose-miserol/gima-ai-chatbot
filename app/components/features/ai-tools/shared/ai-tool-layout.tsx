@@ -1,14 +1,11 @@
-/**
- * AIToolLayout - Layout consistente para páginas de AI tools
- *
- * Proporciona estructura común con header, breadcrumbs, stats, y content area.
- * Incluye soporte para accesibilidad (landmarks) y floating actions via portal.
- */
-
 'use client';
 
+import { ChevronRight, HelpCircle, Sparkles, Home } from 'lucide-react';
+import Link from 'next/link';
 import { Suspense, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+
 import { Badge } from '@/app/components/ui/badge';
 import { Progress } from '@/app/components/ui/progress';
 import {
@@ -17,9 +14,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/app/components/ui/tooltip';
-import { ChevronRight, HelpCircle, Sparkles, Home } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
 /**
  * Estadísticas de uso para el layout
@@ -71,12 +65,22 @@ export interface AIToolLayoutProps {
 
 /**
  * Componente interno para stats con progress bar
+ * @param root0
+ * @param root0.stats
  */
 function StatsBar({ stats }: { stats: AIToolStats }) {
+  // Use state for hydration-safe date calculation
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
+
   const percentage = Math.min((stats.used / stats.quota) * 100, 100);
   const isNearLimit = percentage >= 80;
-  const daysUntilReset = stats.resetDate
-    ? Math.ceil((stats.resetDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+
+  const daysUntilReset = stats.resetDate && now
+    ? Math.ceil((stats.resetDate.getTime() - now) / (1000 * 60 * 60 * 24))
     : null;
 
   return (
@@ -100,7 +104,7 @@ function StatsBar({ stats }: { stats: AIToolStats }) {
         className={isNearLimit ? '[&>div]:bg-destructive' : ''}
       />
       <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-        {daysUntilReset !== null && (
+        {daysUntilReset !== null && daysUntilReset >= 0 && (
           <span>Se reinicia en {daysUntilReset} días</span>
         )}
         {stats.costEstimate !== undefined && (
@@ -113,6 +117,8 @@ function StatsBar({ stats }: { stats: AIToolStats }) {
 
 /**
  * Componente interno para breadcrumbs
+ * @param root0
+ * @param root0.items
  */
 function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
@@ -146,6 +152,8 @@ function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
 
 /**
  * Componente para floating actions con portal
+ * @param root0
+ * @param root0.children
  */
 function FloatingActions({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -175,6 +183,16 @@ function FloatingActions({ children }: { children: ReactNode }) {
  * - Floating actions via portal
  * - Help tooltip con contenido personalizado
  * - Semantic HTML con landmarks para accesibilidad
+ * @param root0
+ * @param root0.title
+ * @param root0.description
+ * @param root0.icon
+ * @param root0.children
+ * @param root0.actions
+ * @param root0.showAIBadge
+ * @param root0.stats
+ * @param root0.helpContent
+ * @param root0.breadcrumbs
  */
 export function AIToolLayout({
   title,

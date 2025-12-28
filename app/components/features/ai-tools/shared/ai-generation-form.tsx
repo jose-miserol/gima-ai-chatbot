@@ -1,16 +1,13 @@
-/**
- * AIGenerationForm - Formulario genérico para generación con IA
- *
- * Componente reutilizable para todas las AI features.
- * Maneja validación, estados de carga, submit, drafts en localStorage, y keyboard shortcuts.
- */
-
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { Sparkles, Loader2, Save, RotateCcw, AlertCircle } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+
+import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Checkbox } from '@/app/components/ui/checkbox';
 import { Input } from '@/app/components/ui/input';
-import { Textarea } from '@/app/components/ui/textarea';
 import { Label } from '@/app/components/ui/label';
 import {
   Select,
@@ -19,18 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/components/ui/select';
-import { Checkbox } from '@/app/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
-import { Sparkles, Loader2, Save, RotateCcw, AlertCircle } from 'lucide-react';
+import { Textarea } from '@/app/components/ui/textarea';
 import { cn } from '@/app/lib/utils';
+
+import { useDraft } from './hooks/use-draft';
 import type { FormField } from './types';
-
-/** Intervalo de auto-guardado en ms (30 segundos) */
-const AUTO_SAVE_INTERVAL = 30000;
-
-/** Key prefix para localStorage */
-const DRAFT_KEY_PREFIX = 'ai-form-draft-';
 
 /**
  * Props para AIGenerationForm
@@ -59,99 +49,6 @@ export interface AIGenerationFormProps<T = Record<string, unknown>> {
 }
 
 /**
- * Hook para manejar drafts en localStorage
- */
-function useDraft<T>(
-  draftId: string | undefined,
-  enabled: boolean,
-  initialData: T
-): {
-  data: T;
-  setData: (data: T) => void;
-  isDirty: boolean;
-  lastSaved: Date | null;
-  save: () => void;
-  clear: () => void;
-} {
-  const key = draftId ? `${DRAFT_KEY_PREFIX}${draftId}` : null;
-  const [data, setDataInternal] = useState<T>(initialData);
-  const [isDirty, setIsDirty] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const initialRef = useRef(initialData);
-
-  // Cargar draft al montar
-  useEffect(() => {
-    if (!enabled || !key) return;
-
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setDataInternal(parsed.data);
-        setLastSaved(new Date(parsed.savedAt));
-      }
-    } catch {
-      // Ignorar errores de parsing
-    }
-  }, [enabled, key]);
-
-  const setData = useCallback((newData: T) => {
-    setDataInternal(newData);
-    setIsDirty(JSON.stringify(newData) !== JSON.stringify(initialRef.current));
-  }, []);
-
-  const save = useCallback(() => {
-    if (!enabled || !key) return;
-
-    try {
-      localStorage.setItem(
-        key,
-        JSON.stringify({ data, savedAt: new Date().toISOString() })
-      );
-      setLastSaved(new Date());
-    } catch {
-      // Ignorar errores de storage
-    }
-  }, [enabled, key, data]);
-
-  const clear = useCallback(() => {
-    if (!key) return;
-
-    try {
-      localStorage.removeItem(key);
-      setDataInternal(initialRef.current);
-      setIsDirty(false);
-      setLastSaved(null);
-    } catch {
-      // Ignorar errores
-    }
-  }, [key]);
-
-  // Auto-save cada 30 segundos si hay cambios
-  useEffect(() => {
-    if (!enabled || !isDirty) return;
-
-    const timer = setInterval(save, AUTO_SAVE_INTERVAL);
-    return () => clearInterval(timer);
-  }, [enabled, isDirty, save]);
-
-  // Advertir al salir con cambios sin guardar
-  useEffect(() => {
-    if (!isDirty) return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDirty]);
-
-  return { data, setData, isDirty, lastSaved, save, clear };
-}
-
-/**
  * Form genérico para generación con IA
  *
  * Features:
@@ -175,18 +72,18 @@ export function AIGenerationForm<T = Record<string, unknown>>({
   defaultValues,
 }: AIGenerationFormProps<T>) {
   // Inicializar datos con valores por defecto
-  const getInitialData = useCallback((): Record<string, unknown> => {
+  const initialData = (() => {
     const initial: Record<string, unknown> = {};
     fields.forEach((field) => {
       initial[field.name] = defaultValues?.[field.name as keyof T] ?? field.defaultValue ?? '';
     });
     return initial;
-  }, [fields, defaultValues]);
+  })();
 
   const { data: formData, setData: setFormData, isDirty, lastSaved, save, clear } = useDraft(
     draftId,
     saveDrafts,
-    getInitialData() as T
+    initialData as T
   );
 
   const formRef = useRef<HTMLFormElement>(null);

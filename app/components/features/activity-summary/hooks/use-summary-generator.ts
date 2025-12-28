@@ -1,20 +1,14 @@
-/**
- * useSummaryGenerator - Hook para generar resúmenes con IA
- *
- * Hook personalizado para manejar el estado de generación
- * de resúmenes de actividades usando ActivitySummaryAIService.
- */
-
 'use client';
 
 import { useState, useRef } from 'react';
-import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
+
 import type { ActivitySummaryRequest } from '@/app/lib/schemas/activity-summary.schema';
+import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
+
 import type { ActivitySummary } from '../types';
 
 /**
  * Hook para generar resúmenes con IA
- *
  * @returns Estado y funciones de generación
  */
 export function useSummaryGenerator() {
@@ -32,7 +26,6 @@ export function useSummaryGenerator() {
 
   /**
    * Genera un resumen de actividades
-   *
    * @param request - Parámetros de generación
    */
   const generate = async (request: ActivitySummaryRequest) => {
@@ -47,7 +40,12 @@ export function useSummaryGenerator() {
 
       // Llamar al servicio
       setProgress(30);
-      const result = await serviceRef.current!.generateSummary(request);
+      const service = serviceRef.current;
+      if (!service) {
+        throw new Error('Service not initialized');
+      }
+      
+      const result = await service.generateSummary(request);
 
       setProgress(90);
 
@@ -56,7 +54,9 @@ export function useSummaryGenerator() {
       }
 
       // Actualizar estado
-      setSummary(result.summary!);
+      if (result.summary) {
+        setSummary(result.summary);
+      }
       setProgress(100);
     } catch (err) {
       const errorObj = err instanceof Error ? err : new Error('Error desconocido');
