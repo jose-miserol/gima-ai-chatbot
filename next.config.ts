@@ -48,8 +48,8 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
               // Future-ready: Add analytics/monitoring domains here
-              // "connect-src 'self' https://api.groq.com https://generativelanguage.googleapis.com https://analytics.example.com",
-              "connect-src 'self' https://api.groq.com https://generativelanguage.googleapis.com",
+              // "connect-src 'self' blob: data: https://api.groq.com https://generativelanguage.googleapis.com https://analytics.example.com",
+              "connect-src 'self' blob: data: https://api.groq.com https://generativelanguage.googleapis.com",
               "media-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
