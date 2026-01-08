@@ -18,7 +18,10 @@ export interface UseFileSubmissionParams {
   /** Función para actualizar el array de mensajes */
   setMessages: (messages: UIMessage[] | ((messages: UIMessage[]) => UIMessage[])) => void;
   /** Función para enviar mensajes regulares (sin archivos) */
-  sendMessage: (message: { role: 'user'; content: string } | string, options?: ChatRequestOptions) => Promise<string | null | undefined>;
+  sendMessage: (
+    message: { role: 'user'; content: string } | string,
+    options?: ChatRequestOptions
+  ) => Promise<string | null | undefined>;
   /** Si el modo de voz está escuchando activamente */
   isListening: boolean;
   /** Función para alternar el estado de escucha de voz */
@@ -115,9 +118,9 @@ export function useFileSubmission({
               parts: [
                 { type: 'text', text: userText },
                 {
-                  type: 'file', // Generic file type, UI handles rendering based on mimeType
+                  type: 'file', // Generic file type, UI handles rendering based on mediaType
                   data: fileDataUrl, // Store dataUrl for local preview continuity if needed
-                  mimeType: targetFile.mediaType,
+                  mediaType: targetFile.mediaType,
                 },
               ],
               createdAt: new Date(),
@@ -185,7 +188,7 @@ export function useFileSubmission({
               parts: [{ type: 'text', text: errorMsg }],
               createdAt: new Date(),
             } as UIMessage,
-            ]);
+          ]);
 
           toast.error(`Error al procesar ${fileTypeLabel}`, errorMessage);
         } finally {
@@ -196,11 +199,25 @@ export function useFileSubmission({
       }
 
       // Normal text message (no recognized file for analysis) - use GROQ
+      // Manually add user message to state first (AI SDK doesn't do this automatically with custom persistence)
+      const userMessageId = `user-${Date.now()}`;
+      const userText = message.text || 'Mensaje';
+
+      setMessages((prev: UIMessage[]) => [
+        ...prev,
+        {
+          id: userMessageId,
+          role: 'user',
+          content: userText,
+          parts: [{ type: 'text', text: userText }],
+          createdAt: new Date(),
+        } as UIMessage,
+      ]);
+
       await sendMessage(
         {
           role: 'user',
-          content: message.text || 'Mensaje',
-          // files: message.files, // CreateMessage doesn't support files directly in this way usually, check type
+          content: userText,
         },
         {
           body: {

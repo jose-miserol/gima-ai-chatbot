@@ -78,11 +78,12 @@ const messageContentSchema = z.union([
 /**
  * Schema para un mensaje individual
  * content es opcional - si no está presente, se usa string vacío
+ * parts se ignora si tiene formato inválido (en lugar de fallar)
  */
 export const messageSchema = z.object({
   role: z.enum(['user', 'assistant', 'system']),
   content: messageContentSchema.optional().default(''),
-  parts: z.array(messagePartSchema).optional(),
+  parts: z.array(messagePartSchema).optional().catch(undefined), // Ignore invalid parts
   id: z.string().optional(),
   createdAt: z.preprocess((val) => {
     if (val === undefined || val === null) return undefined;
