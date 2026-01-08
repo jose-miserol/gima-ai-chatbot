@@ -1,0 +1,290 @@
+/**
+ * PDF Upload Test Client Component
+ *
+ * Interactive testing tool for PDF analysis functionality using Gemini.
+ * Provides file upload via input or drag-and-drop, real-time validation, custom prompt input,
+ * and displays analysis/extraction results from the analyzePdf Server Action.
+ *
+ * **Why this exists:**
+ * Enables developers and QA to quickly verify that PDF uploads, content extraction,
+ * and AI analysis are working correctly. Particularly useful for testing custom prompts
+ * and validating file size limits.
+ *
+ * @returns Client component with PDF upload testing interface
+ */
+
+'use client';
+
+import { FileText, Upload, X, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+
+import { analyzePdf } from '@/app/actions';
+import { Button } from '@/app/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
+import { Separator } from '@/app/components/ui/separator';
+import { Textarea } from '@/app/components/ui/textarea';
+import { useFileUpload } from '@/app/hooks/use-file-upload';
+import { useToast } from '@/app/hooks/use-toast';
+
+const MAX_SIZE_MB = 20;
+const ACCEPTED_TYPE = 'application/pdf';
+
+export function PdfUploadTestClient() {
+    const { toast } = useToast();
+    const [customPrompt, setCustomPrompt] = useState<string>('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [result, setResult] = useState<string>('');
+    const [error, setError] = useState<string>('');
+
+    const {
+        selectedFile,
+        preview: pdfDataUrl,
+        fileInputRef,
+        handleFileInput,
+        handleDrop,
+        handleDragOver,
+        handleReset,
+    } = useFileUpload({
+        maxSizeMB: MAX_SIZE_MB,
+        acceptedTypes: [ACCEPTED_TYPE],
+        onFileSelect: () => {
+            setResult('');
+            setError('');
+        },
+    });
+
+    const handleAnalyze = async () => {
+        if (!selectedFile || !pdfDataUrl) return;
+
+        setIsAnalyzing(true);
+        setResult('');
+        setError('');
+
+        try {
+            const prompt = customPrompt.trim() || undefined;
+            const response = await analyzePdf(pdfDataUrl, prompt);
+
+            if (response.success) {
+                setResult(response.text);
+                toast({
+                    title: '✅ Análisis completado',
+                    description: 'El PDF fue analizado exitosamente',
+                });
+            } else {
+                setError(response.error || 'Error desconocido');
+                toast({
+                    title: '❌ Error en análisis',
+                    description: response.error,
+                    variant: 'destructive',
+                });
+            }
+        } catch (err) {
+            const errorMsg = err instanceof Error ? err.message : 'Error desconocido';
+            setError(errorMsg);
+            toast({
+                title: '❌ Error',
+                description: errorMsg,
+                variant: 'destructive',
+            });
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const reset = () => {
+        handleReset();
+        setCustomPrompt('');
+        setResult('');
+        setError('');
+    };
+
+    return (
+        <div className="container max-w-6xl py-8">
+            <div className="mb-8">
+                <div className="flex items-center gap-3 mb-2">
+                    <FileText className="h-8 w-8 text-red-500" />
+                    <h1 className="text-3xl font-bold">PDF Upload Test</h1>
+                </div>
+                <p className="text-muted-foreground">
+                    Test PDF content extraction and analysis with Gemini
+                </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Left Column - Upload */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Upload PDF</CardTitle>
+                        <CardDescription>
+                            Select or drag a PDF to test analysis (max {MAX_SIZE_MB}MB)
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Drop Zone */}
+                        <div
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            className="border-2 border-dashed rounded-lg p-8 text-center hover:border-red-500 transition-colors cursor-pointer"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground mb-2">
+                                Drag & drop or click to select
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Accepted: PDF only
+                            </p>
+                        </div>
+
+                        <Input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={handleFileInput}
+                            className="hidden"
+                        />
+
+                        {/* File Info */}
+                        {selectedFile && (
+                            <>
+                                <Separator />
+                                <div className="text-sm space-y-1">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Filename:</span>
+                                        <span className="font-medium truncate ml-2">{selectedFile.name}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Type:</span>
+                                        <span className="font-medium">{selectedFile.type}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Size:</span>
+                                        <span className="font-medium">
+                                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                                        </span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Custom Prompt */}
+                        {selectedFile && (
+                            <>
+                                <Separator />
+                                <div className="space-y-2">
+                                    <Label htmlFor="custom-prompt">
+                                        Custom Prompt (Optional)
+                                    </Label>
+                                    <Textarea
+                                        id="custom-prompt"
+                                        placeholder="e.g., Extract all dates and names from this document"
+                                        value={customPrompt}
+                                        onChange={(e) => setCustomPrompt(e.target.value)}
+                                        rows={3}
+                                        className="resize-none"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Leave empty to use default analysis prompt
+                                    </p>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={handleAnalyze}
+                                disabled={!selectedFile || isAnalyzing}
+                                className="flex-1"
+                            >
+                                {isAnalyzing ? (
+                                    <>
+                                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                        Analyzing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Analyze PDF
+                                    </>
+                                )}
+                            </Button>
+                            <Button onClick={reset} variant="outline" disabled={!selectedFile}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Right Column - Results */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Analysis Result</CardTitle>
+                            <CardDescription>
+                                AI-generated analysis from Gemini
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {result ? (
+                                <div className="prose prose-sm max-w-none">
+                                    <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap max-h-[500px] overflow-y-auto">
+                                        {result}
+                                    </div>
+                                </div>
+                            ) : error ? (
+                                <div className="bg-destructive/10 text-destructive rounded-lg p-4">
+                                    <p className="font-medium mb-1">Error:</p>
+                                    <p className="text-sm">{error}</p>
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                    <p>Upload and analyze a PDF to see results</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Help Card */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm">Testing Guide</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm space-y-2">
+                            <div>
+                                <p className="font-medium mb-1">✅ Valid Test:</p>
+                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
+                                    <li>Upload PDF &lt; 20MB</li>
+                                    <li>Optionally add custom prompt</li>
+                                    <li>Click "Analyze PDF"</li>
+                                    <li>Check extracted content</li>
+                                </ul>
+                            </div>
+                            <Separator />
+                            <div>
+                                <p className="font-medium mb-1">❌ Error Tests:</p>
+                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
+                                    <li>Try uploading file &gt; 20MB</li>
+                                    <li>Try non-PDF file type</li>
+                                    <li>Verify error messages</li>
+                                </ul>
+                            </div>
+                            <Separator />
+                            <div>
+                                <p className="font-medium mb-1">💡 Custom Prompts:</p>
+                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
+                                    <li>&quot;Summarize in 3 bullet points&quot;</li>
+                                    <li>&quot;Extract all numerical data&quot;</li>
+                                    <li>&quot;List all dates mentioned&quot;</li>
+                                </ul>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    );
+}

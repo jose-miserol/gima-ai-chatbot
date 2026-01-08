@@ -15,6 +15,7 @@ import {
   Clock,
   TrendingUp,
   Lightbulb,
+  ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -97,6 +98,34 @@ const aiTools: AITool[] = [
       'Análisis de hallazgos',
       'Recomendaciones automáticas',
       'Integrado en WO detail',
+    ],
+  },
+  {
+    id: 'image-upload-test',
+    title: 'Image Upload Test',
+    description: 'Test image analysis with Gemini Vision',
+    icon: <ImageIcon className="h-8 w-8 text-primary" />,
+    href: '/tools/image-upload-test',
+    badge: 'Testing',
+    features: [
+      'Upload & analyze images',
+      'Gemini Vision integration',
+      'File validation (10MB max)',
+      'Drag & drop support',
+    ],
+  },
+  {
+    id: 'pdf-upload-test',
+    title: 'PDF Upload Test',
+    description: 'Test PDF content extraction and analysis',
+    icon: <FileText className="h-8 w-8 text-primary" />,
+    href: '/tools/pdf-upload-test',
+    badge: 'Testing',
+    features: [
+      'Upload & analyze PDFs',
+      'Custom prompt support',
+      'File validation (20MB max)',
+      'Content extraction',
     ],
   },
 ];
