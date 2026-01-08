@@ -135,9 +135,8 @@ export function PdfUploadTestClient() {
                 </div>
             }
         >
-
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* Left Column - Upload */}
+            {/* Left Column - Form */}
+            <div className="space-y-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Upload PDF</CardTitle>
@@ -150,7 +149,7 @@ export function PdfUploadTestClient() {
                         <div
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
-                            className="border-2 border-dashed rounded-lg p-8 text-center hover:border-red-500 transition-colors cursor-pointer"
+                            className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -217,7 +216,7 @@ export function PdfUploadTestClient() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-2">
                             <Button
                                 onClick={handleAnalyze}
                                 disabled={!selectedFile || isAnalyzing}
@@ -241,37 +240,38 @@ export function PdfUploadTestClient() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
 
-                {/* Right Column - Results */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Analysis Result</CardTitle>
-                            <CardDescription>
-                                AI-generated analysis from Gemini
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {result ? (
-                                <div className="prose prose-sm max-w-none">
-                                    <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap max-h-[500px] overflow-y-auto">
-                                        {result}
-                                    </div>
+            {/* Right Column - Results */}
+            <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Analysis Result</CardTitle>
+                        <CardDescription>
+                            AI-generated analysis from Gemini
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {result ? (
+                            <div className="prose prose-sm max-w-none">
+                                <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap max-h-[500px] overflow-y-auto">
+                                    {result}
                                 </div>
-                            ) : error ? (
-                                <div className="bg-destructive/10 text-destructive rounded-lg p-4">
-                                    <p className="font-medium mb-1">Error:</p>
-                                    <p className="text-sm">{error}</p>
-                                </div>
-                            ) : (
-                                <div className="text-center py-12 text-muted-foreground">
-                                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                    <p>Upload and analyze a PDF to see results</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                            </div>
+                        ) : error ? (
+                            <div className="bg-destructive/10 text-destructive rounded-lg p-4">
+                                <p className="font-medium mb-1">Error:</p>
+                                <p className="text-sm">{error}</p>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                <p>Upload and analyze a PDF to see results</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </AIToolLayout>
     );
 }

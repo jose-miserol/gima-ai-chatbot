@@ -123,8 +123,8 @@ export function ImageUploadTestClient() {
                 </div>
             }
         >
-            <div className="grid gap-6 md:grid-cols-2">
-                {/* Left Column - Upload */}
+            {/* Left Column - Form */}
+            <div className="space-y-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Upload Image</CardTitle>
@@ -137,7 +137,7 @@ export function ImageUploadTestClient() {
                         <div
                             onDrop={handleDrop}
                             onDragOver={handleDragOver}
-                            className="border-2 border-dashed rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                            className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -186,7 +186,7 @@ export function ImageUploadTestClient() {
                                 <Separator />
                                 <div>
                                     <Label className="mb-2 block">Preview</Label>
-                                    <div className="relative rounded-lg overflow-hidden border">
+                                    <div className="relative rounded-lg overflow-hidden border bg-muted/20">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={preview}
@@ -199,7 +199,7 @@ export function ImageUploadTestClient() {
                         )}
 
                         {/* Actions */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-2">
                             <Button
                                 onClick={handleAnalyze}
                                 disabled={!selectedFile || isAnalyzing}
@@ -223,8 +223,10 @@ export function ImageUploadTestClient() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
 
-                {/* Right Column - Results */}
+            {/* Right Column - Results */}
+            <div className="space-y-6">
                 <Card>
                     <CardHeader>
                         <CardTitle>Analysis Result</CardTitle>
