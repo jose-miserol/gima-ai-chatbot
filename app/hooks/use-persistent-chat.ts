@@ -5,7 +5,6 @@ import { compress, decompress } from 'lz-string';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
-
 import { MAX_STORED_MESSAGES } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
 
@@ -22,6 +21,11 @@ export type UsePersistentChatOptions = {
    * @default 500
    */
   debounceMs?: number;
+  /**
+   * Enable/disable localStorage persistence
+   * @default true
+   */
+  enablePersistence?: boolean;
 };
 
 /**
@@ -141,7 +145,7 @@ function loadMessagesFromStorage(storageKey: string): UIMessage[] {
  * @see {@link https://sdk.vercel.ai/docs/reference/ai-sdk-ui/use-chat | AI SDK useChat}
  */
 export function usePersistentChat(options: UsePersistentChatOptions = {}) {
-  const { storageKey = 'gima-chat-history', debounceMs = 500 } = options;
+  const { storageKey = 'gima-chat-history', debounceMs = 500, enablePersistence = true } = options;
 
   // ✅ CORRECTO: Lazy initialization de vision response
   const [visionResponse, setVisionResponse] = useState<{ id: string; text: string } | null>(() => {
@@ -173,10 +177,12 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
 
-    // Cargar mensajes iniciales desde storage
-    const initialMessages = loadMessagesFromStorage(storageKey);
-    if (initialMessages.length > 0) {
-      setMessages(initialMessages);
+    // Cargar mensajes iniciales desde storage solo si la persistencia está habilitada
+    if (enablePersistence) {
+      const initialMessages = loadMessagesFromStorage(storageKey);
+      if (initialMessages.length > 0) {
+        setMessages(initialMessages);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Solo ejecutar en mount
@@ -216,7 +222,7 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
 
   // Save messages when they change (debounced)
   useEffect(() => {
-    if (messages.length > 0) {
+    if (enablePersistence && messages.length > 0) {
       debouncedSave(storageKey, messages);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,18 +230,20 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
 
   // Save vision response when it changes
   useEffect(() => {
-    if (visionResponse) {
-      try {
-        localStorage.setItem(`${storageKey}-vision`, JSON.stringify(visionResponse));
-      } catch (e) {
-        logger.warn('Could not save vision response', {
-          component: 'usePersistentChat',
-          action: 'saveVisionResponse',
-          error: String(e),
-        });
+    if (enablePersistence) {
+      if (visionResponse) {
+        try {
+          localStorage.setItem(`${storageKey}-vision`, JSON.stringify(visionResponse));
+        } catch (e) {
+          logger.warn('Could not save vision response', {
+            component: 'usePersistentChat',
+            action: 'saveVisionResponse',
+            error: String(e),
+          });
+        }
+      } else {
+        localStorage.removeItem(`${storageKey}-vision`);
       }
-    } else {
-      localStorage.removeItem(`${storageKey}-vision`);
     }
   }, [visionResponse, storageKey]);
 

@@ -8,15 +8,21 @@ import { z } from 'zod';
  * Asegura que la aplicación falle rápido si falta configuración crítica.
  */
 const envSchema = z.object({
-  // API Keys (requeridas con validación de formato)
+  // API Keys (opcionales con validación condicional)
   GROQ_API_KEY: z
     .string()
-    .min(1, 'GROQ_API_KEY es requerida')
-    .startsWith('gsk_', 'GROQ API key debe empezar con "gsk_"'),
+    .optional()
+    .default('')
+    .refine((val) => !val || val.startsWith('gsk_'), {
+      message: 'GROQ API key debe empezar con "gsk_" si se proporciona',
+    }),
   GOOGLE_GENERATIVE_AI_API_KEY: z
     .string()
-    .min(1, 'Google API Key es requerida')
-    .startsWith('AIza', 'Google API key debe empezar con "AIza"'),
+    .optional()
+    .default('')
+    .refine((val) => !val || val.startsWith('AIza'), {
+      message: 'Google API key debe empezar con "AIza" si se proporciona',
+    }),
 
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
