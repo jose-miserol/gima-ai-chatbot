@@ -142,7 +142,7 @@ Un **CMMS** (Computerized Maintenance Management System) es una aplicación de s
 **IA Conversacional (Chatbots):**
 
 - Procesamiento de Lenguaje Natural (NLP) para consultas de usuarios
-- Generación de respuestas contextuales basadas en know ledge base
+- Generación de respuestas contextuales basadas en knowledge base
 - Asistencia en resolución de problemas técnicos mediante diálogo guiado
 
 **Visión Computacional:**
@@ -162,7 +162,7 @@ Un **CMMS** (Computerized Maintenance Management System) es una aplicación de s
 **Arquitectura basada en Componentes:**
 
 - Separación clara entre frontend (UI) y backend (API)
-- Componentes reutilizables siguendo principios de atomic design
+- Componentes reutilizables siguiendo principios de atomic design
 - Estado centralizado con gestión reactiva
 
 **Next.js y React 19:**
@@ -283,7 +283,7 @@ Un **CMMS** (Computerized Maintenance Management System) es una aplicación de s
 **Entregables:**
 
 - Server Actions `app/actions/voice.ts`, `app/actions/vision.ts`
-  -Components `voice-recorder.tsx`, `image-uploader.tsx`
+- Components `voice-recorder.tsx`, `image-uploader.tsx`
 - Prompts optimizados para cada modalidad
 
 #### **Equipo 3: AI Tools**
@@ -950,18 +950,18 @@ El segundo workshop abordará:
 
 **Frontend:**
 
-- Next.js 16.0 (App Router)
-- React 19.2
+- Next.js 16.0.10 (App Router)
+- React 19.2.1
 - TypeScript 5
 - Tailwind CSS 4
 - Radix UI (componentes primitivos)
 
 **IA & ML:**
 
-- Vercel AI SDK 5.0
-- GROQ (Llama 3.3 70B)
-- Google Gemini 2.5 Flash
-- Zod (validación de schemas)
+- Vercel AI SDK 5.x
+- GROQ (Llama 3.3 70B para chat)
+- Google Gemini 2.5 Flash (para vision y multimodal)
+- Zod 4.x (validación de schemas)
 
 **Dev Tools:**
 

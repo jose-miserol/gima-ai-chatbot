@@ -194,7 +194,7 @@ const handleAudioBlob = async (blob: Blob) => {
 
 - **Modelo:** `gemini-2.5-flash-lite`
 - **Temperature:** `0` (determinístico)
-- **Prompt:** Definido en [`VOICE_PROMPT`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/config/index.ts)
+- **Prompt:** Definido en [`VOICE_PROMPT`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/constants/ai.ts)
 
 ---
 
@@ -267,7 +267,7 @@ const handleImageUpload = async (file: File) => {
 
 - **Modelo:** `gemini-2.5-flash` (Vision)
 - **Temperature:** `0.2` (ligeramente creativo para descripciones)
-- **Prompt:** Definido en [`INVENTORY_PROMPT`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/config/index.ts)
+- **Prompt:** Definido en [`INVENTORY_PROMPT`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/constants/ai.ts)
 
 ---
 
