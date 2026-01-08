@@ -8,7 +8,7 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
 import { generateChecklist } from '@/app/actions/checklist';
 import {
@@ -16,10 +16,8 @@ import {
   AIGenerationForm,
   AIPreviewCard,
   AIHistoryList,
-  AIUsageStats,
   type FormField,
   type HistoryItem,
-  type FeatureUsage,
 } from '@/app/components/features/ai-tools/shared';
 import type {
   Checklist,
@@ -85,17 +83,6 @@ export function ChecklistBuilderClient() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [usageCount, setUsageCount] = useState(0);
-
-  // Stats de uso para mostrar
-  const usageFeatures: FeatureUsage[] = useMemo(() => [
-    { name: 'Checklists', used: usageCount, quota: 100, trend: 'up' as const },
-  ], [usageCount]);
-
-  // Reset date (primer día del próximo mes)
-  const resetDate = useMemo(() => {
-    const date = new Date();
-    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
-  }, []);
 
   const handleGenerate = async (data: Record<string, unknown>) => {
     setIsGenerating(true);
@@ -202,12 +189,6 @@ export function ChecklistBuilderClient() {
       title="Checklist Builder"
       description="Genera checklists de mantenimiento personalizados con inteligencia artificial"
       icon={<CheckCircle2 className="h-8 w-8" />}
-      stats={{
-        used: usageCount,
-        quota: 100,
-        resetDate,
-        costEstimate: `$${(usageCount * 0.02).toFixed(2)}`,
-      }}
       helpContent={
         <div className="space-y-2 text-sm">
           <p><strong>¿Cómo funciona?</strong></p>
@@ -234,11 +215,6 @@ export function ChecklistBuilderClient() {
           submitLabel="Generar Checklist"
           saveDrafts
           draftId="checklist-builder"
-        />
-
-        <AIUsageStats
-          features={usageFeatures}
-          resetDate={resetDate}
         />
       </div>
 

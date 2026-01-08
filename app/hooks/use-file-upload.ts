@@ -28,7 +28,7 @@ interface UseFileUploadOptions {
 interface UseFileUploadReturn {
   selectedFile: File | null;
   preview: string;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleFileInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleDrop: (e: React.DragEvent<HTMLDivElement>) => void;
   handleDragOver: (e: React.DragEvent<HTMLDivElement>) => void;

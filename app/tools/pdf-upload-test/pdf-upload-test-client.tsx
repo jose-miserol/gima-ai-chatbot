@@ -19,6 +19,7 @@ import { FileText, Upload, X, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 import { analyzePdf } from '@/app/actions';
+import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Input } from '@/app/components/ui/input';
@@ -101,16 +102,39 @@ export function PdfUploadTestClient() {
     };
 
     return (
-        <div className="container max-w-6xl py-8">
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <FileText className="h-8 w-8 text-red-500" />
-                    <h1 className="text-3xl font-bold">PDF Upload Test</h1>
+        <AIToolLayout
+            title="PDF Upload Test"
+            description="Test PDF content extraction and analysis with Gemini"
+            icon={<FileText className="h-8 w-8" />}
+            helpContent={
+                <div className="space-y-2 text-sm">
+                    <p><strong>Testing Guide</strong></p>
+                    <div>
+                        <p className="font-medium mb-1">✅ Valid Test:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Upload PDF &lt; 20MB</li>
+                            <li>Add custom prompt (optional)</li>
+                            <li>Click "Analyze PDF"</li>
+                        </ul>
+                    </div>
+                    <div className="mt-2">
+                        <p className="font-medium mb-1">❌ Error Tests:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Try file &gt; 20MB</li>
+                            <li>Try non-PDF file</li>
+                            <li>Verify error messages</li>
+                        </ul>
+                    </div>
+                    <div className="mt-2">
+                        <p className="font-medium mb-1">💡 Custom Prompts:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>"Summarize in 3 bullet points"</li>
+                            <li>"Extract all numerical data"</li>
+                        </ul>
+                    </div>
                 </div>
-                <p className="text-muted-foreground">
-                    Test PDF content extraction and analysis with Gemini
-                </p>
-            </div>
+            }
+        >
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Left Column - Upload */}
@@ -247,44 +271,7 @@ export function PdfUploadTestClient() {
                             )}
                         </CardContent>
                     </Card>
-
-                    {/* Help Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm">Testing Guide</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm space-y-2">
-                            <div>
-                                <p className="font-medium mb-1">✅ Valid Test:</p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-                                    <li>Upload PDF &lt; 20MB</li>
-                                    <li>Optionally add custom prompt</li>
-                                    <li>Click "Analyze PDF"</li>
-                                    <li>Check extracted content</li>
-                                </ul>
-                            </div>
-                            <Separator />
-                            <div>
-                                <p className="font-medium mb-1">❌ Error Tests:</p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-                                    <li>Try uploading file &gt; 20MB</li>
-                                    <li>Try non-PDF file type</li>
-                                    <li>Verify error messages</li>
-                                </ul>
-                            </div>
-                            <Separator />
-                            <div>
-                                <p className="font-medium mb-1">💡 Custom Prompts:</p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-                                    <li>&quot;Summarize in 3 bullet points&quot;</li>
-                                    <li>&quot;Extract all numerical data&quot;</li>
-                                    <li>&quot;List all dates mentioned&quot;</li>
-                                </ul>
-                            </div>
-                        </CardContent>
-                    </Card>
                 </div>
-            </div>
-        </div>
+        </AIToolLayout>
     );
 }

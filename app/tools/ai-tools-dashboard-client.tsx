@@ -30,7 +30,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/app/components/ui/card';
-import { Progress } from '@/app/components/ui/progress';
 
 
 interface AITool {
@@ -200,7 +199,7 @@ export function AIToolsDashboardClient() {
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -232,15 +231,6 @@ export function AIToolsDashboardClient() {
               <p className="text-2xl font-bold">{quickStats.successRate}%</p>
               <p className="text-xs text-muted-foreground">Tasa de éxito</p>
             </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Cuota mensual</span>
-              <span className="font-medium">{quickStats.usedToday}/{quickStats.quota}</span>
-            </div>
-            <Progress value={(quickStats.usedToday / quickStats.quota) * 100} className="h-2" />
           </div>
         </Card>
       </div>

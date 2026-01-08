@@ -18,6 +18,7 @@ import { ImageIcon, Upload, X, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 import { analyzePartImage } from '@/app/actions';
+import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Input } from '@/app/components/ui/input';
@@ -96,17 +97,32 @@ export function ImageUploadTestClient() {
     };
 
     return (
-        <div className="container max-w-6xl py-8">
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <ImageIcon className="h-8 w-8 text-blue-500" />
-                    <h1 className="text-3xl font-bold">Image Upload Test</h1>
+        <AIToolLayout
+            title="Image Upload Test"
+            description="Test image analysis functionality with Gemini Vision"
+            icon={<ImageIcon className="h-8 w-8" />}
+            helpContent={
+                <div className="space-y-2 text-sm">
+                    <p><strong>Testing Guide</strong></p>
+                    <div>
+                        <p className="font-medium mb-1">✅ Valid Test:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Upload image &lt; 10MB</li>
+                            <li>Click "Analyze Image"</li>
+                            <li>Check result appears</li>
+                        </ul>
+                    </div>
+                    <div className="mt-2">
+                        <p className="font-medium mb-1">❌ Error Tests:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                            <li>Try file &gt; 10MB</li>
+                            <li>Try non-image file</li>
+                            <li>Verify error messages</li>
+                        </ul>
+                    </div>
                 </div>
-                <p className="text-muted-foreground">
-                    Test image analysis functionality with Gemini Vision
-                </p>
-            </div>
-
+            }
+        >
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Left Column - Upload */}
                 <Card>
@@ -209,62 +225,34 @@ export function ImageUploadTestClient() {
                 </Card>
 
                 {/* Right Column - Results */}
-                <div className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Analysis Result</CardTitle>
-                            <CardDescription>
-                                AI-generated analysis from Gemini Vision
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {result ? (
-                                <div className="prose prose-sm max-w-none">
-                                    <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap">
-                                        {result}
-                                    </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Analysis Result</CardTitle>
+                        <CardDescription>
+                            AI-generated analysis from Gemini Vision
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {result ? (
+                            <div className="prose prose-sm max-w-none">
+                                <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap">
+                                    {result}
                                 </div>
-                            ) : error ? (
-                                <div className="bg-destructive/10 text-destructive rounded-lg p-4">
-                                    <p className="font-medium mb-1">Error:</p>
-                                    <p className="text-sm">{error}</p>
-                                </div>
-                            ) : (
-                                <div className="text-center py-12 text-muted-foreground">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                    <p>Upload and analyze an image to see results</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Help Card */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm">Testing Guide</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm space-y-2">
-                            <div>
-                                <p className="font-medium mb-1">✅ Valid Test:</p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-                                    <li>Upload image &lt; 10MB</li>
-                                    <li>Click "Analyze Image"</li>
-                                    <li>Check result appears</li>
-                                </ul>
                             </div>
-                            <Separator />
-                            <div>
-                                <p className="font-medium mb-1">❌ Error Tests:</p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-1">
-                                    <li>Try uploading file &gt; 10MB</li>
-                                    <li>Try non-image file type</li>
-                                    <li>Verify error messages</li>
-                                </ul>
+                        ) : error ? (
+                            <div className="bg-destructive/10 text-destructive rounded-lg p-4">
+                                <p className="font-medium mb-1">Error:</p>
+                                <p className="text-sm">{error}</p>
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        ) : (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                <p>Upload and analyze an image to see results</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
-        </div>
+        </AIToolLayout>
     );
 }
