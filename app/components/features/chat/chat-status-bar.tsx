@@ -7,6 +7,7 @@ interface ChatStatusIndicatorsProps {
   isListening: boolean;
   isProcessing: boolean;
   isAnalyzingImage: boolean;
+  fileType?: 'image' | 'pdf'; // Type of file being analyzed
   chatError?: Error;
   mode?: 'gemini' | 'native';
 }
@@ -48,6 +49,7 @@ export function ChatStatusIndicators({
   isListening,
   isProcessing,
   isAnalyzingImage,
+  fileType = 'image',
   chatError,
   mode = 'native',
 }: ChatStatusIndicatorsProps) {
@@ -93,7 +95,7 @@ export function ChatStatusIndicators({
       {isAnalyzingImage && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
           <Loader2 className="size-3 animate-spin" />
-          📷 Analizando imagen con IA...
+          {fileType === 'pdf' ? '📄 Extrayendo contenido del PDF...' : '📷 Analizando contenido de la imagen...'}
         </div>
       )}
       {chatError && (

@@ -36,6 +36,8 @@ export interface UseFileSubmissionReturn {
   handleSubmit: (message: PromptInputMessage) => Promise<void>;
   /** Si se está analizando un archivo actualmente */
   isAnalyzing: boolean;
+  /** Tipo de archivo que se está analizando */
+  analyzingFileType: 'image' | 'pdf' | null;
 }
 
 /**
@@ -57,6 +59,7 @@ export function useFileSubmission({
   toggleListening,
 }: UseFileSubmissionParams): UseFileSubmissionReturn {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzingFileType, setAnalyzingFileType] = useState<'image' | 'pdf' | null>(null);
   const toast = useToast();
 
   const handleSubmit = useCallback(
@@ -82,6 +85,7 @@ export function useFileSubmission({
       if (targetFile && targetFile.url) {
         setIsAnalyzing(true);
         const isPdf = targetFile.mediaType === 'application/pdf';
+        setAnalyzingFileType(isPdf ? 'pdf' : 'image');
         const fileTypeLabel = isPdf ? 'PDF' : 'Imagen'; // Fix: Capitalize correctly
 
         try {
@@ -193,6 +197,7 @@ export function useFileSubmission({
           toast.error(`Error al procesar ${fileTypeLabel}`, errorMessage);
         } finally {
           setIsAnalyzing(false);
+          setAnalyzingFileType(null);
         }
 
         return;
@@ -229,5 +234,5 @@ export function useFileSubmission({
     [isListening, toggleListening, setMessages, toast, sendMessage]
   );
 
-  return { handleSubmit, isAnalyzing };
+  return { handleSubmit, isAnalyzing, analyzingFileType };
 }

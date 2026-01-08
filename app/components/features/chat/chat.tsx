@@ -105,7 +105,7 @@ export function Chat() {
   } = useVoiceInput({ onTranscript: updateTextareaValue });
 
   // File submission handling (Images & PDFs)
-  const { handleSubmit, isAnalyzing } = useFileSubmission({
+  const { handleSubmit, isAnalyzing, analyzingFileType } = useFileSubmission({
     setMessages,
     sendMessage,
     isListening,
@@ -214,6 +214,7 @@ export function Chat() {
           isListening={isListening}
           isProcessing={isProcessing}
           isAnalyzingImage={isAnalyzing}
+          fileType={analyzingFileType || 'image'}
           chatError={chatError}
           mode={mode}
         />
