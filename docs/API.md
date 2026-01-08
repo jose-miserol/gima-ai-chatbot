@@ -85,7 +85,11 @@ El endpoint valida:
 - ✅ `messages` debe ser un array
 - ✅ Cada mensaje debe tener `role` válido
 - ✅ `content` puede ser string u objeto
+- ✅ `parts` se valida opcionalmente - partes inválidas se ignoran automáticamente
 - ✅ Conversión automática de `createdAt` string → Date
+
+> [!NOTE]
+> **Mejora reciente**: El campo `parts` ahora usa `.catch(undefined)` en la validación Zod, lo que significa que estructuras de `parts` inválidas se ignoran en lugar de causar errores de validación. Esto mejora la compatibilidad con diferentes formatos de mensaje del AI SDK.
 
 **Ejemplo de Error (400):**
 
@@ -274,23 +278,45 @@ const handleImageUpload = async (file: File) => {
 ```bash
 GROQ_API_KEY=gsk_xxxxxxxxxxxxx
 GOOGLE_GENERATIVE_AI_API_KEY=AIzaSyxxxxxxxxxxxxx
+NODE_ENV=development  # 'development', 'production', o 'test'
 ```
+
+> [!IMPORTANT]
+> **Codificación UTF-8 Requerida**: Asegúrate de que tu archivo `.env.local` esté guardado con codificación UTF-8. Next.js no puede leer archivos .env en otros formatos (como UTF-16LE). En Windows, puedes convertir el archivo usando PowerShell:
+>
+> ```powershell
+> $content = Get-Content .env.local -Raw -Encoding Unicode
+> [System.IO.File]::WriteAllText((Resolve-Path .env.local), $content, [System.Text.UTF8Encoding]::new($false))
+> ```
 
 ### Validación
 
-Todas las API keys se validan al inicio usando Zod:
+Las API keys se validan al inicio usando Zod con validación condicional:
 
 ```typescript
 // app/config/env.ts
 const envSchema = z.object({
-  GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY es requerida'),
-  GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1, 'Google API Key es requerida'),
+  GROQ_API_KEY: z
+    .string()
+    .optional()
+    .default('')
+    .refine((val) => !val || val.startsWith('gsk_'), {
+      message: 'GROQ API key debe empezar con "gsk_" si se proporciona',
+    }),
+  GOOGLE_GENERATIVE_AI_API_KEY: z
+    .string()
+    .optional()
+    .default('')
+    .refine((val) => !val || val.startsWith('AIza'), {
+      message: 'Google API key debe empezar con "AIza" si se proporciona',
+    }),
 });
 
 export const env = envSchema.parse(process.env);
 ```
 
-Si falta alguna key, la aplicación **fallará al inicio** con un mensaje claro.
+> [!WARNING]
+> Las API keys son **opcionales** en el schema para prevenir crashes al inicio, pero las funciones de IA **fallarán en runtime** si las keys no están configuradas. Esto permite que la aplicación inicie incluso con configuración incompleta, útil para desarrollo y troubleshooting.
 
 ---
 
@@ -359,6 +385,168 @@ while (true) {
   console.log('Chunk:', chunk);
 }
 ```
+
+---
+
+## ⚛️ React Hooks API
+
+### `usePersistentChat()`
+
+Hook personalizado que envuelve `useChat` del AI SDK con persistencia en localStorage.
+
+**Ubicación:** [`app/hooks/use-persistent-chat.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/hooks/use-persistent-chat.ts)
+
+#### Firma
+
+```typescript
+function usePersistentChat(options?: {
+  storageKey?: string;
+  debounceMs?: number;
+  enablePersistence?: boolean;
+}): UsePersistentChatReturn;
+```
+
+#### Parámetros
+
+| Nombre              | Tipo      | Default               | Descripción                                       |
+| ------------------- | --------- | --------------------- | ------------------------------------------------- |
+| `storageKey`        | `string`  | `'gima-chat-history'` | Clave para localStorage                           |
+| `debounceMs`        | `number`  | `500`                 | Retraso en ms para escrituras a localStorage      |
+| `enablePersistence` | `boolean` | `true`                | Habilita/Deshabilita persistencia en localStorage |
+
+> [!TIP]
+> **Nueva característica**: El parámetro `enablePersistence` permite deshabilitar fácilmente la persistencia de localStorage sin cambiar el código. Útil para testing, demos, o cuando se requiere privacidad total.
+
+#### Retorno
+
+Retorna todas las propiedades de `useChat` del AI SDK más:
+
+| Propiedad           | Tipo                                     | Descripción                              |
+| ------------------- | ---------------------------------------- | ---------------------------------------- |
+| `sendMessage`       | `(message, options?) => Promise<string>` | Envía un mensaje al chat                 |
+| `regenerate`        | `() => void`                             | Regenera la última respuesta             |
+| `clearHistory`      | `() => void`                             | Limpia todo el historial                 |
+| `visionResponse`    | `{id: string; text: string} \| null`     | Respuesta de análisis de visión guardada |
+| `setVisionResponse` | `(response) => void`                     | Actualiza la respuesta de visión         |
+
+#### Ejemplo de Uso
+
+```typescript
+import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
+
+function ChatComponent() {
+  const {
+    messages,
+    sendMessage,
+    status,
+    clearHistory,
+    enablePersistence = true
+  } = usePersistentChat({
+    storageKey: 'my-chat',
+    debounceMs: 1000,
+    enablePersistence: true // false para deshabilitar localStorage
+  });
+
+  return (
+    <div>
+      {messages.map((msg) => (
+        <div key={msg.id}>{msg.content}</div>
+      ))}
+      <button onClick={clearHistory}>Limpiar historial</button>
+    </div>
+  );
+}
+```
+
+#### Comportamiento con `enablePersistence`
+
+- **`true` (default)**: Mensajes se guardan y cargan automáticamente de localStorage
+- **`false`**: Chat funciona normalmente pero sin persistencia
+  - No carga mensajes previos al montar
+  - No guarda nuevos mensajes
+  - No guarda respuestas de visión
+  - Útil para sesiones temporales o privadas
+
+---
+
+### `useFileSubmission()`
+
+Hook para manejo de análisis de archivos (imágenes y PDFs) en el chat.
+
+**Ubicación:** [`app/components/features/chat/hooks/use-file-submission.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/components/features/chat/hooks/use-file-submission.ts)
+
+#### Firma
+
+```typescript
+function useFileSubmission(params: {
+  setMessages: (messages: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => void;
+  sendMessage: (message, options?) => Promise<string | null | undefined>;
+  isListening: boolean;
+  toggleListening: () => void;
+}): {
+  handleSubmit: (message: PromptInputMessage) => Promise<void>;
+  isAnalyzing: boolean;
+  analyzingFileType: 'image' | 'pdf' | null;
+};
+```
+
+#### Parámetros
+
+| Nombre            | Tipo       | Descripción                                           |
+| ----------------- | ---------- | ----------------------------------------------------- |
+| `setMessages`     | `function` | Función para actualizar el array de mensajes          |
+| `sendMessage`     | `function` | Función para enviar mensajes regulares (sin archivos) |
+| `isListening`     | `boolean`  | Si el modo de voz está escuchando activamente         |
+| `toggleListening` | `function` | Función para alternar el estado de escucha de voz     |
+
+#### Retorno
+
+| Propiedad           | Tipo                         | Descripción                                   |
+| ------------------- | ---------------------------- | --------------------------------------------- |
+| `handleSubmit`      | `(message) => Promise<void>` | Manejador de envío para mensajes con adjuntos |
+| `isAnalyzing`       | `boolean`                    | Si se está analizando un archivo actualmente  |
+| `analyzingFileType` | `'image' \| 'pdf' \| null`   | Tipo de archivo siendo analizado              |
+
+> [!NOTE]
+> **Nueva característica**: `analyzingFileType` permite mostrar mensajes específicos en la UI dependiendo del tipo de archivo (ej: "📄 Extrayendo contenido del PDF..." vs "📷 Analizando contenido de la imagen...").
+
+#### Ejemplo de Uso
+
+```typescript
+import { useFileSubmission } from '@/app/components/features/chat/hooks/use-file-submission';
+
+function ChatWithFiles() {
+  const { handleSubmit, isAnalyzing, analyzingFileType } = useFileSubmission({
+    setMessages,
+    sendMessage,
+    isListening: false,
+    toggleListening: () => {},
+  });
+
+  return (
+    <div>
+      {isAnalyzing && (
+        <div>
+          {analyzingFileType === 'pdf'
+            ? '📄 Extrayendo contenido del PDF...'
+            : '📷 Analizando contenido de la imagen...'}
+        </div>
+      )}
+      {/* Form para subir archivos */}
+    </div>
+  );
+}
+```
+
+#### Tipos de Archivos Soportados
+
+- **Imágenes**: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+- **PDFs**: `application/pdf`
+
+#### Límites
+
+- **Imágenes**: 10MB máximo
+- **PDFs**: 20MB máximo
 
 ---
 

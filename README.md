@@ -10,7 +10,7 @@ Asistente inteligente para la gestión de mantenimiento y activos de la Universi
 - **Transcripción de voz** inteligente con Gemini API + fallback nativo Web Speech API
 - **Comandos de voz** para órdenes de trabajo (crear, consultar, asignar)
 - **Múltiples modelos de IA**: GROQ (Llama, Mixtral) + Google Gemini
-- **Persistencia de historial** en navegador (localStorage)
+- **Persistencia de historial** configurable en navegador (localStorage)
 - **Interfaz responsiva** con React 19 y Tailwind CSS 4
 
 ## 🎤 Comandos de Voz
@@ -77,6 +77,8 @@ GOOGLE_GENERATIVE_AI_API_KEY=AIza...
 NODE_ENV=development
 ```
 
+> **⚠️ Importante**: El archivo `.env.local` debe estar guardado con codificación **UTF-8**. Si usas Windows y experimentas errores de "ZodError" al iniciar la app, probablemente el archivo esté en UTF-16. Ver sección [Troubleshooting](#-troubleshooting) para solución.
+
 Ver `.env.example` para referencia completa.
 
 ## 🛠️ Scripts Disponibles
@@ -129,6 +131,48 @@ gima-ai-chatbot/
 - Headers de seguridad HTTP configurados
 - Validación estricta de variables de entorno
 - TypeScript strict mode activado
+
+## 🛠️ Troubleshooting
+
+### Error: "ZodError - expected string, received undefined" al iniciar
+
+**Causa**: El archivo `.env.local` está en formato UTF-16 en lugar de UTF-8, lo que impide que Next.js lea las variables de entorno.
+
+**Solución (Windows PowerShell)**:
+
+```powershell
+# Convertir .env.local a UTF-8
+$content = Get-Content .env.local -Raw -Encoding Unicode
+[System.IO.File]::WriteAllText((Resolve-Path .env.local), $content, [System.Text.UTF8Encoding]::new($false))
+```
+
+**Solución (Manual)**:
+
+1. Abre `.env.local` en VSCode o Notepad++
+2. Guarda como → Selecciona "UTF-8" como codificación
+3. Reinicia el servidor: `npm run dev`
+
+### Deshabilitar persistencia de localStorage
+
+Por defecto, el chat guarda el historial en localStorage. Para deshabilitar:
+
+```typescript
+// En app/components/features/chat/chat.tsx línea 77
+const { messages, ... } = usePersistentChat({
+  storageKey: 'gima-chat-v1',
+  enablePersistence: false  // Deshabilitar persistencia
+});
+```
+
+Útil para demos, testing, o cuando se requiere sesiones privadas sin historial.
+
+### Los mensajes no aparecen después de subir imagen
+
+Este problema ya fue **solucionado** en versiones recientes. Si aún ocurre:
+
+1. Asegúrate de tener la última versión del código
+2. Verifica que `use-file-submission.ts` incluya la actualización que agrega mensajes manualmente al estado
+3. Limpia localStorage: `localStorage.clear()` en la consola del navegador
 
 ## 📝 Licencia
 
