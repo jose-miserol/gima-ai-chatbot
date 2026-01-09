@@ -49,7 +49,7 @@ const aiTools: AITool[] = [
     description: 'Genera checklists de mantenimiento personalizados con IA',
     icon: <CheckCircle2 className="h-8 w-8 text-primary" />,
     href: '/tools/checklist-builder',
-    badge: 'Popular',
+    badge: 'Test',
     features: [
       'Checklists personalizados por activo',
       'Múltiples tipos de mantenimiento',
@@ -63,7 +63,7 @@ const aiTools: AITool[] = [
     description: 'Resúmenes profesionales de actividades de mantenimiento',
     icon: <FileText className="h-8 w-8 text-primary" />,
     href: '/tools/activity-summaries',
-    badge: 'Nuevo',
+    badge: 'Test',
     features: [
       '3 estilos profesionales',
       '3 niveles de detalle',
@@ -77,7 +77,7 @@ const aiTools: AITool[] = [
     description: 'Limpia, formatea y transforma datos con instrucciones en lenguaje natural',
     icon: <Zap className="h-8 w-8 text-primary" />,
     href: '/tools/data-transformation',
-    badge: 'Nuevo',
+    badge: 'Test',
     features: [
       'Transformación con IA (Gemini)',
       'Vista previa antes de aplicar',
@@ -91,7 +91,7 @@ const aiTools: AITool[] = [
     description: 'Notas de cierre profesionales para órdenes de trabajo',
     icon: <Sparkles className="h-8 w-8 text-primary" />,
     href: '#modal',
-    badge: 'Modal',
+    badge: 'dev',
     features: [
       'Notas de cierre detalladas',
       'Análisis de hallazgos',
@@ -105,7 +105,7 @@ const aiTools: AITool[] = [
     description: 'Test image analysis with Gemini Vision',
     icon: <ImageIcon className="h-8 w-8 text-primary" />,
     href: '/tools/image-upload-test',
-    badge: 'Testing',
+    badge: 'Test',
     features: [
       'Upload & analyze images',
       'Gemini Vision integration',
@@ -119,7 +119,7 @@ const aiTools: AITool[] = [
     description: 'Test PDF content extraction and analysis',
     icon: <FileText className="h-8 w-8 text-primary" />,
     href: '/tools/pdf-upload-test',
-    badge: 'Testing',
+    badge: 'Test',
     features: [
       'Upload & analyze PDFs',
       'Custom prompt support',
@@ -175,13 +175,7 @@ export function AIToolsDashboardClient() {
     return proTips[dayIndex];
   }, []);
 
-  // Quick stats (simulados - en producción vendrían de API)
-  const quickStats = useMemo(() => ({
-    usedToday: 3,
-    quota: 100,
-    timeSaved: '45 min',
-    successRate: 98,
-  }), []);
+
 
   return (
     <div className="container mx-auto py-8 space-y-8">
@@ -196,43 +190,6 @@ export function AIToolsDashboardClient() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Potencia tu gestión de mantenimiento con inteligencia artificial de última generación
         </p>
-      </div>
-
-      {/* Quick Stats Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{quickStats.usedToday}</p>
-              <p className="text-xs text-muted-foreground">Generaciones hoy</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <Clock className="h-5 w-5 text-green-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{quickStats.timeSaved}</p>
-              <p className="text-xs text-muted-foreground">Tiempo ahorrado</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <CheckCircle2 className="h-5 w-5 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{quickStats.successRate}%</p>
-              <p className="text-xs text-muted-foreground">Tasa de éxito</p>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {/* Tip del Día */}
@@ -259,7 +216,7 @@ export function AIToolsDashboardClient() {
                 <div className="p-3 bg-primary/10 rounded-lg">{tool.icon}</div>
                 {tool.badge && (
                   <Badge
-                    variant={tool.badge === 'Popular' ? 'default' : 'secondary'}
+                    variant={tool.badge === 'Tools' ? 'default' : 'secondary'}
                     className="text-xs"
                   >
                     {tool.badge}

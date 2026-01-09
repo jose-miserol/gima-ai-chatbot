@@ -5,7 +5,7 @@
  * Usa componentes shared de ai-tools.
  */
 
-import { ActivitySummariesClient } from './activity-summaries-client';
+import { ActivitySummary } from '@/app/components/features/activity-summary/activity-summary';
 
 import type { Metadata } from 'next';
 
@@ -18,5 +18,5 @@ export const metadata: Metadata = {
  *
  */
 export default function ActivitySummariesPage() {
-  return <ActivitySummariesClient />;
+  return <ActivitySummary />;
 }

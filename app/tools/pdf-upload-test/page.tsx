@@ -4,7 +4,7 @@
  * Server component for testing PDF upload and analysis functionality.
  */
 
-import { PdfUploadTestClient } from './pdf-upload-test-client';
+import { PdfUploadTestClient } from '@/app/components/features/ai-tools/pdf-upload-test';
 
 import type { Metadata } from 'next';
 

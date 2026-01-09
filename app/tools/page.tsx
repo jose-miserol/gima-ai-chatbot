@@ -4,7 +4,7 @@
  * Landing page que muestra todas las herramientas AI disponibles.
  */
 
-import { AIToolsDashboardClient } from './ai-tools-dashboard-client';
+import { AIToolsDashboardClient } from '@/app/components/features/ai-tools/dashboard';
 
 import type { Metadata } from 'next';
 

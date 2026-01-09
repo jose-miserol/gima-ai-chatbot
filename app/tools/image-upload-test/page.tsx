@@ -4,7 +4,7 @@
  * Server component for testing image upload and analysis functionality.
  */
 
-import { ImageUploadTestClient } from './image-upload-test-client';
+import { ImageUploadTestClient } from '@/app/components/features/ai-tools/image-upload-test';
 
 import type { Metadata } from 'next';
 

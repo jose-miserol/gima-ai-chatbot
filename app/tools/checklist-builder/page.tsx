@@ -5,7 +5,7 @@
  * Usa componentes shared de ai-tools.
  */
 
-import { ChecklistBuilderClient } from './checklist-builder-client';
+import { ChecklistBuilder } from '@/app/components/features/checklist-builder/checklist-builder';
 
 import type { Metadata } from 'next';
 
@@ -18,5 +18,5 @@ export const metadata: Metadata = {
  *
  */
 export default function ChecklistBuilderPage() {
-  return <ChecklistBuilderClient />;
+  return <ChecklistBuilder />;
 }

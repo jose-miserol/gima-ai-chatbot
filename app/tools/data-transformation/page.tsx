@@ -6,7 +6,7 @@
 
 import type { Metadata } from 'next';
 
-import { DataTransformationClient } from './data-transformation-client';
+import { DataTransformation } from '@/app/components/features/data-transformation/data-transformation';
 
 export const metadata: Metadata = {
   title: 'Data Transformation | GIMA AI',
@@ -19,5 +19,5 @@ export const metadata: Metadata = {
  * @returns Server component that renders the client
  */
 export default function DataTransformationPage() {
-  return <DataTransformationClient />;
+  return <DataTransformation />;
 }
