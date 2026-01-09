@@ -1,139 +1,35 @@
 /**
  * Tipos para Activity Summaries
  *
- * Define interfaces para resúmenes de actividades de mantenimiento
- * generados con IA.
+ * Re-exporta tipos del schema para mantener consistencia entre
+ * cliente y servidor, similar al patrón de ChecklistBuilder.
  */
 
-import type { AssetType, TaskType } from '@/app/constants/ai';
+import type {
+  ActivitySummaryRequest,
+  ActivitySummary,
+  SummarySection,
+  AISummaryResponse,
+} from '@/app/lib/schemas/activity-summary.schema';
+
+// Re-exportar para compatibilidad
+export type { ActivitySummaryRequest, ActivitySummary, SummarySection, AISummaryResponse };
 
 /**
  * Estilos de resumen disponibles
+ * (Mantener aquí porque son específicos de UI)
  */
 export type SummaryStyle = 'ejecutivo' | 'tecnico' | 'narrativo';
 
 /**
  * Niveles de detalle del resumen
+ * (Mantener aquí porque son específicos de UI)
  */
 export type DetailLevel = 'alto' | 'medio' | 'bajo';
 
 /**
- * Request para generar resumen de actividades
- */
-export interface ActivitySummaryRequest {
-  /**
-   * Tipo de activo
-   */
-  assetType: AssetType;
-
-  /**
-   * Tipo de tarea
-   */
-  taskType: TaskType;
-
-  /**
-   * Actividades completadas (texto libre)
-   */
-  activities: string;
-
-  /**
-   * Estilo del resumen
-   */
-  style: SummaryStyle;
-
-  /**
-   * Nivel de detalle
-   */
-  detailLevel: DetailLevel;
-
-  /**
-   * Contexto adicional (opcional)
-   */
-  context?: string;
-}
-
-/**
- * Sección de un resumen
- */
-export interface SummarySection {
-  /**
-   * Título de la sección
-   */
-  title: string;
-
-  /**
-   * Contenido de la sección
-   */
-  content: string;
-
-  /**
-   * Orden de la sección
-   */
-  order: number;
-}
-
-/**
- * Resumen de actividad completo
- */
-export interface ActivitySummary {
-  /**
-   * ID único del resumen
-   */
-  id: string;
-
-  /**
-   * Título del resumen
-   */
-  title: string;
-
-  /**
-   * Resumen ejecutivo (1-2 párrafos)
-   */
-  executive: string;
-
-  /**
-   * Secciones del resumen
-   */
-  sections: SummarySection[];
-
-  /**
-   * Tipo de activo
-   */
-  assetType: AssetType;
-
-  /**
-   * Tipo de tarea
-   */
-  taskType: TaskType;
-
-  /**
-   * Estilo usado
-   */
-  style: SummaryStyle;
-
-  /**
-   * Nivel de detalle
-   */
-  detailLevel: DetailLevel;
-
-  /**
-   * Fecha de creación
-   */
-  createdAt: Date;
-
-  /**
-   * Metadata adicional
-   */
-  metadata?: {
-    wordCount?: number;
-    readingTime?: number; // minutos
-    generatedBy?: 'ai' | 'manual';
-    version?: string;
-  };
-}
-
-/**
  * Template de resumen guardado
+ * (Específico de UI, no validado por Zod)
  */
 export interface SummaryTemplate {
   /**
@@ -164,6 +60,7 @@ export interface SummaryTemplate {
 
 /**
  * Estado del hook de generación
+ * (Específico de UI, manejo de estado del componente)
  */
 export interface SummaryGenerationState {
   /**

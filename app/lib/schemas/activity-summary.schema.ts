@@ -38,7 +38,7 @@ export const activitySummaryRequestSchema = z.object({
    */
   activities: z
     .string()
-    .min(50, 'Las actividades deben tener al menos 50 caracteres')
+    .min(10, 'Las actividades deben tener al menos 10 caracteres')
     .max(5000, 'Las actividades no pueden exceder 5000 caracteres'),
 
   /**

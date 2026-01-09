@@ -8,6 +8,7 @@
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 
+import { env } from '@/app/config/env';
 import {
   SUMMARY_SYSTEM_PROMPT,
   buildSummaryPrompt,
@@ -50,12 +51,11 @@ export class ActivitySummaryAIService extends BaseAIService {
       cacheTTL: 3600, // 1 hora
     });
 
-    this.groq = createGroq();
+    this.groq = createGroq({ apiKey: env.GROQ_API_KEY });
   }
 
   /**
    * Genera un resumen de actividades con IA
-   * @param request - Parámetros de generación
    * @returns Resultado con resumen generado
    */
   async generateSummary(request: ActivitySummaryRequest): Promise<SummaryGenerationResult> {

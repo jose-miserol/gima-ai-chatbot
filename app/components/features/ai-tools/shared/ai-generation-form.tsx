@@ -173,6 +173,7 @@ export function AIGenerationForm<T = Record<string, unknown>>({
                   value={((formData as Record<string, unknown>)[field.name] as string) || ''}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   required={field.required}
+                  minLength={field.minLength}
                   maxLength={field.maxLength}
                   disabled={isGenerating}
                 />
@@ -186,6 +187,7 @@ export function AIGenerationForm<T = Record<string, unknown>>({
                     value={((formData as Record<string, unknown>)[field.name] as string) || ''}
                     onChange={(e) => handleChange(field.name, e.target.value)}
                     required={field.required}
+                    minLength={field.minLength}
                     maxLength={field.maxLength}
                     disabled={isGenerating}
                     rows={field.rows || 4}

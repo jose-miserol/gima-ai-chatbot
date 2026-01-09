@@ -47,6 +47,11 @@ export interface FormField {
   maxLength?: number;
 
   /**
+   * Longitud mínima (para text/textarea)
+   */
+  minLength?: number;
+
+  /**
    * Valor mínimo (para number)
    */
   min?: number;
@@ -70,7 +75,14 @@ export interface FormField {
 /**
  * Estado de generación de IA
  */
-export type AIGenerationStatus = 'idle' | 'generating' | 'success' | 'error' | 'cached' | 'rate_limited' | 'timeout';
+export type AIGenerationStatus =
+  | 'idle'
+  | 'generating'
+  | 'success'
+  | 'error'
+  | 'cached'
+  | 'rate_limited'
+  | 'timeout';
 
 /**
  * Metadata de generación

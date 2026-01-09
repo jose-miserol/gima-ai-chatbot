@@ -8,8 +8,9 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
+import { generateActivitySummary } from '@/app/actions/activity-summary';
 import type {
   ActivitySummaryRequest,
   ActivitySummary,
@@ -21,16 +22,11 @@ import {
   AIGenerationForm,
   AIPreviewCard,
   AIHistoryList,
-  AIUsageStats,
   type FormField,
   type HistoryItem,
-  type FeatureUsage,
 } from '@/app/components/features/ai-tools/shared';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/hooks/use-toast';
-import { ActivitySummaryAIService } from '@/app/lib/services/activity-summary-ai-service';
-
-const summaryService = new ActivitySummaryAIService();
 
 /**
  * Form fields para generación de resumen
@@ -49,6 +45,7 @@ const formFields: FormField[] = [
         .join(' '),
     })),
     placeholder: 'Selecciona el tipo de equipo',
+    defaultValue: ASSET_TYPES[0],
   },
   {
     name: 'taskType',
@@ -60,16 +57,18 @@ const formFields: FormField[] = [
       label: type.charAt(0).toUpperCase() + type.slice(1),
     })),
     placeholder: 'Selecciona el tipo de mantenimiento',
+    defaultValue: TASK_TYPES[0],
   },
   {
     name: 'activities',
     label: 'Actividades Realizadas',
     type: 'textarea',
     required: true,
+    minLength: 10,
     maxLength: 2000,
     placeholder:
       'Describe las actividades realizadas. Ej: Revisión completa del sistema HVAC, limpieza de filtros, verificación de presiones...',
-    helpText: 'Lista las actividades de mantenimiento completadas (máximo 2000 caracteres)',
+    helpText: 'Lista las actividades de mantenimiento completadas (mínimo 10 caracteres)',
   },
   {
     name: 'style',
@@ -116,18 +115,9 @@ export function ActivitySummary() {
   const [summary, setSummary] = useState<ActivitySummary | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [usageCount, setUsageCount] = useState(0);
 
-  // Stats de uso para mostrar
-  const usageFeatures: FeatureUsage[] = useMemo(() => [
-    { name: 'Resúmenes', used: usageCount, quota: 100, trend: 'up' as const },
-  ], [usageCount]);
 
-  // Reset date (primer día del próximo mes)
-  const resetDate = useMemo(() => {
-    const date = new Date();
-    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
-  }, []);
+
 
   const handleGenerate = async (data: Record<string, unknown>) => {
     setIsGenerating(true);
@@ -143,11 +133,11 @@ export function ActivitySummary() {
         context: data.context as string | undefined,
       };
 
-      const result = await summaryService.generateSummary(request);
+      const result = await generateActivitySummary(request);
 
       if (result.success && result.summary) {
         setSummary(result.summary);
-        setUsageCount((prev) => prev + 1);
+
 
         // Agregar al historial
         const historyItem: HistoryItem = {
@@ -241,12 +231,12 @@ export function ActivitySummary() {
       title="Activity Summaries"
       description="Genera resúmenes profesionales de actividades de mantenimiento con inteligencia artificial"
       icon={<FileText className="h-8 w-8" />}
-      stats={{
-        used: usageCount,
-        quota: 100,
-        resetDate,
-        costEstimate: `$${(usageCount * 0.03).toFixed(2)}`,
-      }}
+      // stats={{
+      //   used: usageCount,
+      //   quota: 100,
+      //   resetDate,
+      //   costEstimate: `$${(usageCount * 0.03).toFixed(2)}`,
+      // }}
       helpContent={
         <div className="space-y-2 text-sm">
           <p><strong>¿Cómo funciona?</strong></p>
@@ -275,10 +265,7 @@ export function ActivitySummary() {
           draftId="activity-summaries"
         />
 
-        <AIUsageStats
-          features={usageFeatures}
-          resetDate={resetDate}
-        />
+
       </div>
 
       {/* Right Column - Preview & History */}
