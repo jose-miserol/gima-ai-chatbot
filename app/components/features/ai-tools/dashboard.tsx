@@ -49,7 +49,7 @@ const aiTools: AITool[] = [
     description: 'Genera checklists de mantenimiento personalizados con IA',
     icon: <CheckCircle2 className="h-8 w-8 text-primary" />,
     href: '/tools/checklist-builder',
-    badge: 'Test',
+    badge: 'Tools',
     features: [
       'Checklists personalizados por activo',
       'Múltiples tipos de mantenimiento',
@@ -63,7 +63,7 @@ const aiTools: AITool[] = [
     description: 'Resúmenes profesionales de actividades de mantenimiento',
     icon: <FileText className="h-8 w-8 text-primary" />,
     href: '/tools/activity-summaries',
-    badge: 'Test',
+    badge: 'Tools',
     features: [
       '3 estilos profesionales',
       '3 niveles de detalle',
@@ -77,7 +77,7 @@ const aiTools: AITool[] = [
     description: 'Limpia, formatea y transforma datos con instrucciones en lenguaje natural',
     icon: <Zap className="h-8 w-8 text-primary" />,
     href: '/tools/data-transformation',
-    badge: 'Test',
+    badge: 'Tools',
     features: [
       'Transformación con IA (Gemini)',
       'Vista previa antes de aplicar',
@@ -91,7 +91,7 @@ const aiTools: AITool[] = [
     description: 'Notas de cierre profesionales para órdenes de trabajo',
     icon: <Sparkles className="h-8 w-8 text-primary" />,
     href: '#modal',
-    badge: 'dev',
+    badge: 'Tools',
     features: [
       'Notas de cierre detalladas',
       'Análisis de hallazgos',
@@ -105,7 +105,7 @@ const aiTools: AITool[] = [
     description: 'Test image analysis with Gemini Vision',
     icon: <ImageIcon className="h-8 w-8 text-primary" />,
     href: '/tools/image-upload-test',
-    badge: 'Test',
+    badge: 'Tools',
     features: [
       'Upload & analyze images',
       'Gemini Vision integration',
@@ -119,7 +119,7 @@ const aiTools: AITool[] = [
     description: 'Test PDF content extraction and analysis',
     icon: <FileText className="h-8 w-8 text-primary" />,
     href: '/tools/pdf-upload-test',
-    badge: 'Test',
+    badge: 'Tools',
     features: [
       'Upload & analyze PDFs',
       'Custom prompt support',
