@@ -82,7 +82,7 @@ export function ChecklistBuilderClient() {
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [usageCount, setUsageCount] = useState(0);
+  const [_usageCount, setUsageCount] = useState(0);
 
   const handleGenerate = async (data: Record<string, unknown>) => {
     setIsGenerating(true);
