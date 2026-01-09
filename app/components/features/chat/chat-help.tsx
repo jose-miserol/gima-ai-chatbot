@@ -116,8 +116,11 @@ export function ChatHelp() {
             </DialogTrigger>
             <DialogContent className="w-[95vw] max-w-lg rounded-xl md:max-w-2xl p-0 gap-0 overflow-hidden">
                 <DialogHeader className="p-6 pb-2 border-b bg-muted/10">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex flex-col gap-1 mb-4">
                         <DialogTitle className="text-xl">Ayuda del Chat</DialogTitle>
+                        <DialogDescription className="text-sm text-muted-foreground">
+                            Guía completa de funcionalidades y comandos de voz.
+                        </DialogDescription>
                     </div>
                     <div className="flex p-1 bg-muted/50 rounded-lg">
                         <button
