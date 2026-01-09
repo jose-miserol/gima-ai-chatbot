@@ -4,9 +4,9 @@
  * Página de la herramienta de transformación de datos con IA.
  */
 
-import { DataTransformation } from '@/app/components/features/data-transformation';
-
 import type { Metadata } from 'next';
+
+import { DataTransformationClient } from './data-transformation-client';
 
 export const metadata: Metadata = {
   title: 'Data Transformation | GIMA AI',
@@ -14,12 +14,10 @@ export const metadata: Metadata = {
 };
 
 /**
+ * Data Transformation Page Component
  *
+ * @returns Server component that renders the client
  */
 export default function DataTransformationPage() {
-  return (
-    <div className="container mx-auto py-8">
-      <DataTransformation />
-    </div>
-  );
+  return <DataTransformationClient />;
 }
