@@ -131,7 +131,7 @@ Las Server Actions son funciones del lado del servidor que se pueden llamar dire
 
 Transcribe audio a texto usando Gemini Flash Lite.
 
-**Ubicación:** [`app/actions.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/actions.ts)
+**Ubicación:** [`app/actions/voice.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/actions/voice.ts)
 
 #### Firma
 
@@ -202,7 +202,7 @@ const handleAudioBlob = async (blob: Blob) => {
 
 Analiza una imagen de una pieza industrial para inventario.
 
-**Ubicación:** [`app/actions.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/actions.ts)
+**Ubicación:** [`app/actions/vision.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/actions/vision.ts)
 
 #### Firma
 
@@ -267,7 +267,66 @@ const handleImageUpload = async (file: File) => {
 
 - **Modelo:** `gemini-2.5-flash` (Vision)
 - **Temperature:** `0.2` (ligeramente creativo para descripciones)
-- **Prompt:** Definido en [`INVENTORY_PROMPT`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/constants/ai.ts)
+- **Prompt:** Definido internamente con instrucciones para análisis industrial
+
+---
+
+### `extractPDFContent()`
+
+Extrae y analiza el contenido de documentos PDF.
+
+**Ubicación:** [`app/actions/files.ts`](file:///c:/Users/joses/OneDrive/Escritorio/gima-ai-chatbot/app/actions/files.ts)
+
+#### Firma
+
+```typescript
+async function extractPDFContent(pdfDataUrl: string): Promise<{
+  text: string;
+  success: boolean;
+  error?: string;
+}>;
+```
+
+#### Parámetros
+
+| Nombre       | Tipo     | Descripción                                                |
+| ------------ | -------- | ---------------------------------------------------------- |
+| `pdfDataUrl` | `string` | PDF en base64 (formato: `data:application/pdf;base64,...`) |
+
+#### Retorno
+
+```typescript
+{
+  text: string;      // Contenido extraído del PDF
+  success: boolean;  // true si la extracción fue exitosa
+  error?: string;    // Mensaje de error (solo si success = false)
+}
+```
+
+#### Ejemplo de Uso
+
+```typescript
+import { extractPDFContent } from '@/app/actions/files';
+
+const handlePDFUpload = async (file: File) => {
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64PDF = reader.result as string;
+    const result = await extractPDFContent(base64PDF);
+
+    if (result.success) {
+      console.log('Contenido:', result.text);
+    }
+  };
+  reader.readAsDataURL(file);
+};
+```
+
+#### Configuración
+
+- **Modelo:** `gemini-2.5-flash`
+- **Temperature:** `0.1` (determinístico para extracción precisa)
+- **Max tokens:** 2000
 
 ---
 
