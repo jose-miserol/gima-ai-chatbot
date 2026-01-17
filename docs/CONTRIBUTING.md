@@ -18,14 +18,19 @@ cp .env.example .env.local
 
 ## 🔧 Comandos Disponibles
 
-| Comando              | Descripción                              |
-| -------------------- | ---------------------------------------- |
-| `npm run dev`        | Servidor de desarrollo                   |
-| `npm run build`      | Build de producción                      |
-| `npm run lint`       | Verificar estilo de código               |
-| `npm run lint:fix`   | Corregir errores de lint automáticamente |
-| `npm run format`     | Formatear código con Prettier            |
-| `npm run type-check` | Verificar tipos de TypeScript            |
+| Comando                 | Descripción                              |
+| ----------------------- | ---------------------------------------- |
+| `npm run dev`           | Servidor de desarrollo                   |
+| `npm run build`         | Build de producción                      |
+| `npm run start`         | Servidor de producción                   |
+| `npm run lint`          | Verificar estilo de código               |
+| `npm run lint:fix`      | Corregir errores de lint automáticamente |
+| `npm run format`        | Formatear código con Prettier            |
+| `npm run type-check`    | Verificar tipos de TypeScript            |
+| `npm test`              | Ejecutar tests con Vitest                |
+| `npm run test:ui`       | Ejecutar tests con UI interactiva        |
+| `npm run test:coverage` | Generar reporte de cobertura             |
+| `npm run analyze`       | Analizar el bundle de producción         |
 
 ## 🪝 Git Hooks (Husky)
 
@@ -97,20 +102,45 @@ git commit -m "fix: Something."        # Termina con punto
 
 ```
 app/
-├── api/              # API Routes
-├── components/       # Componentes React
-│   ├── ui/           # Componentes UI base
-│   └── ai-elements/  # Componentes específicos de AI
-├── config/           # Configuración (env, constants)
-├── hooks/            # Custom React Hooks
-├── types/            # TypeScript types/interfaces
-└── actions.ts        # Server Actions
+├── api/                 # API Routes
+├── actions/             # Server Actions (voice, vision, files, etc.)
+├── components/          # Componentes React
+│   ├── ui/              # Componentes UI base (shadcn/ui)
+│   ├── ai-elements/     # Componentes específicos de AI
+│   └── features/        # Features (chat, voice, ai-tools, etc.)
+├── config/              # Configuración (env, constants)
+├── constants/           # Constantes del sistema (AI models, etc.)
+├── hooks/               # Custom React Hooks
+├── lib/                 # Librerías (AI services, schemas, utils)
+│   ├── ai/              # AI Services
+│   ├── schemas/         # Zod validation schemas
+│   └── services/        # Business logic services
+├── tools/               # AI Tools pages (dashboard, checklist, etc.)
+├── types/               # TypeScript types/interfaces
+└── utils/               # Utilidades generales
 ```
 
-## 🧪 Testing (Próximamente)
+## 🧪 Testing
 
-Aunque la fase de testing está pospuesta, escribe código testable:
+El proyecto usa **Vitest** para testing unitario y de integración.
 
-- Funciones puras
+### Ejecutar Tests
+
+```bash
+npm test              # Ejecutar tests en modo watch
+npm run test:ui       # Abrir UI interactiva de tests
+npm run test:coverage # Generar reporte de cobertura
+```
+
+### Escribir Tests
+
+- Coloca tests en `__tests__` dentro del mismo directorio
+- Usa el sufijo `.test.ts` o `.test.tsx`
+- Sigue el patrón AAA (Arrange, Act, Assert)
+
+### Buenas Prácticas
+
+- Funciones puras cuando sea posible
 - Dependencias inyectables
 - Separación de lógica y UI
+- Mock de server actions y APIs
