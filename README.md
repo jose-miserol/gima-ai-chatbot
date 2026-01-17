@@ -2,18 +2,30 @@
 
 Asistente inteligente para la gestión de mantenimiento y activos de la Universidad Nacional Experimental de Guayana (UNEG).
 
-## 🚀 Características
+## Características Principales
 
-- **Chat multimodal**: Texto, voz e imágenes
-- **Análisis automático de piezas** con IA (Gemini Vision)
-- **Lector de PDFs**: Análisis y resumen de documentos PDF (manuales, reportes)
-- **Transcripción de voz** inteligente con Gemini API + fallback nativo Web Speech API
-- **Comandos de voz** para órdenes de trabajo (crear, consultar, asignar)
-- **Múltiples modelos de IA**: GROQ (Llama, Mixtral) + Google Gemini
-- **Persistencia de historial** configurable en navegador (localStorage)
-- **Interfaz responsiva** con React 19 y Tailwind CSS 4
+**Chatbot Multimodal**
 
-## 🎤 Comandos de Voz
+- Chat conversacional con texto, voz e imágenes
+- Análisis automático de piezas industriales con Gemini Vision
+- Extracción y análisis de contenido de PDFs
+- Transcripción de voz con Gemini API y fallback Web Speech API
+- Comandos de voz para gestión de órdenes de trabajo
+
+**Herramientas de IA**
+
+- Checklist Builder: Generación de checklists de mantenimiento personalizados
+- Activity Summaries: Resúmenes profesionales de actividades
+- Data Transformation: Transformación y validación de datos con IA
+- Work Order Closeout: Notas de cierre automáticas para órdenes de trabajo
+
+**Tecnología y UX**
+
+- Múltiples modelos: GROQ (Llama 3.3) y Google Gemini
+- Persistencia configurable de historial en localStorage
+- Interfaz responsiva con React 19 y Tailwind CSS 4
+
+## Comandos de Voz
 
 El sistema permite crear órdenes de trabajo usando comandos de voz naturales.
 
@@ -35,19 +47,19 @@ El sistema permite crear órdenes de trabajo usando comandos de voz naturales.
 
 ### Uso
 
-1. Click en "🎤 Usar comando de voz para órdenes de trabajo"
+1. Click en el botón de comando de voz para órdenes de trabajo
 2. Habla tu comando de forma clara
 3. Revisa el preview del comando interpretado
 4. Confirma o reintenta
 
-## 📋 Requisitos
+## Requisitos
 
 - Node.js 20+ y npm
 - API Keys:
   - [GROQ API](https://console.groq.com/)
   - [Google Gemini](https://makersuite.google.com/app/apikey)
 
-## ⚙️ Instalación y Setup
+## Instalación y Setup
 
 ```bash
 # Clonar repositorio
@@ -67,7 +79,7 @@ npm run dev
 
 Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 
-## 🔑 Variables de Entorno
+## Variables de Entorno
 
 Crear archivo `.env.local` con:
 
@@ -77,11 +89,11 @@ GOOGLE_GENERATIVE_AI_API_KEY=AIza...
 NODE_ENV=development
 ```
 
-> **⚠️ Importante**: El archivo `.env.local` debe estar guardado con codificación **UTF-8**. Si usas Windows y experimentas errores de "ZodError" al iniciar la app, probablemente el archivo esté en UTF-16. Ver sección [Troubleshooting](#-troubleshooting) para solución.
+> **Importante**: El archivo `.env.local` debe estar guardado con codificación **UTF-8**. Si usas Windows y experimentas errores de "ZodError" al iniciar la app, probablemente el archivo esté en UTF-16. Ver sección [Troubleshooting](#troubleshooting) para solución.
 
 Ver `.env.example` para referencia completa.
 
-## 🛠️ Scripts Disponibles
+## Scripts Disponibles
 
 ```bash
 npm run dev          # Servidor de desarrollo
@@ -91,9 +103,13 @@ npm run lint         # Ejecutar ESLint
 npm run lint:fix     # Corregir errores de ESLint
 npm run format       # Formatear código con Prettier
 npm run type-check   # Verificar tipos TypeScript
+npm test             # Ejecutar tests con Vitest
+npm run test:ui      # UI interactiva de tests
+npm run test:coverage # Reporte de cobertura
+npm run analyze      # Analizar bundle de producción
 ```
 
-## 🏗️ Tecnologías
+## Tecnologías
 
 - **Framework**: Next.js 16.0 (App Router)
 - **UI**: React 19, Tailwind CSS 4, Radix UI
@@ -102,37 +118,51 @@ npm run type-check   # Verificar tipos TypeScript
 - **Validación**: Zod
 - **Iconos**: Lucide React
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 gima-ai-chatbot/
 ├── app/
-│   ├── api/chat/          # API route para chat
-│   ├── components/
+│   ├── api/               # API routes
+│   ├── actions/           # Server Actions (voice, vision, files)
+│   ├── components/        # Componentes React
+│   │   ├── ui/            # Componentes base (shadcn/ui)
 │   │   ├── ai-elements/   # Componentes de IA
-│   │   └── ui/            # Componentes UI
-│   ├── config/            # Configuración y prompts
+│   │   └── features/      # Features (chat, ai-tools, voice)
+│   ├── config/            # Configuración del sistema
+│   ├── constants/         # Constantes (AI models, etc.)
 │   ├── hooks/             # React hooks personalizados
+│   ├── lib/               # Librerías y services
+│   │   ├── ai/            # AI services
+│   │   ├── schemas/       # Validación Zod
+│   │   └── services/      # Lógica de negocio
+│   ├── tools/             # AI Tools pages
 │   ├── types/             # Tipos TypeScript
-│   └── actions.ts         # Server Actions (Gemini)
+│   └── utils/             # Utilidades
+├── docs/                  # Documentación del proyecto
 ├── public/                # Archivos estáticos
-└── .env.example           # Plantilla de variables
+└── tests/                 # Tests unitarios y de integración
 ```
 
-## 🤖 Modelos Disponibles
+## Modelos de IA
 
-- **LLaMA 3.3 70B** (predeterminado): Rápido y eficiente
-- **Mixtral 8x7B**: Excelente razonamiento
-- **LLaMA 3.1 8B**: Ultrarrápido
+**GROQ**
 
-## 🔒 Seguridad
+- LLaMA 3.3 70B Versatile (predeterminado): Chat, generación de texto
+
+**Google Gemini**
+
+- Gemini 2.5 Flash: Análisis de imágenes, PDFs
+- Gemini 2.5 Flash Lite: Transcripción de voz, comandos
+
+## Seguridad
 
 - Validación de entrada con Zod
 - Headers de seguridad HTTP configurados
 - Validación estricta de variables de entorno
 - TypeScript strict mode activado
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Error: "ZodError - expected string, received undefined" al iniciar
 
@@ -174,7 +204,15 @@ Este problema ya fue **solucionado** en versiones recientes. Si aún ocurre:
 2. Verifica que `use-file-submission.ts` incluya la actualización que agrega mensajes manualmente al estado
 3. Limpia localStorage: `localStorage.clear()` en la consola del navegador
 
-## 📝 Licencia
+## Documentación
+
+Para información detallada sobre el proyecto, consulta:
+
+- [AI Tools Guide](./docs/AI_TOOLS_GUIDE.md) - Guía de herramientas de IA
+- [API Documentation](./docs/API.md) - Documentación de endpoints y server actions
+- [Contributing Guide](./docs/CONTRIBUTING.md) - Guía para contribuir al proyecto
+
+## Licencia
 
 Proyecto académico - UNEG
 
