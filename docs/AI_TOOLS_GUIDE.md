@@ -82,7 +82,38 @@ Genera resúmenes profesionales de actividades de mantenimiento.
 
 ---
 
-#### 3. Work Order Closeout
+#### 3. Data Transformation
+
+**Ruta:** `/tools/data-transformation`
+
+Transforma y valida datos con IA, convirtiendo entre formatos y estructuras.
+
+**Características:**
+
+- ✅ Múltiples operaciones (renombrar campos, convertir tipos, combinar, dividir)
+- ✅ Validación automática de transformaciones
+- ✅ Preview antes de aplicar cambios
+- ✅ Support para JSON, CSV, y otros formatos
+- ✅ Historial de transformaciones
+
+**Flujo de uso:**
+
+1. Ingresa datos origen (JSON o CSV)
+2. Describe la transformación deseada
+3. Selecciona operaciones específicas
+4. Click "Generar Transformación"
+5. Preview de resultados transformados
+6. **Aceptar** para aplicar o **Rechazar** para descartar
+
+**Output:**
+
+- Datos transformados validados
+- Log de operaciones aplicadas
+- Metadata de la transformación
+
+---
+
+#### 4. Work Order Closeout
 
 **Tipo:** Modal (integrado en WO detail pages)
 
@@ -180,6 +211,7 @@ Cada herramienta integra su service correspondiente:
 
 - `ChecklistAIService` - Checklist generation
 - `ActivitySummaryAIService` - Activity summaries
+- `DataTransformationAIService` - Data transformation
 - `WorkOrderCloseoutAIService` - Closeout notes
 
 Todos heredan de `BaseAIService` con:
