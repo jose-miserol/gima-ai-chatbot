@@ -74,6 +74,7 @@ export function Chat() {
     error: chatError,
     clearHistory,
     setMessages,
+    addToolOutput,
   } = usePersistentChat({ storageKey: 'gima-chat-v1', enablePersistence: true });
 
   // Hook de ejecución de Work Orders
@@ -159,6 +160,33 @@ export function Chat() {
     isListening,
   });
 
+  // Quick action handler
+  const handleQuickAction = useCallback(
+    (prompt: string) => {
+      // If prompt is complete (doesn't end in space), send directly
+      if (!prompt.endsWith(' ')) {
+        handleSubmit({ text: prompt, files: [] });
+      } else {
+        // Incomplete prompt - put in input and focus textarea
+        updateTextareaValue(prompt);
+        textareaRef.current?.focus();
+      }
+    },
+    [handleSubmit, updateTextareaValue]
+  );
+
+  // Tool approval handler (for crear_orden_trabajo)
+  const handleToolApproval = useCallback(
+    (toolCallId: string, output: string) => {
+      addToolOutput({
+        tool: 'crear_orden_trabajo',
+        toolCallId,
+        output,
+      });
+    },
+    [addToolOutput]
+  );
+
   // Auto-detect voice commands
   const prevIsListening = useRef(false);
   const prevIsProcessing = useRef(false);
@@ -206,6 +234,10 @@ export function Chat() {
           voiceMode={mode}
           onRegenerate={handleRegenerate}
           onCopyMessage={(text) => handleCopyMessage(text, toast)}
+          onQuickAction={handleQuickAction}
+          onToolApproval={(approvalId: string, approved: boolean) =>
+            handleToolApproval(approvalId, approved ? 'Aprobado por el usuario' : 'Rechazado por el usuario')
+          }
         />
 
         {/* Status Indicators */}

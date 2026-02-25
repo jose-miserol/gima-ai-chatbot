@@ -52,12 +52,18 @@ export function ChatConversation({
   voiceMode,
   onRegenerate,
   onCopyMessage,
+  onQuickAction,
+  onToolApproval,
 }: ChatConversationProps) {
   return (
     <Conversation className="h-full">
       <ConversationContent>
         {messages.length === 0 ? (
-          <ChatEmptyState isVoiceSupported={isVoiceSupported} voiceMode={voiceMode} />
+          <ChatEmptyState
+            isVoiceSupported={isVoiceSupported}
+            voiceMode={voiceMode}
+            onQuickAction={onQuickAction}
+          />
         ) : (
           messages.map((message) => (
             <ChatMessage
@@ -65,6 +71,7 @@ export function ChatConversation({
               message={message}
               onRegenerate={onRegenerate}
               onCopy={onCopyMessage}
+              onToolApproval={onToolApproval}
             />
           ))
         )}

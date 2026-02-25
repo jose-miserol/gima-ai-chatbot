@@ -54,6 +54,8 @@ export interface ChatConversationProps {
   voiceMode: 'gemini' | 'native';
   onRegenerate: () => void;
   onCopyMessage: (text: string) => void;
+  onQuickAction?: (prompt: string) => void;
+  onToolApproval?: (approvalId: string, approved: boolean) => void;
 }
 
 /**
