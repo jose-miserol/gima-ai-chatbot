@@ -1,10 +1,11 @@
 import { createGroq } from '@ai-sdk/groq';
-import { streamText, type LanguageModel } from 'ai';
+import { streamText, stepCountIs, type LanguageModel } from 'ai';
 
 import { sanitizeForModel } from '@/app/components/features/chat/utils';
 import { SYSTEM_PROMPT } from '@/app/config';
 import { env } from '@/app/config/env';
 import { ERROR_MESSAGES } from '@/app/constants/messages';
+import { chatTools } from '@/app/lib/ai/tools/chat-tools';
 import { logger } from '@/app/lib/logger';
 import { chatRateLimiter } from '@/app/lib/rate-limiter';
 import { chatRequestSchema } from '@/app/lib/schemas';
@@ -65,6 +66,8 @@ export class ChatService {
         model: this.deps.modelProvider(model),
         messages,
         system: SYSTEM_PROMPT,
+        tools: chatTools,
+        stopWhen: stepCountIs(5),
       });
 
       return result;

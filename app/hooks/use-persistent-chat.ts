@@ -168,6 +168,9 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
   } as any);
   const { messages, setMessages } = chat;
 
+  // Expose addToolOutput for client-side tool handling (e.g., crear_orden_trabajo)
+  const addToolOutput = (chat as any).addToolOutput;
+
   // ✅ CORRECTO: Cargar mensajes una sola vez al montar
   // Usar useRef para evitar que se ejecute múltiples veces en desarrollo
   const hasInitializedRef = useRef(false);
@@ -261,6 +264,7 @@ export function usePersistentChat(options: UsePersistentChatOptions = {}) {
     // Type assertions necesarias porque el tipo del SDK no coincide con la implementación real
     sendMessage: (chat as any).sendMessage ?? (chat as any).append,
     regenerate: (chat as any).reload,
+    addToolOutput,
     visionResponse,
     setVisionResponse,
     clearHistory,
