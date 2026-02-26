@@ -3,6 +3,7 @@ import {
   PromptInputActionAddAttachments,
   PromptInputActionMenu,
   PromptInputActionMenuContent,
+  PromptInputActionMenuItem,
   PromptInputActionMenuTrigger,
   PromptInputAttachment,
   PromptInputAttachments,
@@ -13,7 +14,10 @@ import {
   PromptInputTools,
   PromptInputHeader,
 } from '@/app/components/ai-elements/prompt-input';
+import { DropdownMenuLabel, DropdownMenuSeparator } from '@/app/components/ui/dropdown-menu';
 import { VoiceButton } from '@/app/components/features/voice';
+
+import { QUICK_ACTIONS } from './chat-quick-actions';
 
 import type { ChatInputAreaProps } from './types';
 
@@ -23,54 +27,20 @@ import type { ChatInputAreaProps } from './types';
  * Contiene todos los controles para ingresar mensajes:
  * - Textarea para texto
  * - Attachments (imágenes, archivos) con drag and drop
+ * - Herramientas de IA (quick actions en el menú +)
  * - Botón de voz (Gemini AI o Web Speech API nativa)
  * - Botón de envío
- *
- * Usa componentes de AI SDK Elements (PromptInput, PromptInputTextarea, etc).
- * @param textareaRef - Ref del textarea para control programático
- * @param textareaRef.textareaRef
- * @param input - Valor actual del input
- * @param textareaRef.input
- * @param onInputChange - Callback al cambiar el input
- * @param textareaRef.onInputChange
- * @param onSubmit - Callback al enviar mensaje
- * @param textareaRef.onSubmit
- * @param canSend - Si se puede enviar (estado del chat)
- * @param textareaRef.canSend
- * @param status - Estado actual del chat
- * @param textareaRef.status
- * @param textareaRef.isAnalyzingFile
- * @param voiceProps - Props para el botón de voz customizado
- * @param textareaRef.voiceProps
- * @example
- * ```tsx
- * <ChatInputArea
- *   textareaRef={textareaRef}
- *   input={input}
- *   onInputChange={(e) => setInput(e.target.value)}
- *   onSubmit={handleSubmit}
- *   canSend={canSend}
- *   status={status}
- *   voiceProps={{
- *     isListening,
- *     isProcessing,
- *     isSupported,
- *     mode,
- *     onClick: toggleListening,
- *     disabled: !canSend || isProcessing
- *   }}
- * />
- * ```
  */
 export function ChatInputArea({
   textareaRef,
-  input: _input, // Managed internally by PromptInputTextarea
+  input: _input,
   onInputChange,
   onSubmit,
   canSend,
   status,
-  isAnalyzingFile: _isAnalyzingFile, // Reserved for future UI enhancements
+  isAnalyzingFile: _isAnalyzingFile,
   voiceProps,
+  onQuickAction,
 }: ChatInputAreaProps) {
   return (
     <PromptInput
@@ -100,6 +70,24 @@ export function ChatInputArea({
             <PromptInputActionMenuTrigger />
             <PromptInputActionMenuContent>
               <PromptInputActionAddAttachments />
+
+              {/* Herramientas de IA */}
+              {onQuickAction && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">Herramientas</DropdownMenuLabel>
+                  {QUICK_ACTIONS.map((action) => (
+                    <PromptInputActionMenuItem
+                      key={action.label}
+                      onClick={() => onQuickAction(action.prompt)}
+                      className="gap-2 cursor-pointer"
+                    >
+                      {action.icon}
+                      <span>{action.label}</span>
+                    </PromptInputActionMenuItem>
+                  ))}
+                </>
+              )}
             </PromptInputActionMenuContent>
           </PromptInputActionMenu>
 

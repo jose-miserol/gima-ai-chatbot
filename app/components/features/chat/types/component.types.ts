@@ -7,7 +7,6 @@
 
 import type { UIMessage } from 'ai';
 import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
-
 import type { VoiceButtonProps } from './voice-props.types';
 
 /**
@@ -79,4 +78,5 @@ export interface ChatInputAreaProps {
   status: 'ready' | 'streaming' | 'submitted' | 'error';
   isAnalyzingFile: boolean;
   voiceProps: VoiceButtonProps;
+  onQuickAction?: (prompt: string) => void;
 }

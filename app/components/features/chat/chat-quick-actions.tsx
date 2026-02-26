@@ -9,8 +9,20 @@
 
 'use client';
 
-import { Package, ClipboardList, AlertTriangle, Wrench, FileText, PlusCircle } from 'lucide-react';
+import {
+    Package, ClipboardList, AlertTriangle, Wrench, FileText, PlusCircle,
+    Sparkles,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/app/components/ui/dropdown-menu';
 
 // ===========================================
 // Quick Action Definitions
@@ -23,7 +35,7 @@ interface QuickAction {
     colorClass: string;
 }
 
-const QUICK_ACTIONS: QuickAction[] = [
+export const QUICK_ACTIONS: QuickAction[] = [
     {
         icon: <Wrench className="size-3.5" />,
         label: 'Ver Activos',
@@ -99,5 +111,51 @@ export function ChatQuickActions({ onActionClick, disabled }: ChatQuickActionsPr
                 </button>
             ))}
         </div>
+    );
+}
+
+// ===========================================
+// Tools Dropdown (for input area — always visible)
+// ===========================================
+
+interface ToolsDropdownProps {
+    onActionClick: (prompt: string) => void;
+    disabled?: boolean;
+}
+
+/**
+ * ToolsDropdown — Botón con dropdown de herramientas para el input area
+ *
+ * Siempre visible junto al botón de voz y adjuntos.
+ * Al seleccionar una acción, cierra el dropdown e inyecta el prompt.
+ */
+export function ToolsDropdown({ onActionClick, disabled }: ToolsDropdownProps) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={disabled}>
+                <button
+                    className="inline-flex items-center justify-center size-8 rounded-md
+                     text-muted-foreground hover:text-foreground hover:bg-muted
+                     transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Herramientas de IA"
+                >
+                    <Sparkles className="size-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="w-56">
+                <DropdownMenuLabel className="text-xs">Herramientas</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {QUICK_ACTIONS.map((action) => (
+                    <DropdownMenuItem
+                        key={action.label}
+                        onClick={() => onActionClick(action.prompt)}
+                        className="gap-2 cursor-pointer"
+                    >
+                        {action.icon}
+                        <span>{action.label}</span>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

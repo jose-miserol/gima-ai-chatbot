@@ -334,6 +334,7 @@ export function Chat() {
           canSend={canSend}
           status={status}
           isAnalyzingFile={isAnalyzing}
+          onQuickAction={handleQuickAction}
           voiceProps={{
             isListening,
             isProcessing,
