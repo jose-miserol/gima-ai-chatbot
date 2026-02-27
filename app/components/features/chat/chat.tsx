@@ -14,11 +14,14 @@ import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
 import { ChatConversation } from './chat-conversation';
 import { ChatHeader } from './chat-header';
 import { ChatInputArea } from './chat-input-area';
+import { QUICK_ACTIONS, QuickActionDataForm } from './chat-quick-actions';
 import { ChatStatusIndicators } from './chat-status-bar';
 import { CHAT_MESSAGES } from './constants';
 import { useChatActions } from './hooks/use-chat-actions';
 import { useChatKeyboard } from './hooks/use-chat-keyboard';
 import { useFileSubmission } from './hooks/use-file-submission';
+
+import type { QuickAction } from './chat-quick-actions';
 
 
 /**
@@ -62,6 +65,7 @@ export function Chat() {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [isCommandMode, setIsCommandMode] = useState(false);
   const [detectedCommand, setDetectedCommand] = useState<VoiceWorkOrderCommand | null>(null);
+  const [activeQuickAction, setActiveQuickAction] = useState<QuickAction | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Integraciones
@@ -163,6 +167,15 @@ export function Chat() {
   // Quick action handler
   const handleQuickAction = useCallback(
     (prompt: string) => {
+      // Find the matching QuickAction to check if it has formFields
+      const action = QUICK_ACTIONS.find((a) => a.prompt === prompt);
+
+      if (action?.formFields && action.formFields.length > 0) {
+        // Action requires data → show inline form
+        setActiveQuickAction(action);
+        return;
+      }
+
       // If prompt is complete (doesn't end in space), send directly
       if (!prompt.endsWith(' ')) {
         handleSubmit({ text: prompt, files: [] });
@@ -173,6 +186,15 @@ export function Chat() {
       }
     },
     [handleSubmit, updateTextareaValue]
+  );
+
+  // Quick action form submit handler
+  const handleQuickActionFormSubmit = useCallback(
+    (composedPrompt: string) => {
+      setActiveQuickAction(null);
+      handleSubmit({ text: composedPrompt, files: [] });
+    },
+    [handleSubmit]
   );
 
   // Tool approval handler (for crear_orden_trabajo)
@@ -323,6 +345,15 @@ export function Chat() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* QuickAction Data Form (inline, above input) */}
+        {activeQuickAction && (
+          <QuickActionDataForm
+            action={activeQuickAction}
+            onSubmit={handleQuickActionFormSubmit}
+            onCancel={() => setActiveQuickAction(null)}
+          />
         )}
 
         {/* Input Area */}
