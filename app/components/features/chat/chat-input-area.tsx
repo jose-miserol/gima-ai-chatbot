@@ -69,8 +69,6 @@ export function ChatInputArea({
           <PromptInputActionMenu>
             <PromptInputActionMenuTrigger />
             <PromptInputActionMenuContent>
-              <PromptInputActionAddAttachments />
-
               {/* Herramientas de IA */}
               {onQuickAction && (
                 <>
@@ -88,6 +86,7 @@ export function ChatInputArea({
                   ))}
                 </>
               )}
+              <PromptInputActionAddAttachments />
             </PromptInputActionMenuContent>
           </PromptInputActionMenu>
 
