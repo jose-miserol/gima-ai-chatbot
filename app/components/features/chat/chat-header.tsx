@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+import Image from 'next/image';
 
 import { ThemeToggle } from '@/app/components/features/theme';
 import { ChatHelp } from './chat-help';
@@ -31,7 +32,14 @@ interface ChatHeaderProps {
 export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
   return (
     <div className="mb-4 text-center relative">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">GIMA Chatbot</h1>
+      <Image
+        src="/logotype.svg"
+        alt="GIMA"
+        width={120}
+        height={40}
+        className="mx-auto mb-2 dark:invert"
+        priority
+      />
       <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
         Asistente Inteligente de Mantenimiento - UNEG
       </p>
