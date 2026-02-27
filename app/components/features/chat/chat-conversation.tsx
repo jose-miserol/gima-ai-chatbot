@@ -65,9 +65,9 @@ export function ChatConversation({
             onQuickAction={onQuickAction}
           />
         ) : (
-          messages.map((message) => (
+          messages.map((message, index) => (
             <ChatMessage
-              key={message.id}
+              key={`${message.id}-${index}`}
               message={message}
               onRegenerate={onRegenerate}
               onCopy={onCopyMessage}
