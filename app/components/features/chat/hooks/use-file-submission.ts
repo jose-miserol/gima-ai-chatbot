@@ -121,11 +121,17 @@ export function useFileSubmission({
               content: userText,
               parts: [
                 { type: 'text', text: userText },
-                {
-                  type: 'file', // Generic file type, UI handles rendering based on mediaType
-                  data: fileDataUrl, // Store dataUrl for local preview continuity if needed
-                  mediaType: targetFile.mediaType,
-                },
+                isPdf
+                  ? {
+                      type: 'file',
+                      data: fileDataUrl,
+                      mediaType: targetFile.mediaType,
+                    }
+                  : {
+                      type: 'image',
+                      imageUrl: fileDataUrl,
+                      mimeType: targetFile.mediaType,
+                    },
               ],
               createdAt: new Date(),
             } as UIMessage,
@@ -133,14 +139,20 @@ export function useFileSubmission({
 
           // Call specific server action based on type
           let result;
+          const formData = new FormData();
+          const fileName =
+            'name' in targetFile && typeof targetFile.name === 'string'
+              ? targetFile.name
+              : 'archivo';
+          formData.append('file', blob, fileName);
+          if (message.text?.trim()) {
+            formData.append('prompt', message.text.trim());
+          }
+
           if (isPdf) {
-            result = await analyzePdf(fileDataUrl, message.text?.trim());
+            result = await analyzePdf(formData);
           } else {
-            result = await analyzePartImage(
-              fileDataUrl,
-              targetFile.mediaType || 'image/jpeg',
-              message.text?.trim()
-            );
+            result = await analyzePartImage(formData);
           }
 
           if (result.success && result.text) {

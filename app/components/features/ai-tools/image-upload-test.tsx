@@ -61,7 +61,9 @@ export function ImageUploadTestClient() {
         setError('');
 
         try {
-            const response = await analyzePartImage(preview, selectedFile.type);
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            const response = await analyzePartImage(formData);
 
             if (response.success) {
                 setResult(response.text);

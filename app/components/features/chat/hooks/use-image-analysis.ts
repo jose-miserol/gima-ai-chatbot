@@ -80,17 +80,11 @@ export function useImageAnalysis({ setMessages, toast }: UseImageAnalysisParams)
         const response = await fetch(imageFile.url);
         const blob = await response.blob();
 
-        const base64Promise = new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-
-        const imageDataUrl = await base64Promise;
+        const formData = new FormData();
+        formData.append('file', blob, imageFile.name || 'image');
 
         // Call Gemini Vision API via server action
-        const result = await analyzePartImage(imageDataUrl, imageFile.mediaType || 'image/jpeg');
+        const result = await analyzePartImage(formData);
 
         if (result.success && result.text) {
           const visionId = `vision-${Date.now()}`;

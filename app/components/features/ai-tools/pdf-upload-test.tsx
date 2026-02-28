@@ -65,7 +65,11 @@ export function PdfUploadTestClient() {
 
         try {
             const prompt = customPrompt.trim() || undefined;
-            const response = await analyzePdf(pdfDataUrl, prompt);
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            if (prompt) formData.append('prompt', prompt);
+
+            const response = await analyzePdf(formData);
 
             if (response.success) {
                 setResult(response.text);

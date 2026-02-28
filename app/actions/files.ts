@@ -5,35 +5,24 @@ import { generateText } from 'ai';
 
 import { MAX_PDF_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-import { getBase64Size } from '@/app/utils/base64';
 
 /**
  * Analiza un documento PDF.
  * Utiliza Gemini para leer y analizar el contenido del documento.
- * @param pdfDataUrl - String codificado en base64 del PDF
- * @param prompt - Prompt para el análisis (opcional)
+ * @param formData - Objeto FormData que contiene el archivo 'file' y opcionalmente un 'prompt'
  * @returns Análisis generado por la IA
- * @example
- * ```typescript
- * const result = await analyzePdf("data:application/pdf;base64,...", "Resumir este contrato");
- * if (result.success) {
- *   console.log(result.text);
- * }
- * ```
  */
 export async function analyzePdf(
-  pdfDataUrl: string,
-  prompt?: string
+  formData: FormData
 ): Promise<{ text: string; success: boolean; error?: string }> {
   try {
-    const base64Content = pdfDataUrl.includes('base64,')
-      ? pdfDataUrl.split('base64,').pop() || ''
-      : pdfDataUrl;
+    const file = formData.get('file') as File | null;
+    const prompt = formData.get('prompt') as string | null;
 
-    if (!base64Content) throw new Error('PDF vacío');
+    if (!file) throw new Error('PDF vacío');
 
     // Validar tamaño del PDF
-    const sizeInBytes = getBase64Size(base64Content);
+    const sizeInBytes = file.size;
     const sizeInMB = bytesToMB(sizeInBytes);
 
     if (sizeInMB > MAX_PDF_SIZE_MB) {
@@ -41,6 +30,9 @@ export async function analyzePdf(
         `PDF demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_PDF_SIZE_MB}MB`
       );
     }
+
+    const buffer = await file.arrayBuffer();
+    const base64Content = Buffer.from(buffer).toString('base64');
 
     const result = await generateText({
       model: google('gemini-2.5-flash'), // Flash soporta hasta 1M tokens, ideal para PDFs

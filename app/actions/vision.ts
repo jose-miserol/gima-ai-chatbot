@@ -6,37 +6,24 @@ import { generateText } from 'ai';
 import { INVENTORY_PROMPT } from '@/app/config';
 import { MAX_IMAGE_SIZE_MB, bytesToMB } from '@/app/config/limits';
 import { logger } from '@/app/lib/logger';
-import { getBase64Size } from '@/app/utils/base64';
 
 /**
  * Analiza una imagen de una pieza industrial para inventario.
  * Utiliza Gemini Vision para identificar, describir y evaluar el estado de la pieza.
- * @param imageDataUrl - String codificado en base64 de la imagen
- * @param mediaType - Tipo MIME de la imagen (default: image/jpeg)
- * @param customPrompt - Prompt personalizado del usuario (opcional, usa INVENTORY_PROMPT por defecto)
+ * @param formData - FormData conteniendo el archivo 'file' y 'prompt' opcional
  * @returns Descripción detallada generada por la IA
- * @example
- * ```typescript
- * const result = await analyzePartImage("data:image/jpeg;base64,...");
- * if (result.success) {
- *   console.log("Descripción:", result.text);
- * }
- * ```
  */
 export async function analyzePartImage(
-  imageDataUrl: string,
-  mediaType: string = 'image/jpeg',
-  customPrompt?: string
+  formData: FormData
 ): Promise<{ text: string; success: boolean; error?: string }> {
   try {
-    const base64Content = imageDataUrl.includes('base64,')
-      ? imageDataUrl.split('base64,').pop() || ''
-      : imageDataUrl;
+    const file = formData.get('file') as File | null;
+    let customPrompt = formData.get('prompt') as string | null;
 
-    if (!base64Content) throw new Error('Imagen vacía');
+    if (!file) throw new Error('Imagen vacía');
 
     // Validar tamaño de la imagen
-    const sizeInBytes = getBase64Size(base64Content);
+    const sizeInBytes = file.size;
     const sizeInMB = bytesToMB(sizeInBytes);
 
     if (sizeInMB > MAX_IMAGE_SIZE_MB) {
@@ -44,6 +31,10 @@ export async function analyzePartImage(
         `Imagen demasiado grande (${sizeInMB.toFixed(1)}MB). Máximo permitido: ${MAX_IMAGE_SIZE_MB}MB`
       );
     }
+
+    const buffer = await file.arrayBuffer();
+    const base64Content = Buffer.from(buffer).toString('base64');
+    const mediaType = file.type || 'image/jpeg';
 
     const result = await generateText({
       model: google('gemini-2.5-flash'),
