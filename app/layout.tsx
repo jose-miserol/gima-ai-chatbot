@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 
+export const maxDuration = 60; // 60 seconds timeout for Server Actions and API Routes
+
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import './globals.css';

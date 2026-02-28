@@ -1,7 +1,5 @@
 'use server';
 
-export const maxDuration = 60; // Set timeout to 60 seconds
-
 import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 
