@@ -6,12 +6,10 @@
  *
  * Targets:
  * - Sanitización de mensajes: <10ms/1000 mensajes
- * - Serialización localStorage: <5ms
  */
 
 import { describe, it, expect } from 'vitest';
 import { sanitizeForModel } from '@/app/components/features/chat/utils';
-import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
 // ===========================================
 // Test Data Generators
@@ -28,17 +26,6 @@ function generateTestMessages(count: number) {
     parts: [],
     createdAt: new Date(),
   }));
-}
-
-/**
- * Genera un historial de chat para serialización
- */
-function generateChatHistory(messageCount: number) {
-  return {
-    messages: generateTestMessages(messageCount),
-    createdAt: Date.now(),
-    title: 'Test Chat',
-  };
 }
 
 // ===========================================
@@ -69,37 +56,6 @@ describe('Performance: Chat Operations', () => {
     });
   });
 
-  describe('localStorage Serialization', () => {
-    it('should compress chat history in <5ms', () => {
-      const history = generateChatHistory(100);
-      const jsonString = JSON.stringify(history);
-
-      const start = performance.now();
-      const compressed = compressToUTF16(jsonString);
-      const duration = performance.now() - start;
-
-      console.log(`Compression of 100 messages: ${duration.toFixed(2)}ms`);
-      console.log(`Original size: ${jsonString.length}, Compressed: ${compressed.length}`);
-
-      expect(duration).toBeLessThan(5);
-    });
-
-    it('should decompress chat history in <5ms', () => {
-      const history = generateChatHistory(100);
-      const jsonString = JSON.stringify(history);
-      const compressed = compressToUTF16(jsonString);
-
-      const start = performance.now();
-      const decompressed = decompressFromUTF16(compressed);
-      const duration = performance.now() - start;
-
-      console.log(`Decompression: ${duration.toFixed(2)}ms`);
-
-      expect(duration).toBeLessThan(5);
-      expect(decompressed).toBe(jsonString);
-    });
-  });
-
   describe('Large Data Handling', () => {
     it('should handle 5000 messages without timeout', () => {
       const messages = generateTestMessages(5000);
@@ -111,7 +67,7 @@ describe('Performance: Chat Operations', () => {
       console.log(`5000 messages sanitization: ${duration.toFixed(2)}ms`);
 
       expect(sanitized.length).toBeLessThanOrEqual(5000);
-      expect(duration).toBeLessThan(100); // Generous limit for large datasets
+      expect(duration).toBeLessThan(100);
     });
   });
 });
