@@ -6,7 +6,7 @@ interface ToastFunctions {
 }
 
 interface UseChatActionsParams {
-  regenerate: () => void;
+  reload: () => void;
   clearHistory: () => void;
   setInput: (value: string) => void;
 }
@@ -19,15 +19,15 @@ interface UseChatActionsParams {
  * - Limpiar: Borra todo el historial y resetea el input
  * - Copiar: Copia un mensaje al portapapeles y muestra toast
  * @param params - Parámetros del hook
- * @param params.regenerate - Función para regenerar la última respuesta
+ * @param params.reload - Función para regenerar la última respuesta
  * @param params.clearHistory - Función para borrar todo el historial
  * @param params.setInput - Setter para limpiar el input
  * @returns Objeto con funciones handleRegenerate, handleClear, handleCopyMessage
  */
-export function useChatActions({ regenerate, clearHistory, setInput }: UseChatActionsParams) {
+export function useChatActions({ reload, clearHistory, setInput }: UseChatActionsParams) {
   const handleRegenerate = useCallback(() => {
-    regenerate();
-  }, [regenerate]);
+    reload();
+  }, [reload]);
 
   const handleClear = useCallback(() => {
     clearHistory();

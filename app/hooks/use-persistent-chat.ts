@@ -66,7 +66,7 @@ export function usePersistentChat() {
     ...chat,
     // AI SDK v5 usa sendMessage en lugar de append
     sendMessage: (chat as any).sendMessage ?? (chat as any).append,
-    regenerate: (chat as any).reload,
+    reload: (chat as any).reload,
     addToolOutput,
     visionResponse,
     setVisionResponse,

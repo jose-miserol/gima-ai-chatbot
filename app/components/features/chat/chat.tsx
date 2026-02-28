@@ -75,7 +75,7 @@ export function Chat() {
     messages,
     sendMessage,
     status,
-    regenerate,
+    reload,
     error: chatError,
     clearHistory,
     setMessages,
@@ -120,7 +120,7 @@ export function Chat() {
 
   // Chat actions
   const { handleRegenerate, handleClear, handleCopyMessage } = useChatActions({
-    regenerate,
+    reload,
     clearHistory,
     setInput,
   });
