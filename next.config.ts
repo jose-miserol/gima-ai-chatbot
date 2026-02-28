@@ -8,7 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: '5mb', // Matches MAX_AUDIO_SIZE_MB and MAX_IMAGE_SIZE_MB from config/limits.ts
+      bodySizeLimit: '20mb', // Increased to 20MB to prevent 413 Payload Too Large on high-res photos
     },
   },
   // Security headers - separated by route type for flexibility
