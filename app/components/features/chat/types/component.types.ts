@@ -6,7 +6,7 @@
  */
 
 import type { UIMessage } from 'ai';
-import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+import type { PromptInputMessage } from '@components/ai-elements/prompt-input';
 import type { VoiceButtonProps } from './voice-props.types';
 
 /**

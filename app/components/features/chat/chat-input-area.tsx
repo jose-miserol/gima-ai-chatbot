@@ -13,7 +13,7 @@ import {
   PromptInputFooter,
   PromptInputTools,
   PromptInputHeader,
-} from '@/app/components/ai-elements/prompt-input';
+} from '@components/ai-elements/prompt-input';
 import { DropdownMenuLabel, DropdownMenuSeparator } from '@/app/components/ui/dropdown-menu';
 import { VoiceButton } from '@/app/components/features/voice';
 
@@ -86,7 +86,10 @@ export function ChatInputArea({
                   ))}
                 </>
               )}
-              <PromptInputActionAddAttachments label="Añadir fotos o archivos" />
+              <PromptInputActionAddAttachments
+                label="Añadir fotos o archivos"
+                className="gap-2 cursor-pointer [&>svg]:!mr-0 [&>svg]:!size-3.5"
+              />
             </PromptInputActionMenuContent>
           </PromptInputActionMenu>
 

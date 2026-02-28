@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+import type { PromptInputMessage } from '@components/ai-elements/prompt-input';
 
 import { CHAT_CONFIG } from '../constants';
 
@@ -17,7 +17,10 @@ interface SendMessageOptions {
 }
 
 interface UseChatSubmitParams {
-  sendMessage: (message: { text: string; files?: FileAttachment[] }, options?: SendMessageOptions) => void;
+  sendMessage: (
+    message: { text: string; files?: FileAttachment[] },
+    options?: SendMessageOptions
+  ) => void;
   isListening: boolean;
   toggleListening: () => void;
   model: string;

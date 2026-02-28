@@ -56,7 +56,7 @@ export function ChatConversation({
   onToolApproval,
 }: ChatConversationProps) {
   return (
-    <Conversation className="h-full">
+    <Conversation className="h-full" initial="instant">
       <ConversationContent>
         {messages.length === 0 ? (
           <ChatEmptyState

@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { analyzePartImage, analyzePdf } from '@/app/actions';
-import type { PromptInputMessage } from '@/app/components/ai-elements/prompt-input';
+import type { PromptInputMessage } from '@components/ai-elements/prompt-input';
 import { useToast } from '@/app/components/ui/toast';
 import { DEFAULT_MODEL } from '@/app/config';
 import { MAX_IMAGE_SIZE_BYTES, MAX_PDF_SIZE_BYTES, bytesToMB } from '@/app/config/limits';
