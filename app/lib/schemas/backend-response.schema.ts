@@ -77,7 +77,7 @@ export type Direccion = z.infer<typeof direccionSchema>;
 
 export const ubicacionSchema = z.object({
   id: z.number(),
-  direccion_id: z.number().optional(),
+  direccion_id: z.number(),
   edificio: z.string().nullable().optional(),
   piso: z.string().nullable().optional(),
   salon: z.string().nullable().optional(),
@@ -92,7 +92,7 @@ export type Ubicacion = z.infer<typeof ubicacionSchema>;
 
 export const articuloSchema = z.object({
   id: z.number(),
-  tipo: z.string().nullable().optional(),
+  tipo: z.string(),
   marca: z.string().nullable().optional(),
   modelo: z.string().nullable().optional(),
   descripcion: z.string().nullable().optional(),
@@ -106,12 +106,12 @@ export type Articulo = z.infer<typeof articuloSchema>;
 
 export const activoSchema = z.object({
   id: z.number(),
-  articulo_id: z.number().optional(),
-  ubicacion_id: z.number().optional(),
-  estado: z.string().nullable().optional(),
+  articulo_id: z.number(),
+  ubicacion_id: z.number(),
+  estado: z.string(),
   valor: z.number().nullable().optional(),
-  created_at: z.string().nullable().optional(),
-  updated_at: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
   // Relaciones expandidas (cuando el backend las incluye con ->load())
   articulo: articuloSchema.optional(),
   ubicacion: ubicacionSchema.optional(),
@@ -125,13 +125,13 @@ export type Activo = z.infer<typeof activoSchema>;
 
 export const reporteSchema = z.object({
   id: z.number(),
-  usuario_id: z.number().optional(),
-  activo_id: z.number().optional(),
-  descripcion: z.string().nullable().optional(),
+  usuario_id: z.number(),
+  activo_id: z.number(),
+  descripcion: z.string(),
   prioridad: z.string().nullable().optional(),
-  estado: z.string().nullable().optional(),
-  created_at: z.string().nullable().optional(),
-  updated_at: z.string().nullable().optional(),
+  estado: z.string(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
 export type Reporte = z.infer<typeof reporteSchema>;
@@ -142,19 +142,19 @@ export type Reporte = z.infer<typeof reporteSchema>;
 
 export const mantenimientoSchema = z.object({
   id: z.number(),
-  activo_id: z.number().optional(),
+  activo_id: z.number(),
   supervisor_id: z.number().optional(),
   tecnico_principal_id: z.number().optional(),
-  tipo: z.string().nullable().optional(),
+  tipo: z.string(),
   reporte_id: z.number().nullable().optional(),
-  fecha_apertura: z.string().nullable().optional(),
+  fecha_apertura: z.string().optional(),
   fecha_cierre: z.string().nullable().optional(),
-  estado: z.string().nullable().optional(),
+  estado: z.string(),
   descripcion: z.string().nullable().optional(),
   validado: z.boolean().nullable().optional(),
   costo_total: z.union([z.number(), z.string()]).nullable().optional(),
-  created_at: z.string().nullable().optional(),
-  updated_at: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
   // Relaciones
   activo: activoSchema.optional(),
   reporte: reporteSchema.optional(),
