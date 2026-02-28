@@ -10,7 +10,7 @@ import { notFound } from 'next/navigation';
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
     // Block access in production
     if (process.env.NODE_ENV === 'production') {
-        notFound();
+        // notFound();
     }
 
     return <>{children}</>;

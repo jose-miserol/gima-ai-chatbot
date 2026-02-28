@@ -9,7 +9,7 @@ import { logger } from '@/app/lib/logger';
 
 import { z } from 'zod';
 
-export const partAnalysisSchema = z.object({
+const partAnalysisSchema = z.object({
   tipo_articulo: z.enum(['mobiliario', 'equipo']).describe('Clasificación general del artículo'),
   codigo: z.string().optional().describe('Código identificado visible en la pieza'),
   descripcion: z.string().describe('Descripción detallada de la pieza o equipo'),
@@ -27,7 +27,7 @@ export const partAnalysisSchema = z.object({
     .describe('Confianza de la IA sobre su identificación'),
 });
 
-export type PartAnalysisResult = z.infer<typeof partAnalysisSchema>;
+type PartAnalysisResult = z.infer<typeof partAnalysisSchema>;
 
 /**
  * Analiza una imagen de una pieza industrial para inventario.
@@ -56,7 +56,6 @@ export async function analyzePartImage(
 
     const buffer = await file.arrayBuffer();
     const base64Content = Buffer.from(buffer).toString('base64');
-    const mediaType = file.type || 'image/jpeg';
 
     const result = await generateObject({
       model: google('gemini-2.5-flash'),
@@ -71,9 +70,8 @@ export async function analyzePartImage(
               text: customPrompt || INVENTORY_PROMPT,
             },
             {
-              type: 'file',
-              data: base64Content,
-              mediaType: mediaType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+              type: 'image',
+              image: base64Content,
             },
           ],
         },
