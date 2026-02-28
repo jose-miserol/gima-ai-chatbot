@@ -86,7 +86,7 @@ export function ChatInputArea({
                   ))}
                 </>
               )}
-              <PromptInputActionAddAttachments />
+              <PromptInputActionAddAttachments label="Añadir fotos o archivos" />
             </PromptInputActionMenuContent>
           </PromptInputActionMenu>
 
