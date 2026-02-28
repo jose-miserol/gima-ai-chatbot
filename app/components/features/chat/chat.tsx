@@ -79,7 +79,7 @@ export function Chat() {
     clearHistory,
     setMessages,
     addToolOutput,
-  } = usePersistentChat({ storageKey: 'gima-chat-v1', enablePersistence: false });
+  } = usePersistentChat();
 
   // Hook de ejecución de Work Orders
   const { executeCommand } = useWorkOrderCommands();

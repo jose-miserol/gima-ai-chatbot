@@ -1,18 +1,9 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { usePersistentChat } from '../use-persistent-chat';
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-
 beforeEach(() => {
-  global.localStorage = mockLocalStorage as any;
   vi.clearAllMocks();
 });
 
@@ -21,131 +12,83 @@ afterEach(() => {
 });
 
 describe('usePersistentChat', () => {
-  const mockMessages = [
-    {
-      id: '1',
-      role: 'user' as const,
-      content: 'Hello',
-      parts: [{ type: 'text' as const, text: 'Hello' }],
-    },
-    {
-      id: '2',
-      role: 'assistant' as const,
-      content: 'Hi there!',
-      parts: [{ type: 'text' as const, text: 'Hi there!' }],
-    },
-  ] as any; // Type assertion to bypass strict typing for tests
-
   describe('initialization', () => {
-    it('should load messages from localStorage on mount', () => {
-      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockMessages));
-
-      const { result } = renderHook(() => usePersistentChat());
-
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('gima-chat-history');
-      expect(result.current.messages).toHaveLength(2);
-      expect(result.current.messages[0].id).toBe('1');
-    });
-
-    it('should return empty array when localStorage is empty', () => {
-      mockLocalStorage.getItem.mockReturnValue(null);
-
+    it('should initialize with empty messages', () => {
       const { result } = renderHook(() => usePersistentChat());
 
       expect(result.current.messages).toEqual([]);
     });
 
-    it('should handle corrupted localStorage data gracefully', () => {
-      mockLocalStorage.getItem.mockReturnValue('invalid json {');
-
+    it('should initialize with null visionResponse', () => {
       const { result } = renderHook(() => usePersistentChat());
 
-      expect(result.current.messages).toEqual([]);
-    });
-  });
-
-  describe('saving messages', () => {
-    it('should debounce localStorage writes', async () => {
-      const { result } = renderHook(() => usePersistentChat());
-
-      act(() => {
-        result.current.setMessages(mockMessages);
-      });
-
-      // Should not save immediately
-      expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
-
-      // Wait for debounce (500ms)
-      await waitFor(
-        () => {
-          expect(mockLocalStorage.setItem).toHaveBeenCalled();
-        },
-        { timeout: 600 }
-      );
-    });
-
-    it('should persist messages to localStorage', async () => {
-      const { result } = renderHook(() => usePersistentChat());
-
-      act(() => {
-        result.current.setMessages(mockMessages);
-      });
-
-      await waitFor(
-        () => {
-          expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-            'gima-chat-history',
-            expect.stringContaining('Hello')
-          );
-        },
-        { timeout: 600 }
-      );
+      expect(result.current.visionResponse).toBeNull();
     });
   });
 
   describe('clearHistory', () => {
-    it('should clear messages and localStorage', () => {
-      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockMessages));
-
+    it('should clear messages and visionResponse', () => {
       const { result } = renderHook(() => usePersistentChat());
+
+      // Set some state first
+      act(() => {
+        result.current.setVisionResponse({ id: 'v1', text: 'test vision' });
+      });
+
+      expect(result.current.visionResponse).toEqual({ id: 'v1', text: 'test vision' });
 
       act(() => {
         result.current.clearHistory();
       });
 
       expect(result.current.messages).toEqual([]);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('gima-chat-history');
+      expect(result.current.visionResponse).toBeNull();
     });
   });
 
-  describe('custom storage key', () => {
-    it('should use custom storage key when provided', () => {
-      const customKey = 'custom-chat-key';
-      mockLocalStorage.getItem.mockReturnValue(null);
-
-      renderHook(() => usePersistentChat({ storageKey: customKey }));
-
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith(customKey);
-    });
-  });
-
-  describe('date serialization', () => {
-    it('should preserve date objects when loading from localStorage', () => {
-      const messagesWithDates = [
-        {
-          id: '1',
-          role: 'user',
-          content: 'Test',
-          createdAt: '2025-01-01T12:00:00Z', // Stored as ISO string
-        },
-      ];
-
-      mockLocalStorage.getItem.mockReturnValue(JSON.stringify(messagesWithDates));
-
+  describe('visionResponse', () => {
+    it('should update visionResponse state', () => {
       const { result } = renderHook(() => usePersistentChat());
 
-      // Check that messages were loaded
-      expect(result.current.messages).toHaveLength(1);
+      act(() => {
+        result.current.setVisionResponse({ id: 'v1', text: 'test' });
+      });
+
+      expect(result.current.visionResponse).toEqual({ id: 'v1', text: 'test' });
+    });
+
+    it('should clear visionResponse when set to null', () => {
+      const { result } = renderHook(() => usePersistentChat());
+
+      act(() => {
+        result.current.setVisionResponse({ id: 'v1', text: 'test' });
+      });
+
+      act(() => {
+        result.current.setVisionResponse(null);
+      });
+
+      expect(result.current.visionResponse).toBeNull();
+    });
+  });
+
+  describe('chat API surface', () => {
+    it('should expose sendMessage method', () => {
+      const { result } = renderHook(() => usePersistentChat());
+
+      expect(result.current.sendMessage).toBeDefined();
+    });
+
+    it('should expose regenerate method', () => {
+      const { result } = renderHook(() => usePersistentChat());
+
+      expect(result.current.regenerate).toBeDefined();
+    });
+
+    it('should expose clearHistory method', () => {
+      const { result } = renderHook(() => usePersistentChat());
+
+      expect(typeof result.current.clearHistory).toBe('function');
     });
   });
 });
