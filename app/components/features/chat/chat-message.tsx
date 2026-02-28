@@ -30,9 +30,23 @@ import {
   ToolErrorCard,
   DataResultCard,
   OrderApprovalCard,
-  ChecklistResultCard,
-  SummaryResultCard,
 } from './tool-result-cards';
+import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
+
+const ChecklistResultCard = dynamic(
+  () => import('./cards/checklist-result-card'),
+  {
+    loading: () => <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin inline-block mr-2" /> Cargando componente...</div>,
+  }
+);
+
+const SummaryResultCard = dynamic(
+  () => import('./cards/summary-result-card'),
+  {
+    loading: () => <div className="p-4 text-center text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin inline-block mr-2" /> Cargando componente...</div>,
+  }
+);
 import type { ChatMessageProps } from './types';
 
 // ===========================================
