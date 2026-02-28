@@ -1,0 +1,112 @@
+<mxfile host="Electron" type="device">
+  <diagram id="Nivel2" name="Nivel 2 (Ejecutar Herramientas)">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Interfaces Externas / Entidades -->
+        <mxCell id="FI_IN" value="&lt;i&gt;Flujo de Entrada:&lt;/i&gt;&lt;br&gt;&lt;b&gt;Solicitud de Operación&lt;/b&gt;" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="120" y="40" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="E2_EXT" value="E2&lt;br&gt;SISTEMA BACKEND&lt;br&gt;GIMA" style="shape=rect;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="680" y="40" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FI_OUT" value="&lt;i&gt;Flujo de Salida:&lt;/i&gt;&lt;br&gt;&lt;b&gt;Resultado de Operación&lt;/b&gt;" style="shape=ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="460" y="480" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Procesos del Nivel 2 -->
+        <mxCell id="P41" value="&lt;b&gt;4.1&lt;/b&gt;&lt;hr style=&quot;border-color: #000; margin-top: 5px; margin-bottom: 5px;&quot;&gt;CLASIFICAR&lt;br&gt;ACCIÓN Y&lt;br&gt;AUTORIZAR" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="120" y="200" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="P42" value="&lt;b&gt;4.2&lt;/b&gt;&lt;hr style=&quot;border-color: #000; margin-top: 5px; margin-bottom: 5px;&quot;&gt;VALIDAR&lt;br&gt;REGLAS DE&lt;br&gt;NEGOCIO" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="400" y="200" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="P43" value="&lt;b&gt;4.3&lt;/b&gt;&lt;hr style=&quot;border-color: #000; margin-top: 5px; margin-bottom: 5px;&quot;&gt;GENERAR&lt;br&gt;DOCUMENTOS DE&lt;br&gt;ACTIVIDAD" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="120" y="400" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="P44" value="&lt;b&gt;4.4&lt;/b&gt;&lt;hr style=&quot;border-color: #000; margin-top: 5px; margin-bottom: 5px;&quot;&gt;PROCESAR&lt;br&gt;TRANSACCIÓN&lt;br&gt;CENTRAL" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontStyle=1;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="680" y="200" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ======================= FLUJOS ======================= -->
+        
+        <!-- FI_IN a P4.1 -->
+        <mxCell id="F_FI_41" value="Detalle de Herramienta" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="FI_IN" target="P41">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- P4.1 a P4.2 -->
+        <mxCell id="F_41_42" value="Parámetros de Operación" style="endArrow=classic;html=1;exitX=1;exitY=0.3;entryX=0;entryY=0.3;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P41" target="P42">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- P4.1 a P4.3 -->
+        <mxCell id="F_41_43" value="Datos Crudos&lt;br&gt;de Actividad" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P41" target="P43">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- P4.1 a FI_OUT -->
+        <mxCell id="F_41_FO" value="Operación Denegada" style="endArrow=classic;html=1;exitX=1;exitY=0.8;entryX=0;entryY=0.2;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P41" target="FI_OUT">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="280" />
+              <mxPoint x="320" y="496" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- P4.2 a P4.4 -->
+        <mxCell id="F_42_44" value="Instrucción Verificada" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P42" target="P44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- P4.2 a FI_OUT -->
+        <mxCell id="F_42_FO" value="Error Lógico" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.2;entryY=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P42" target="FI_OUT">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="440" />
+              <mxPoint x="492" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- P4.3 a P4.4 -->
+        <mxCell id="F_43_44" value="Documento&lt;br&gt;Estandarizado" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0.2;entryY=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P43" target="P44">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="712" y="450" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- P4.4 y E2 -->
+        <mxCell id="F_44_E2" value="Solicitud de Transacción&lt;br&gt;o Consulta" style="endArrow=classic;html=1;exitX=0.4;exitY=0;entryX=0.4;entryY=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P44" target="E2_EXT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="F_E2_44" value="Datos de&lt;br&gt;Inventario y OT" style="endArrow=classic;html=1;exitX=0.6;exitY=1;entryX=0.6;entryY=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="E2_EXT" target="P44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- P4.4 a FI_OUT (Rodeando por la derecha para no cruzar nada) -->
+        <mxCell id="F_44_FO" value="Confirmación de Operación" style="endArrow=classic;html=1;exitX=1;exitY=0.8;entryX=0.5;entryY=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1;" edge="1" parent="1" source="P44" target="FI_OUT">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="900" y="280" />
+              <mxPoint x="900" y="580" />
+              <mxPoint x="540" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
