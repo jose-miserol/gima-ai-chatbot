@@ -119,7 +119,7 @@ export function ChatMessage({
   onCopy,
   onToolApproval,
 }: ChatMessageProps & {
-  onToolApproval?: (approvalId: string, approved: boolean) => void;
+  onToolApproval?: (approvalId: string, approved: boolean, input?: any) => void;
 }) {
   const parts = (message.parts as unknown[]) || [];
   const textContent = getTextContent(parts);
@@ -187,8 +187,8 @@ export function ChatMessage({
             <OrderApprovalCard
               key={key}
               input={part.input || {}}
-              onApprove={() => onToolApproval?.(part.approval?.id || '', true)}
-              onDeny={() => onToolApproval?.(part.approval?.id || '', false)}
+              onApprove={() => onToolApproval?.(part.approval?.id || '', true, part.input)}
+              onDeny={() => onToolApproval?.(part.approval?.id || '', false, part.input)}
             />
           );
         }

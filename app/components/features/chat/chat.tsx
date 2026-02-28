@@ -10,6 +10,7 @@ import { usePersistentChat } from '@/app/hooks/use-persistent-chat';
 import { useVoiceInput } from '@/app/hooks/use-voice-input';
 import { useWorkOrderCommands } from '@/app/hooks/use-work-order-commands';
 import type { VoiceWorkOrderCommand } from '@/app/types/voice-commands';
+import { getWorkOrderService } from '@/app/lib/services/work-order-service';
 
 import { ChatConversation } from './chat-conversation';
 import { ChatHeader } from './chat-header';
@@ -199,12 +200,56 @@ export function Chat() {
 
   // Tool approval handler (for crear_orden_trabajo)
   const handleToolApproval = useCallback(
-    (toolCallId: string, output: string) => {
-      addToolOutput({
-        tool: 'crear_orden_trabajo',
-        toolCallId,
-        output,
-      });
+    async (toolCallId: string, approved: boolean, input?: any) => {
+      if (!approved) {
+        addToolOutput({
+          tool: 'crear_orden_trabajo',
+          toolCallId,
+          output: { success: false, error: 'Rechazado por el usuario' },
+        });
+        return;
+      }
+
+      try {
+        const service = getWorkOrderService();
+        // Construimos el comando a partir del input pre-aprobado por el tool
+        const result = await service.create(
+          {
+            action: 'create_work_order',
+            type: 'work_order',
+            confidence: 1.0,
+            rawTranscript: 'Aprobación mediante UI',
+            equipment: input?.equipment || 'Desconocido',
+            description: input?.description || '',
+            priority: input?.priority || 'normal',
+            location: input?.location,
+          },
+          {
+            userId: '1', // Contexto hardcodeado como en el resto de la app, a futuro: sesión
+            correlationId: crypto.randomUUID()
+          }
+        );
+
+        addToolOutput({
+          tool: 'crear_orden_trabajo',
+          toolCallId,
+          output: {
+            success: true,
+            resourceId: result.resourceId,
+            resourceUrl: result.resourceUrl,
+            message: result.message
+          },
+        });
+        toast.success('Orden Creada', result.message || 'Se ha creado la orden correctamente.');
+      } catch (error: any) {
+        console.error('Error al ejecutar la orden de trabajo:', error);
+        addToolOutput({
+          tool: 'crear_orden_trabajo',
+          toolCallId,
+          output: { success: false, error: error.message || 'Ocurrió un error en el servidor.' },
+        });
+        toast.error('Error', 'No se pudo crear la orden de trabajo.');
+      }
     },
     [addToolOutput]
   );
@@ -257,8 +302,8 @@ export function Chat() {
           onRegenerate={handleRegenerate}
           onCopyMessage={(text) => handleCopyMessage(text, toast)}
           onQuickAction={handleQuickAction}
-          onToolApproval={(approvalId: string, approved: boolean) =>
-            handleToolApproval(approvalId, approved ? 'Aprobado por el usuario' : 'Rechazado por el usuario')
+          onToolApproval={(approvalId: string, approved: boolean, input?: any) =>
+            handleToolApproval(approvalId, approved, input)
           }
         />
 
