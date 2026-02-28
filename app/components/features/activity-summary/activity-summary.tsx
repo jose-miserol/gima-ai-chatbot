@@ -26,7 +26,7 @@ import {
   type HistoryItem,
 } from '@/app/components/features/ai-tools/shared';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
-import { useToast } from '@/app/hooks/use-toast';
+import { useToast } from '@/app/components/ui/toast';
 
 /**
  * Form fields para generación de resumen
@@ -111,7 +111,7 @@ const formFields: FormField[] = [
  *
  */
 export function ActivitySummary() {
-  const { toast } = useToast();
+  const toast = useToast();
   const [summary, setSummary] = useState<ActivitySummary | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -153,19 +153,15 @@ export function ActivitySummary() {
         };
         setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
-        toast({
-          title: result.cached ? '✨ Resumen cargado del caché' : '✅ Resumen generado',
-          description: `${result.summary.metadata?.wordCount || 0} palabras - ${result.summary.metadata?.readingTime || 1} min lectura`,
-        });
+        toast.success(
+          result.cached ? '✨ Resumen cargado del caché' : '✅ Resumen generado',
+          `${result.summary.metadata?.wordCount || 0} palabras - ${result.summary.metadata?.readingTime || 1} min lectura`
+        );
       } else {
         throw new Error(result.error || 'Error al generar resumen');
       }
     } catch (error) {
-      toast({
-        title: '❌ Error al generar',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
-      });
+      toast.error('❌ Error al generar', error instanceof Error ? error.message : 'Error desconocido');
     } finally {
       setIsGenerating(false);
     }
@@ -175,19 +171,13 @@ export function ActivitySummary() {
     if (!summary) return;
 
     // TODO: Guardar resumen en DB / exportar
-    toast({
-      title: '✅ Resumen guardado',
-      description: 'El resumen ha sido guardado exitosamente',
-    });
+    toast.success('✅ Resumen guardado', 'El resumen ha sido guardado exitosamente');
     setSummary(null);
   };
 
   const handleReject = () => {
     setSummary(null);
-    toast({
-      title: 'Resumen descartado',
-      description: 'Puedes generar uno nuevo',
-    });
+    toast.success('Resumen descartado', 'Puedes generar uno nuevo');
   };
 
   const handleRegenerate = async () => {
@@ -203,27 +193,18 @@ export function ActivitySummary() {
   };
 
   const handleHistoryItemClick = (item: HistoryItem) => {
-    toast({
-      title: 'Cargando resumen',
-      description: `Cargando "${item.title}" del historial`,
-    });
+    toast.success('Cargando resumen', `Cargando "${item.title}" del historial`);
   };
 
   const handleHistoryItemDelete = (item: HistoryItem) => {
     setHistory((prev) => prev.filter((h) => h.id !== item.id));
-    toast({
-      title: 'Item eliminado',
-      description: 'El resumen ha sido eliminado del historial',
-    });
+    toast.success('Item eliminado', 'El resumen ha sido eliminado del historial');
   };
 
   const handleBulkDelete = (items: HistoryItem[]) => {
     const idsToDelete = new Set(items.map((i) => i.id));
     setHistory((prev) => prev.filter((h) => !idsToDelete.has(h.id)));
-    toast({
-      title: 'Items eliminados',
-      description: `${items.length} resúmenes eliminados del historial`,
-    });
+    toast.success('Items eliminados', `${items.length} resúmenes eliminados del historial`);
   };
 
   return (

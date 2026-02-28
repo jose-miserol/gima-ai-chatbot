@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/app/components/ui/dialog';
-import { useToast } from '@/app/hooks/use-toast';
+import { useToast } from '@/app/components/ui/toast';
 import { WorkOrderCloseoutAIService } from '@/app/lib/services/work-order-closeout-ai-service';
 
 const closeoutService = new WorkOrderCloseoutAIService();
@@ -60,42 +60,19 @@ const formFields: FormField[] = [
 ];
 
 export interface CloseoutNotesModalProps {
-  /**
-   * Si el modal está abierto
-   */
   open: boolean;
-
-  /**
-   * Callback para cerrar el modal
-   */
   onOpenChange: (open: boolean) => void;
-
-  /**
-   * Datos del work order
-   */
   workOrderData: WorkOrderSummary;
-
-  /**
-   * Callback cuando las notas se aceptan
-   */
   onNotesAccepted?: (notes: CloseoutNotes) => void;
 }
 
-/**
- * Modal para generar notas de cierre con IA
- * @param root0
- * @param root0.open
- * @param root0.onOpenChange
- * @param root0.workOrderData
- * @param root0.onNotesAccepted
- */
 export function CloseoutNotesModal({
   open,
   onOpenChange,
   workOrderData,
   onNotesAccepted,
 }: CloseoutNotesModalProps) {
-  const { toast } = useToast();
+  const toast = useToast();
   const [notes, setNotes] = useState<CloseoutNotes | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -115,20 +92,15 @@ export function CloseoutNotesModal({
 
       if (result.success && result.notes) {
         setNotes(result.notes);
-
-        toast({
-          title: result.cached ? '✨ Notas cargadas del caché' : '✅ Notas generadas',
-          description: `${result.notes.metadata?.wordCount || 0} palabras generadas`,
-        });
+        toast.success(
+          result.cached ? '✨ Notas cargadas del caché' : '✅ Notas generadas',
+          `${result.notes.metadata?.wordCount || 0} palabras generadas`
+        );
       } else {
         throw new Error(result.error || 'Error al generar notas');
       }
     } catch (error) {
-      toast({
-        title: '❌ Error al generar',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
-      });
+      toast.error('❌ Error al generar', error instanceof Error ? error.message : 'Error desconocido');
     } finally {
       setIsGenerating(false);
     }
@@ -136,22 +108,15 @@ export function CloseoutNotesModal({
 
   const handleAccept = () => {
     if (!notes) return;
-
     onNotesAccepted?.(notes);
-    toast({
-      title: '✅ Notas guardadas',
-      description: 'Las notas de cierre han sido agregadas al Work Order',
-    });
+    toast.success('✅ Notas guardadas', 'Las notas de cierre han sido agregadas al Work Order');
     setNotes(null);
     onOpenChange(false);
   };
 
   const handleReject = () => {
     setNotes(null);
-    toast({
-      title: 'Notas descartadas',
-      description: 'Puedes generar unas nuevas',
-    });
+    toast.info('Notas descartadas', 'Puedes generar unas nuevas');
   };
 
   const handleRegenerate = async () => {
@@ -179,7 +144,6 @@ export function CloseoutNotesModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           {/* Left Column - Form */}
           <div className="space-y-4">
-            {/* Work Order Info */}
             <div className="bg-muted rounded-lg p-4 text-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tipo:</span>
@@ -199,7 +163,6 @@ export function CloseoutNotesModal({
               </div>
             </div>
 
-            {/* Generation Form */}
             <AIGenerationForm
               title="Configurar Notas"
               fields={formFields}
@@ -220,21 +183,18 @@ export function CloseoutNotesModal({
                       <h4 className="text-sm font-semibold mb-2">Resumen</h4>
                       <p className="text-sm text-muted-foreground">{notes.summary}</p>
                     </div>
-
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Trabajo Realizado</h4>
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {notes.workPerformed}
                       </p>
                     </div>
-
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Hallazgos</h4>
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {notes.findings}
                       </p>
                     </div>
-
                     {notes.recommendations && (
                       <div>
                         <h4 className="text-sm font-semibold mb-2">Recomendaciones</h4>
@@ -243,17 +203,14 @@ export function CloseoutNotesModal({
                         </p>
                       </div>
                     )}
-
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Materiales</h4>
                       <p className="text-sm text-muted-foreground">{notes.materialsUsed}</p>
                     </div>
-
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Tiempo</h4>
                       <p className="text-sm text-muted-foreground">{notes.timeBreakdown}</p>
                     </div>
-
                     {notes.nextActions && (
                       <div>
                         <h4 className="text-sm font-semibold mb-2">Próximas Acciones</h4>

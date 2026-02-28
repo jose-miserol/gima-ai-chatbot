@@ -16,7 +16,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 
-import { useToast } from '@/app/hooks/use-toast';
+import { useToast } from '@/app/components/ui/toast';
 import { validateFile, bytesToMB } from '@/app/lib/validation/file-validation';
 
 interface UseFileUploadOptions {
@@ -40,7 +40,7 @@ export function useFileUpload({
   acceptedTypes,
   onFileSelect,
 }: UseFileUploadOptions): UseFileUploadReturn {
-  const { toast } = useToast();
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -52,11 +52,7 @@ export function useFileUpload({
       const validation = validateFile(file, { acceptedTypes, maxSizeMB });
 
       if (!validation.valid) {
-        toast({
-          title: '❌ Error de validación',
-          description: validation.error,
-          variant: 'destructive',
-        });
+        toast.error('❌ Error de validación', validation.error);
         return;
       }
 
@@ -69,10 +65,7 @@ export function useFileUpload({
       };
       reader.readAsDataURL(file);
 
-      toast({
-        title: '✅ Archivo cargado',
-        description: `${file.name} (${bytesToMB(file.size)}MB)`,
-      });
+      toast.success('✅ Archivo cargado', `${file.name} (${bytesToMB(file.size)}MB)`);
 
       onFileSelect?.(file);
     },

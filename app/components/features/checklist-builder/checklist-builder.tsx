@@ -24,7 +24,7 @@ import type {
   ChecklistGenerationRequest,
 } from '@/app/components/features/checklist-builder/types';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
-import { useToast } from '@/app/hooks/use-toast';
+import { useToast } from '@/app/components/ui/toast';
 
 /**
  * Form fields para generación de checklist
@@ -78,7 +78,7 @@ const formFields: FormField[] = [
  *
  */
 export function ChecklistBuilder() {
-  const { toast } = useToast();
+  const toast = useToast();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -112,19 +112,15 @@ export function ChecklistBuilder() {
         };
         setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
-        toast({
-          title: result.cached ? '✨ Checklist cargado del caché' : '✅ Checklist generado',
-          description: `${result.checklist.items.length} items creados`,
-        });
+        toast.success(
+          result.cached ? 'Checklist cargado del caché' : '✅ Checklist generado',
+          `${result.checklist.items.length} items creados`
+        );
       } else {
         throw new Error(result.error || 'Error al generar checklist');
       }
     } catch (error) {
-      toast({
-        title: '❌ Error al generar',
-        description: error instanceof Error ? error.message : 'Error desconocido',
-        variant: 'destructive',
-      });
+      toast.error('❌ Error al generar', error instanceof Error ? error.message : 'Error desconocido');
     } finally {
       setIsGenerating(false);
     }
@@ -134,19 +130,13 @@ export function ChecklistBuilder() {
     if (!checklist) return;
 
     // TODO: Guardar checklist en DB
-    toast({
-      title: '✅ Checklist guardado',
-      description: 'El checklist ha sido guardado exitosamente',
-    });
+    toast.success('Checklist guardado', 'El checklist ha sido guardado exitosamente');
     setChecklist(null);
   };
 
   const handleReject = () => {
     setChecklist(null);
-    toast({
-      title: 'Checklist descartado',
-      description: 'Puedes generar uno nuevo',
-    });
+    toast.success('Checklist descartado', 'Puedes generar uno nuevo');
   };
 
   const handleRegenerate = async () => {
@@ -161,27 +151,18 @@ export function ChecklistBuilder() {
 
   const handleHistoryItemClick = (item: HistoryItem) => {
     // Cargar checklist del historial
-    toast({
-      title: 'Cargando checklist',
-      description: `Cargando "${item.title}" del historial`,
-    });
+    toast.success('Cargando checklist', `Cargando "${item.title}" del historial`);
   };
 
   const handleHistoryItemDelete = (item: HistoryItem) => {
     setHistory((prev) => prev.filter((h) => h.id !== item.id));
-    toast({
-      title: 'Item eliminado',
-      description: 'El checklist ha sido eliminado del historial',
-    });
+    toast.success('Item eliminado', 'El checklist ha sido eliminado del historial');
   };
 
   const handleBulkDelete = (items: HistoryItem[]) => {
     const idsToDelete = new Set(items.map((i) => i.id));
     setHistory((prev) => prev.filter((h) => !idsToDelete.has(h.id)));
-    toast({
-      title: 'Items eliminados',
-      description: `${items.length} checklists eliminados del historial`,
-    });
+    toast.success('Items eliminados', `${items.length} checklists eliminados del historial`);
   };
 
   return (

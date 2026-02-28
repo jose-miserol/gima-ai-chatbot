@@ -27,13 +27,13 @@ import { Label } from '@/app/components/ui/label';
 import { Separator } from '@/app/components/ui/separator';
 import { Textarea } from '@/app/components/ui/textarea';
 import { useFileUpload } from '@/app/hooks/use-file-upload';
-import { useToast } from '@/app/hooks/use-toast';
+import { useToast } from '@/app/components/ui/toast';
 
 const MAX_SIZE_MB = 20;
 const ACCEPTED_TYPE = 'application/pdf';
 
 export function PdfUploadTestClient() {
-    const { toast } = useToast();
+    const toast = useToast();
     const [customPrompt, setCustomPrompt] = useState<string>('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [result, setResult] = useState<string>('');
@@ -69,26 +69,15 @@ export function PdfUploadTestClient() {
 
             if (response.success) {
                 setResult(response.text);
-                toast({
-                    title: '✅ Análisis completado',
-                    description: 'El PDF fue analizado exitosamente',
-                });
+                toast.success('✅ Análisis completado', 'El PDF fue analizado exitosamente');
             } else {
                 setError(response.error || 'Error desconocido');
-                toast({
-                    title: '❌ Error en análisis',
-                    description: response.error,
-                    variant: 'destructive',
-                });
+                toast.error('❌ Error en análisis', response.error);
             }
         } catch (err) {
             const errorMsg = err instanceof Error ? err.message : 'Error desconocido';
             setError(errorMsg);
-            toast({
-                title: '❌ Error',
-                description: errorMsg,
-                variant: 'destructive',
-            });
+            toast.error('❌ Error', errorMsg);
         } finally {
             setIsAnalyzing(false);
         }
