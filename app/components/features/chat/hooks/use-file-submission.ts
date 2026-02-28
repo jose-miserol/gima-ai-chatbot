@@ -138,7 +138,7 @@ export function useFileSubmission({
           ]);
 
           // Call specific server action based on type
-          let result;
+          let result: any;
           const formData = new FormData();
           const fileName =
             'name' in targetFile && typeof targetFile.name === 'string'
@@ -155,7 +155,7 @@ export function useFileSubmission({
             result = await analyzePartImage(formData);
           }
 
-          if (result.success && result.text) {
+          if (isPdf && result.success && result.text) {
             const analysisId = `analysis-${Date.now()}`;
 
             // Add analysis result to chat
@@ -166,6 +166,37 @@ export function useFileSubmission({
                 role: 'assistant',
                 content: result.text,
                 parts: [{ type: 'text', text: result.text }] as unknown as MessagePart[],
+                createdAt: new Date(),
+              } as UIMessage,
+            ]);
+
+            toast.success(`${fileTypeLabel} analizado`, 'El análisis se ha agregado al chat');
+          } else if (!isPdf && result.success && result.result) {
+            const visionId = `analysis-${Date.now()}`;
+            const analysisObj = result.result;
+            const formattedText = `📷 **Análisis Visual (IA)**
+          
+**Tipo:** ${analysisObj.tipo_articulo}
+**Estado:** ${analysisObj.estado_fisico.replace('_', ' ')}
+**Confianza:** ${analysisObj.nivel_confianza}
+
+${analysisObj.descripcion}
+
+- **Cant. detectada:** ${analysisObj.cantidad_detectada}
+- **Marca:** ${analysisObj.marca || 'N/A'}
+- **Modelo:** ${analysisObj.modelo || 'N/A'}
+
+💡 **Recomendación:** ${analysisObj.recomendacion}
+---
+*Generado automáticamente a partir de la imagen.*`;
+
+            setMessages((prev: UIMessage[]) => [
+              ...prev,
+              {
+                id: visionId,
+                role: 'assistant',
+                content: formattedText,
+                parts: [{ type: 'text', text: formattedText }] as unknown as MessagePart[],
                 createdAt: new Date(),
               } as UIMessage,
             ]);

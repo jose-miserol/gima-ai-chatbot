@@ -86,16 +86,23 @@ export function useImageAnalysis({ setMessages, toast }: UseImageAnalysisParams)
         // Call Gemini Vision API via server action
         const result = await analyzePartImage(formData);
 
-        if (result.success && result.text) {
+        if (result.success && result.result) {
           const visionId = `vision-${Date.now()}`;
-          const analysisText = `📷 **Análisis de Imagen Subida por el Usuario**
+          const formattedText = `📷 **Análisis Visual (IA)**
+          
+**Tipo:** ${result.result.tipo_articulo}
+**Estado:** ${result.result.estado_fisico.replace('_', ' ')}
+**Confianza:** ${result.result.nivel_confianza}
 
-He analizado la imagen que el usuario acaba de subir. Este es el resultado del análisis visual:
+${result.result.descripcion}
 
-${result.text}
+- **Cant. detectada:** ${result.result.cantidad_detectada}
+- **Marca:** ${result.result.marca || 'N/A'}
+- **Modelo:** ${result.result.modelo || 'N/A'}
 
+💡 **Recomendación:** ${result.result.recomendacion}
 ---
-*Este análisis fue generado automáticamente a partir de la imagen subida.*`;
+*Generado automáticamente a partir de la imagen.*`;
 
           // Add analysis as assistant message
           setMessages((prev) => [
@@ -103,7 +110,7 @@ ${result.text}
             {
               id: visionId,
               role: 'assistant',
-              content: analysisText,
+              content: formattedText,
               parts: [], // Array vacío - compatible con AI SDK
               createdAt: new Date(),
             },

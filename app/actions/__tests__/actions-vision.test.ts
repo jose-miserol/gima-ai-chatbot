@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { generateObject } from 'ai';
 import { MAX_IMAGE_SIZE_MB } from '@/app/config/limits';
-import { MockAiSdk } from '@/tests/mocks/ai-sdk';
 
 import { analyzePartImage } from '../vision';
 
 // Mock dependencies
 vi.mock('ai', () => ({
-  generateText: (args: any) => MockAiSdk.generateText(args),
+  generateObject: vi.fn(),
 }));
 
 vi.mock('@ai-sdk/google', () => ({
@@ -44,8 +44,17 @@ describe('Server Action: Vision (analyzePartImage)', () => {
     expect(result.error).toContain('Imagen demasiado grande');
   });
 
-  it('should call generateText with correct parameters on success', async () => {
-    MockAiSdk.generateText.mockResolvedValue({ text: 'Image Analysis Result' });
+  it('should call generateObject with correct parameters on success', async () => {
+    const mockRepuesto = {
+      tipo_articulo: 'equipo',
+      descripcion: 'Bomba de agua centrífuga genérica.',
+      cantidad_detectada: 1,
+      estado_fisico: 'usado',
+      recomendacion: 'Prueba de recomendación.',
+      nivel_confianza: 'alta',
+    };
+
+    (generateObject as any).mockResolvedValue({ object: mockRepuesto });
 
     const validBuffer = new ArrayBuffer(1024);
     const validFile = new File([validBuffer], 'test.jpg', { type: 'image/jpeg' });
@@ -54,9 +63,9 @@ describe('Server Action: Vision (analyzePartImage)', () => {
     const result = await analyzePartImage(formData);
 
     expect(result.success).toBe(true);
-    expect(result.text).toBe('Image Analysis Result');
+    expect(result.result).toEqual(mockRepuesto);
 
-    expect(MockAiSdk.generateText).toHaveBeenCalledWith(
+    expect(generateObject).toHaveBeenCalledWith(
       expect.objectContaining({
         messages: expect.arrayContaining([
           expect.objectContaining({
@@ -71,7 +80,7 @@ describe('Server Action: Vision (analyzePartImage)', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    MockAiSdk.generateText.mockRejectedValue(new Error('Google API Error'));
+    (generateObject as any).mockRejectedValue(new Error('Google API Error'));
 
     const validBuffer = new ArrayBuffer(1024);
     const validFile = new File([validBuffer], 'test.jpg', { type: 'image/jpeg' });

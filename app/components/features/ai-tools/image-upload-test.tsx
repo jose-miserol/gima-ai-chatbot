@@ -17,7 +17,7 @@
 import { ImageIcon, Upload, X, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
-import { analyzePartImage } from '@/app/actions';
+import { analyzePartImage, type PartAnalysisResult } from '@/app/actions/vision';
 import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
@@ -33,7 +33,7 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 export function ImageUploadTestClient() {
     const toast = useToast();
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [result, setResult] = useState<string>('');
+    const [result, setResult] = useState<PartAnalysisResult | null>(null);
     const [error, setError] = useState<string>('');
 
     const {
@@ -48,7 +48,7 @@ export function ImageUploadTestClient() {
         maxSizeMB: MAX_SIZE_MB,
         acceptedTypes: ACCEPTED_TYPES,
         onFileSelect: () => {
-            setResult('');
+            setResult(null);
             setError('');
         },
     });
@@ -57,7 +57,7 @@ export function ImageUploadTestClient() {
         if (!selectedFile || !preview) return;
 
         setIsAnalyzing(true);
-        setResult('');
+        setResult(null);
         setError('');
 
         try {
@@ -65,8 +65,8 @@ export function ImageUploadTestClient() {
             formData.append('file', selectedFile);
             const response = await analyzePartImage(formData);
 
-            if (response.success) {
-                setResult(response.text);
+            if (response.success && response.result) {
+                setResult(response.result);
                 toast.success('✅ Análisis completado', 'La imagen fue analizada exitosamente');
             } else {
                 setError(response.error || 'Error desconocido');
@@ -83,7 +83,7 @@ export function ImageUploadTestClient() {
 
     const reset = () => {
         handleReset();
-        setResult('');
+        setResult(null);
         setError('');
     };
 
@@ -227,9 +227,46 @@ export function ImageUploadTestClient() {
                     </CardHeader>
                     <CardContent>
                         {result ? (
-                            <div className="prose prose-sm max-w-none">
-                                <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap">
-                                    {result}
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="bg-muted p-3 rounded-lg">
+                                        <p className="font-semibold text-xs text-muted-foreground uppercase">TIPO</p>
+                                        <p className="capitalize">{result.tipo_articulo}</p>
+                                    </div>
+                                    <div className="bg-muted p-3 rounded-lg">
+                                        <p className="font-semibold text-xs text-muted-foreground uppercase">ESTADO FÍSICO</p>
+                                        <p className="capitalize">{result.estado_fisico.replace('_', ' ')}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-muted/50 p-4 rounded-lg">
+                                    <h4 className="font-medium text-sm mb-2">Descripción</h4>
+                                    <p className="text-sm text-muted-foreground">{result.descripcion}</p>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                    <div className="bg-muted/30 border p-3 rounded-lg">
+                                        <p className="font-semibold text-xs text-muted-foreground uppercase">MARCA</p>
+                                        <p>{result.marca || 'N/A'}</p>
+                                    </div>
+                                    <div className="bg-muted/30 border p-3 rounded-lg">
+                                        <p className="font-semibold text-xs text-muted-foreground uppercase">MODELO</p>
+                                        <p>{result.modelo || 'N/A'}</p>
+                                    </div>
+                                    <div className="bg-muted/30 border p-3 rounded-lg">
+                                        <p className="font-semibold text-xs text-muted-foreground uppercase">CANTIDAD</p>
+                                        <p>{result.cantidad_detectada}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
+                                    <h4 className="font-medium text-sm text-primary mb-1">Recomendación</h4>
+                                    <p className="text-sm">{result.recomendacion}</p>
+                                </div>
+
+                                <div className="text-xs text-right text-muted-foreground">
+                                    Confianza IA: <span className="font-medium capitalize">{result.nivel_confianza}</span>
                                 </div>
                             </div>
                         ) : error ? (
