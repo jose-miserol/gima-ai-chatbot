@@ -1,5 +1,7 @@
 'use server';
 
+export const maxDuration = 60; // Set timeout to 60 seconds (Vercel max for Pro is 300s, Hobby is 60s occasionally but normally 10s, but 60s config is standard to push limits)
+
 import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 
