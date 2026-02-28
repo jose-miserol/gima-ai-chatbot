@@ -79,7 +79,7 @@ export function Chat() {
     clearHistory,
     setMessages,
     addToolOutput,
-  } = usePersistentChat({ storageKey: 'gima-chat-v1', enablePersistence: true });
+  } = usePersistentChat({ storageKey: 'gima-chat-v1', enablePersistence: false });
 
   // Hook de ejecución de Work Orders
   const { executeCommand } = useWorkOrderCommands();
@@ -244,7 +244,7 @@ export function Chat() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <ChatHeader
-          hasMessages={messages.length > 0}
+          hasMessages={false} // Persistence disabled — hide clear history
           onClearHistory={() => setShowClearDialog(true)}
         />
 
