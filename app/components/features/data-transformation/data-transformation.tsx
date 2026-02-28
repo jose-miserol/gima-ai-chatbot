@@ -11,18 +11,16 @@
 
 'use client';
 
-import { Database, History } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { Database } from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
 
-import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
-import { Button } from '@/app/components/ui/button';
-import { DataHistoryView } from '@/app/components/features/data-transformation/data-history-view';
+import { AIToolLayout, AIHistoryList, type HistoryItem } from '@/app/components/features/ai-tools/shared';
 import { DataTransformationForm } from '@/app/components/features/data-transformation/data-transformation-form';
 import { DataTransformationPreview } from '@/app/components/features/data-transformation/data-transformation-preview';
 import { useDataSnapshots } from '@/app/components/features/data-transformation/hooks/use-data-snapshots';
 import { useDataTransformation } from '@/app/components/features/data-transformation/hooks/use-data-transformation';
 
-import type { DataSnapshot, TransformationRequest } from '@/app/components/features/data-transformation/types';
+import type { TransformationRequest } from '@/app/components/features/data-transformation/types';
 
 /**
  * Main Data Transformation Client Component
@@ -31,14 +29,13 @@ import type { DataSnapshot, TransformationRequest } from '@/app/components/featu
  */
 export function DataTransformation() {
     const [originalData, setOriginalData] = useState<string>('');
-    const [historyOpen, setHistoryOpen] = useState(false);
     const [restoredData, setRestoredData] = useState<string | undefined>(undefined);
 
     // Hooks
     const { status, result, processTransformation, applyTransformation, reset } =
         useDataTransformation();
 
-    const { snapshots, createSnapshot, deleteSnapshot, clearHistory } =
+    const { snapshots, createSnapshot, deleteSnapshot } =
         useDataSnapshots();
 
     const handleAnalyze = useCallback(
@@ -68,15 +65,30 @@ export function DataTransformation() {
         reset();
     }, [reset]);
 
-    const handleRestore = useCallback(
-        async (snapshot: DataSnapshot) => {
-            // Restaurar datos al form
-            setRestoredData(snapshot.originalData);
-            setHistoryOpen(false);
-            reset(); // Volver a idle para mostrar form con datos restaurados
-        },
-        [reset]
-    );
+    const historyItems: HistoryItem[] = useMemo(() => {
+        return snapshots.map((snap) => ({
+            id: snap.id,
+            title: snap.name || 'Transformación sin nombre',
+            createdAt: new Date(snap.timestamp),
+            preview: snap.originalData.length > 100 ? `${snap.originalData.substring(0, 100)}...` : snap.originalData,
+            fullData: snap
+        }));
+    }, [snapshots]);
+
+    const handleHistoryItemClick = useCallback((item: HistoryItem) => {
+        if (item.fullData) {
+            setRestoredData(item.fullData.originalData);
+            reset();
+        }
+    }, [reset]);
+
+    const handleHistoryItemDelete = useCallback((item: HistoryItem) => {
+        deleteSnapshot(item.id);
+    }, [deleteSnapshot]);
+
+    const handleBulkDelete = useCallback((items: HistoryItem[]) => {
+        items.forEach((item) => deleteSnapshot(item.id));
+    }, [deleteSnapshot]);
 
     return (
         <AIToolLayout
@@ -101,65 +113,56 @@ export function DataTransformation() {
                     </ul>
                 </div>
             }
-            actions={
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setHistoryOpen(true)}
-                    disabled={snapshots.length === 0}
-                    className="gap-2"
-                >
-                    <History className="h-4 w-4" />
-                    Historial ({snapshots.length})
-                </Button>
-            }
+
         >
-            {/* Left Column - Form/Preview */}
+            {/* Left Column - Form */}
             <div className="space-y-6">
-                {(status === 'idle' || status === 'analyzing' || status === 'error') && (
-                    <DataTransformationForm
-                        onSubmit={handleAnalyze}
-                        isProcessing={status === 'analyzing'}
-                        initialSourceData={restoredData}
-                    />
-                )}
+                <DataTransformationForm
+                    onSubmit={handleAnalyze}
+                    isProcessing={status === 'analyzing'}
+                    initialSourceData={restoredData}
+                />
+            </div>
 
-                {(status === 'previewing' || status === 'uploading' || status === 'completed') && result && (
-                    <DataTransformationPreview
-                        originalData={originalData}
-                        result={result}
-                        onApply={handleApply}
-                        onReject={handleReject}
-                        isApplying={status === 'uploading'}
+            {/* Right Column - Info/Tips OR Preview */}
+            <div className="space-y-6">
+                {(status === 'idle' || status === 'analyzing' || status === 'error') ? (
+                    <AIHistoryList
+                        title="Historial de Transformaciones"
+                        items={historyItems}
+                        onItemClick={handleHistoryItemClick}
+                        onItemDelete={handleHistoryItemDelete}
+                        onBulkDelete={handleBulkDelete}
+                        showSearch
+                        showFilters
+                        emptyState={
+                            <div className="bg-muted/50 rounded-lg p-6">
+                                <h3 className="font-semibold mb-2">Consejos</h3>
+                                <ul className="text-sm text-muted-foreground space-y-2">
+                                    <li>✅ Funciona con CSV, JSON, y texto plano</li>
+                                    <li>✅ Soporta transformaciones complejas</li>
+                                    <li>✅ Historial automático de cambios</li>
+                                    <li>✅ Vista previa antes de aplicar</li>
+                                </ul>
+                            </div>
+                        }
                     />
+                ) : (
+                    <>
+                        {(status === 'previewing' || status === 'uploading' || status === 'completed') && result && (
+                            <DataTransformationPreview
+                                originalData={originalData}
+                                result={result}
+                                onApply={handleApply}
+                                onReject={handleReject}
+                                isApplying={status === 'uploading'}
+                            />
+                        )}
+                    </>
                 )}
             </div>
 
-            {/* Right Column - Info/Tips */}
-            <div className="space-y-6">
-                {/* Placeholder for future enhancements */}
-                {status === 'idle' && (
-                    <div className="bg-muted/50 rounded-lg p-6">
-                        <h3 className="font-semibold mb-2">Consejos</h3>
-                        <ul className="text-sm text-muted-foreground space-y-2">
-                            <li>✅ Funciona con CSV, JSON, y texto plano</li>
-                            <li>✅ Soporta transformaciones complejas</li>
-                            <li>✅ Historial automático de cambios</li>
-                            <li>✅ Vista previa antes de aplicar</li>
-                        </ul>
-                    </div>
-                )}
-            </div>
 
-            {/* History Modal */}
-            <DataHistoryView
-                snapshots={snapshots}
-                onRestore={handleRestore}
-                onDelete={deleteSnapshot}
-                onClear={clearHistory}
-                isOpen={historyOpen}
-                onClose={() => setHistoryOpen(false)}
-            />
         </AIToolLayout>
     );
 }

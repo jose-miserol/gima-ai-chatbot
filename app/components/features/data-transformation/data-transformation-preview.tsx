@@ -62,9 +62,9 @@ export function DataTransformationPreview({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[500px]">
+      <div className="flex flex-col gap-4 h-[500px]">
         {/* Original */}
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col gap-2 flex-1 min-h-[200px]">
           <span className="text-xs font-medium text-muted-foreground uppercase">Original</span>
           <div className="border rounded-md bg-muted/50 flex-1 overflow-hidden">
             <ScrollArea className="h-full p-4 font-mono text-xs">
@@ -74,7 +74,7 @@ export function DataTransformationPreview({
         </div>
 
         {/* Result */}
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col gap-2 flex-1 min-h-[200px]">
           <span className="text-xs font-medium text-muted-foreground uppercase">Resultado</span>
           <div className="border rounded-md bg-background flex-1 overflow-hidden border-green-200 dark:border-green-900 ring-1 ring-green-100 dark:ring-green-900/20">
             <ScrollArea className="h-full p-4 font-mono text-xs">
@@ -84,15 +84,15 @@ export function DataTransformationPreview({
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t">
-        <div className="text-sm text-muted-foreground mr-auto">
+      <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t">
+        <div className="text-sm text-muted-foreground mr-auto w-full sm:w-auto mb-2 sm:mb-0">
           Duración: {result.stats.durationMs}ms
         </div>
-        <Button variant="outline" onClick={onReject} disabled={isApplying}>
+        <Button variant="outline" onClick={onReject} disabled={isApplying} className="flex-1 sm:flex-none">
           <X className="mr-2 h-4 w-4" />
           Descartar
         </Button>
-        <Button onClick={onApply} disabled={isApplying}>
+        <Button onClick={onApply} disabled={isApplying} className="flex-1 sm:flex-none">
           <Check className="mr-2 h-4 w-4" />
           {isApplying ? 'Aplicando...' : 'Aplicar Transformación'}
         </Button>

@@ -34,6 +34,7 @@ export function DataTransformationForm({
 }: DataTransformationFormProps) {
   return (
     <AIGenerationForm
+      key={initialSourceData || 'new'}
       title="Transformación de Datos"
       description="Ingresa tus datos y describe cómo quieres transformarlos. Usaré IA para procesar tu solicitud."
       submitLabel="Analizar y Previsualizar"
