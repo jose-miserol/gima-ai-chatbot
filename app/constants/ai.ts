@@ -226,7 +226,7 @@ export type AssetType = (typeof ASSET_TYPES)[number];
 /**
  * Tipos de tareas de mantenimiento
  */
-export const TASK_TYPES = ['preventivo', 'correctivo', 'predictivo', 'inspeccion'] as const;
+export const TASK_TYPES = ['preventivo', 'correctivo', 'predictivo'] as const;
 
 export type TaskType = (typeof TASK_TYPES)[number];
 

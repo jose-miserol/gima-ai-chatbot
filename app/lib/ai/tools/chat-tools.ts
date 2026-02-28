@@ -112,7 +112,7 @@ export const chatTools = {
       'Busca activos/equipos registrados en GIMA. Usa esta herramienta cuando el usuario pregunte por equipos, activos, UMAs, bombas, tableros, su estado o ubicación. Devuelve datos paginados — si necesitas más resultados, pide la siguiente página.',
     inputSchema: z.object({
       estado: z
-        .enum(['activo', 'inactivo', 'en_mantenimiento'])
+        .enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
         .optional()
         .describe('Filtrar por estado del activo'),
       buscar: z.string().optional().describe('Texto de búsqueda por nombre, código o tipo'),
@@ -165,7 +165,7 @@ export const chatTools = {
         .optional()
         .describe('Filtrar por tipo de mantenimiento'),
       sede_id: z.string().optional().describe('ID de la sede/dirección para filtrar'),
-      prioridad: z.string().optional().describe('Filtrar por prioridad'),
+      prioridad: z.enum(['baja', 'media', 'alta']).optional().describe('Filtrar por prioridad'),
       page: z.number().optional().default(1).describe('Número de página'),
     }),
     execute: async (params) => {
@@ -204,8 +204,14 @@ export const chatTools = {
     description:
       'Consulta reportes de mantenimiento. Usa cuando pregunten por reportes, fallos reportados, incidencias o problemas registrados.',
     inputSchema: z.object({
-      prioridad: z.string().optional().describe('Filtrar por nivel de prioridad'),
-      estado: z.string().optional().describe('Filtrar por estado del reporte'),
+      prioridad: z
+        .enum(['baja', 'media', 'alta'])
+        .optional()
+        .describe('Filtrar por nivel de prioridad'),
+      estado: z
+        .enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
+        .optional()
+        .describe('Filtrar por estado del reporte'),
       page: z.number().optional().default(1).describe('Número de página'),
     }),
     execute: async (params) => {
@@ -395,8 +401,8 @@ export const chatTools = {
       equipment: z.string().describe('Nombre o identificador del equipo'),
       description: z.string().describe('Descripción del problema o tarea a realizar'),
       priority: z
-        .enum(['urgent', 'high', 'normal', 'low'])
-        .default('normal')
+        .enum(['baja', 'media', 'alta'])
+        .default('media')
         .describe('Prioridad de la orden'),
       location: z.string().optional().describe('Ubicación del equipo'),
     }),
