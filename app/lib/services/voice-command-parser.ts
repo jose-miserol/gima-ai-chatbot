@@ -1,7 +1,7 @@
 import { google } from '@ai-sdk/google';
 import { generateText, type LanguageModel } from 'ai';
 
-import { MASTER_VOICE_PROMPT } from '@/app/config/voice-master-prompt';
+import { MASTER_VOICE_PROMPT } from '@/app/config/prompts/voice-master-prompt';
 import { BaseAIService } from '@/app/lib/ai/base-ai-service';
 import {
   VoiceCommandSchema,

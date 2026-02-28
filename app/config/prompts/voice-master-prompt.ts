@@ -5,7 +5,7 @@
  * en múltiples dominios: Work Orders, Navigation, System.
  */
 
-import { formatGlossary } from './server';
+import { formatGlossary } from '../server';
 
 /**
  * MASTER_VOICE_PROMPT - Prompt del sistema para parser polimórfico

@@ -34,6 +34,12 @@ const envSchema = z.object({
     .string()
     .default('false')
     .transform((val) => val === 'true'),
+
+  // Persistence
+  NEXT_PUBLIC_ENABLE_CHAT_PERSISTENCE: z
+    .string()
+    .default('false')
+    .transform((val) => val === 'true'),
 });
 
 /**

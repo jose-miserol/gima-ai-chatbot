@@ -29,6 +29,8 @@ interface ChatHeaderProps {
  * />
  * ```
  */
+import { env } from '@/app/config';
+
 export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
   return (
     <div className="mb-4 text-center relative">
@@ -48,7 +50,7 @@ export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
       <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
         <ChatHelp />
         <ThemeToggle />
-        {hasMessages && (
+        {env.NEXT_PUBLIC_ENABLE_CHAT_PERSISTENCE && hasMessages && (
           <button
             onClick={onClearHistory}
             title="Borrar historial"
