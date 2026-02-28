@@ -258,9 +258,11 @@ export function ChatMessage({
       {/* Acciones del asistente */}
       {message.role === 'assistant' && textContent && (
         <MessageActions>
-          <MessageAction onClick={onRegenerate} label="Reintentar">
-            <RefreshCcwIcon className="size-3" />
-          </MessageAction>
+          {!textContent.includes('Análisis Visual (IA)') && !textContent.includes('**Análisis de Documento**') && (
+            <MessageAction onClick={onRegenerate} label="Reintentar">
+              <RefreshCcwIcon className="size-3" />
+            </MessageAction>
+          )}
           <MessageAction onClick={() => onCopy(textContent)} label="Copiar">
             <CopyIcon className="size-3" />
           </MessageAction>
