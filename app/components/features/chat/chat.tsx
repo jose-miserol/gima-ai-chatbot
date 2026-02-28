@@ -244,7 +244,7 @@ export function Chat() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <ChatHeader
-          hasMessages={false} // Persistence disabled — hide clear history
+          hasMessages={messages.length > 0}
           onClearHistory={() => setShowClearDialog(true)}
         />
 
