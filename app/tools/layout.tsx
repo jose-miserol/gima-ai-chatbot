@@ -5,13 +5,11 @@
  * These pages are development/testing utilities only.
  */
 
-import { notFound } from 'next/navigation';
-
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
     // Block access in production
-    if (process.env.NODE_ENV === 'production') {
-        // notFound();
-    }
+    // if (process.env.NODE_ENV === 'production') {
+    // notFound();
+    // }
 
     return <>{children}</>;
 }
