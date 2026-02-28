@@ -17,7 +17,8 @@
 import { ImageIcon, Upload, X, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
-import { analyzePartImage, type PartAnalysisResult } from '@/app/actions/vision';
+import { analyzePartImage } from '@/app/actions/vision';
+import type { PartAnalysisResult } from '@/app/lib/schemas/vision.schema';
 import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/app/components/ui/card';
