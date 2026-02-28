@@ -45,7 +45,9 @@ export interface HistoryItem {
   /** Si está marcado como favorito */
   isFavorite?: boolean;
   /** Metadata adicional */
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, any>;
+  /** Contenido completo original para restaurarlo al hacer clic */
+  fullData?: any;
 }
 
 /**

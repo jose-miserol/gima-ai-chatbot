@@ -80,6 +80,7 @@ const formFields: FormField[] = [
 export function ChecklistBuilder() {
   const toast = useToast();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
+  const [currentRequest, setCurrentRequest] = useState<ChecklistGenerationRequest | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [_usageCount, setUsageCount] = useState(0);
@@ -100,6 +101,7 @@ export function ChecklistBuilder() {
 
       if (result.success && result.checklist) {
         setChecklist(result.checklist);
+        setCurrentRequest(request);
         setUsageCount((prev) => prev + 1);
 
         // Agregar al historial
@@ -108,7 +110,11 @@ export function ChecklistBuilder() {
           title: result.checklist.title,
           createdAt: result.checklist.createdAt,
           preview: `${result.checklist.items.length} items - ${request.assetType}`,
-          metadata: result.checklist.metadata,
+          metadata: {
+            ...(result.checklist.metadata || {}),
+            originalRequest: request,
+          },
+          fullData: result.checklist,
         };
         setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
@@ -141,17 +147,21 @@ export function ChecklistBuilder() {
 
   const handleRegenerate = async () => {
     // Regenerar con los mismos parámetros
-    if (checklist) {
-      await handleGenerate({
-        assetType: checklist.assetType,
-        taskType: checklist.taskType,
-      });
+    if (currentRequest) {
+      await handleGenerate(currentRequest as unknown as Record<string, unknown>);
+    } else {
+      toast.error('Error', 'No se puede regenerar: faltan los datos originales del prompt');
     }
   };
 
   const handleHistoryItemClick = (item: HistoryItem) => {
-    // Cargar checklist del historial
-    toast.success('Cargando checklist', `Cargando "${item.title}" del historial`);
+    if (item.fullData) {
+      setChecklist(item.fullData as Checklist);
+      setCurrentRequest(item.metadata?.originalRequest || null);
+      toast.success('Checklist cargado', `Visualizando "${item.title}"`);
+    } else {
+      toast.error('Error al cargar', 'No se encontraron los datos completos del checklist');
+    }
   };
 
   const handleHistoryItemDelete = (item: HistoryItem) => {

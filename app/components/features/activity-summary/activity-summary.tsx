@@ -113,6 +113,7 @@ const formFields: FormField[] = [
 export function ActivitySummary() {
   const toast = useToast();
   const [summary, setSummary] = useState<ActivitySummary | null>(null);
+  const [currentRequest, setCurrentRequest] = useState<ActivitySummaryRequest | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
@@ -137,6 +138,7 @@ export function ActivitySummary() {
 
       if (result.success && result.summary) {
         setSummary(result.summary);
+        setCurrentRequest(request);
 
 
         // Agregar al historial
@@ -149,7 +151,9 @@ export function ActivitySummary() {
             style: result.summary.style,
             detailLevel: result.summary.detailLevel,
             wordCount: result.summary.metadata?.wordCount,
+            originalRequest: request,
           },
+          fullData: result.summary,
         };
         setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
@@ -181,19 +185,21 @@ export function ActivitySummary() {
   };
 
   const handleRegenerate = async () => {
-    if (summary) {
-      await handleGenerate({
-        assetType: summary.assetType,
-        taskType: summary.taskType,
-        activities: '', // No guardamos las actividades originales
-        style: summary.style,
-        detailLevel: summary.detailLevel,
-      });
+    if (currentRequest) {
+      await handleGenerate(currentRequest as unknown as Record<string, unknown>);
+    } else {
+      toast.error('Error', 'No se puede regenerar: faltan los datos originales del prompt');
     }
   };
 
   const handleHistoryItemClick = (item: HistoryItem) => {
-    toast.success('Cargando resumen', `Cargando "${item.title}" del historial`);
+    if (item.fullData) {
+      setSummary(item.fullData as ActivitySummary);
+      setCurrentRequest(item.metadata?.originalRequest || null);
+      toast.success('Resumen cargado', `Visualizando "${item.title}"`);
+    } else {
+      toast.error('Error al cargar', 'No se encontraron los datos completos del resumen');
+    }
   };
 
   const handleHistoryItemDelete = (item: HistoryItem) => {
