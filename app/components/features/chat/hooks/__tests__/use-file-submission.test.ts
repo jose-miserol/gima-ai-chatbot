@@ -28,7 +28,7 @@ class MockFileReader {
   }
   result = 'data:application/pdf;base64,mockbase64data';
 }
- 
+
 global.FileReader = MockFileReader as any;
 
 describe('useFileSubmission', () => {
@@ -47,9 +47,9 @@ describe('useFileSubmission', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-     
+
     (useToast as any).mockReturnValue(mockToast);
-     
+
     (global.fetch as any).mockResolvedValue({
       blob: () => Promise.resolve({ size: 1024, type: 'application/pdf' }),
     });
@@ -66,7 +66,6 @@ describe('useFileSubmission', () => {
   });
 
   it('should handle PDF submission correctly', async () => {
-     
     (actions.analyzePdf as any).mockResolvedValue({
       success: true,
       text: 'PDF analyzed',
@@ -82,7 +81,6 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/123',
           mediaType: 'application/pdf',
           type: 'text', // AI SDK type
-           
         } as any,
       ],
     };
@@ -91,17 +89,14 @@ describe('useFileSubmission', () => {
       await result.current.handleSubmit(message);
     });
 
-    expect(actions.analyzePdf).toHaveBeenCalledWith(
-      expect.stringContaining('base64'),
-      '' // prompt text
-    );
+    expect(actions.analyzePdf).toHaveBeenCalledWith(expect.any(FormData));
     expect(mockSetMessages).toHaveBeenCalledTimes(2); // User message + Assistant message
     expect(mockToast.success).toHaveBeenCalledWith('PDF analizado', expect.any(String));
   });
 
   it('should validate PDF size limit', async () => {
     // Mock large file
-     
+
     (global.fetch as any).mockResolvedValue({
       blob: () => Promise.resolve({ size: MAX_PDF_SIZE_BYTES + 1, type: 'application/pdf' }),
     });
@@ -116,7 +111,6 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/large',
           mediaType: 'application/pdf',
           type: 'text',
-           
         } as any,
       ],
     };
@@ -133,7 +127,6 @@ describe('useFileSubmission', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-     
     (actions.analyzePdf as any).mockResolvedValue({
       success: false,
       error: 'API Error',
@@ -149,7 +142,6 @@ describe('useFileSubmission', () => {
           url: 'blob:http://localhost/error',
           mediaType: 'application/pdf',
           type: 'text',
-           
         } as any,
       ],
     };

@@ -19,18 +19,27 @@ describe('Server Action: Files (analyzePdf)', () => {
     vi.clearAllMocks();
   });
 
-  const validBase64 = 'data:application/pdf;base64,validPdfBase64';
+  const createFormData = (file: File | null, prompt?: string) => {
+    const formData = new FormData();
+    if (file) formData.append('file', file);
+    if (prompt) formData.append('prompt', prompt);
+    return formData;
+  };
 
   it('should throw error if PDF input is empty', async () => {
-    const result = await analyzePdf('');
+    const formData = createFormData(null);
+    const result = await analyzePdf(formData);
     expect(result.success).toBe(false);
     expect(result.error).toBe('PDF vacío');
   });
 
   it('should fail if PDF size exceeds MAX_PDF_SIZE_MB', async () => {
-    // Create large dummy base64
-    const hugeString = 'a'.repeat(MAX_PDF_SIZE_MB * 1.5 * 1024 * 1024);
-    const result = await analyzePdf(`data:application/pdf;base64,${hugeString}`);
+    // Create large dummy file
+    const hugeBuffer = new ArrayBuffer(MAX_PDF_SIZE_MB * 1.5 * 1024 * 1024);
+    const largeFile = new File([hugeBuffer], 'large.pdf', { type: 'application/pdf' });
+    const formData = createFormData(largeFile);
+
+    const result = await analyzePdf(formData);
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('PDF demasiado grande');
@@ -39,7 +48,11 @@ describe('Server Action: Files (analyzePdf)', () => {
   it('should call generateText with correct parameters on success', async () => {
     MockAiSdk.generateText.mockResolvedValue({ text: 'PDF Analysis Result' });
 
-    const result = await analyzePdf(validBase64, 'Summarize this');
+    const validBuffer = new ArrayBuffer(1024);
+    const validFile = new File([validBuffer], 'test.pdf', { type: 'application/pdf' });
+    const formData = createFormData(validFile, 'Summarize this');
+
+    const result = await analyzePdf(formData);
 
     expect(result.success).toBe(true);
     expect(result.text).toBe('PDF Analysis Result');
@@ -65,7 +78,11 @@ describe('Server Action: Files (analyzePdf)', () => {
   it('should handle API errors gracefully', async () => {
     MockAiSdk.generateText.mockRejectedValue(new Error('Google API Error'));
 
-    const result = await analyzePdf(validBase64);
+    const validBuffer = new ArrayBuffer(1024);
+    const validFile = new File([validBuffer], 'test.pdf', { type: 'application/pdf' });
+    const formData = createFormData(validFile);
+
+    const result = await analyzePdf(formData);
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Google API Error');

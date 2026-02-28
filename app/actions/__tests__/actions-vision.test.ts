@@ -19,33 +19,42 @@ describe('Server Action: Vision (analyzePartImage)', () => {
     vi.clearAllMocks();
   });
 
-  // Small fake base64
-  const smallBase64 =
-    'data:image/jpeg;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const createFormData = (file: File | null, prompt?: string) => {
+    const formData = new FormData();
+    if (file) formData.append('file', file);
+    if (prompt) formData.append('prompt', prompt);
+    return formData;
+  };
 
-  it('should throw error/fail if image input is empty', async () => {
-    const result = await analyzePartImage('');
+  it('should throw error if image input is empty', async () => {
+    const formData = createFormData(null);
+    const result = await analyzePartImage(formData);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Imagen vacía');
   });
 
   it('should fail if image size exceeds MAX_IMAGE_SIZE_MB', async () => {
-    // Create a large fake base64 string to simulate size
-    // 1MB ~ 1.33MB base64. Let's make a huge string.
-    const hugeString = 'a'.repeat(MAX_IMAGE_SIZE_MB * 1.5 * 1024 * 1024);
-    const result = await analyzePartImage(`data:image/jpeg;base64,${hugeString}`);
+    const hugeBuffer = new ArrayBuffer(MAX_IMAGE_SIZE_MB * 1.5 * 1024 * 1024);
+    const largeFile = new File([hugeBuffer], 'large.jpg', { type: 'image/jpeg' });
+    const formData = createFormData(largeFile);
+
+    const result = await analyzePartImage(formData);
 
     expect(result.success).toBe(false);
     expect(result.error).toContain('Imagen demasiado grande');
   });
 
   it('should call generateText with correct parameters on success', async () => {
-    MockAiSdk.generateText.mockResolvedValue({ text: 'Descripción detectada' });
+    MockAiSdk.generateText.mockResolvedValue({ text: 'Image Analysis Result' });
 
-    const result = await analyzePartImage(smallBase64, 'image/png', 'Custom Prompt');
+    const validBuffer = new ArrayBuffer(1024);
+    const validFile = new File([validBuffer], 'test.jpg', { type: 'image/jpeg' });
+    const formData = createFormData(validFile, 'Custom Prompt');
+
+    const result = await analyzePartImage(formData);
 
     expect(result.success).toBe(true);
-    expect(result.text).toBe('Descripción detectada');
+    expect(result.text).toBe('Image Analysis Result');
 
     expect(MockAiSdk.generateText).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -54,10 +63,6 @@ describe('Server Action: Vision (analyzePartImage)', () => {
             role: 'user',
             content: expect.arrayContaining([
               expect.objectContaining({ type: 'text', text: 'Custom Prompt' }),
-              expect.objectContaining({
-                type: 'file',
-                mediaType: 'image/png',
-              }),
             ]),
           }),
         ]),
@@ -66,11 +71,15 @@ describe('Server Action: Vision (analyzePartImage)', () => {
   });
 
   it('should handle API errors gracefully', async () => {
-    MockAiSdk.generateText.mockRejectedValue(new Error('API Error'));
+    MockAiSdk.generateText.mockRejectedValue(new Error('Google API Error'));
 
-    const result = await analyzePartImage(smallBase64);
+    const validBuffer = new ArrayBuffer(1024);
+    const validFile = new File([validBuffer], 'test.jpg', { type: 'image/jpeg' });
+    const formData = createFormData(validFile);
+
+    const result = await analyzePartImage(formData);
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe('API Error');
+    expect(result.error).toBe('Google API Error');
   });
 });
