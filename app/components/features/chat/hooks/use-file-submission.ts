@@ -174,21 +174,25 @@ export function useFileSubmission({
           } else if (!isPdf && result.success && result.result) {
             const visionId = `analysis-${Date.now()}`;
             const analysisObj = result.result;
-            const formattedText = `📷 **Análisis Visual (IA)**
+            const formattedText = `📱 **Análisis Visual (IA)**
           
-**Tipo:** ${analysisObj.tipo_articulo}
-**Estado:** ${analysisObj.estado_fisico.replace('_', ' ')}
-**Confianza:** ${analysisObj.nivel_confianza}
+| Atributo | Detalle |
+| :--- | :--- |
+| **Tipo** | ${analysisObj.tipo_articulo} |
+| **Estado** | ${analysisObj.estado_fisico.replace('_', ' ')} |
+| **Confianza** | ${analysisObj.nivel_confianza} |
+| **Marca** | ${analysisObj.marca || 'N/A'} |
+| **Modelo** | ${analysisObj.modelo || 'N/A'} |
+| **Cantidad** | ${analysisObj.cantidad_detectada} |
 
-${analysisObj.descripcion}
+**Descripción detallada:**
+> ${analysisObj.descripcion}
 
-- **Cant. detectada:** ${analysisObj.cantidad_detectada}
-- **Marca:** ${analysisObj.marca || 'N/A'}
-- **Modelo:** ${analysisObj.modelo || 'N/A'}
+💡 **Recomendación:**  
+*${analysisObj.recomendacion}*
 
-💡 **Recomendación:** ${analysisObj.recomendacion}
 ---
-*Generado automáticamente a partir de la imagen.*`;
+*Generado automáticamente por IA a partir de la imagen.*`;
 
             setMessages((prev: UIMessage[]) => [
               ...prev,
