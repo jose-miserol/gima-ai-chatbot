@@ -98,30 +98,31 @@ Diseñar conceptualmente un **Sistema Integral de Gestión de Mantenimiento y Ac
 
 ## 5. OBJETIVOS ESPECÍFICOS
 
-1. **Conceptualizar la arquitectura del chatbot multimodal** para asistencia en gestión de mantenimiento
-   - Definir capacidades conversacionales en lenguaje natural
-   - Especificar funcionalidades de visión computacional para análisis de piezas
-   - Diseñar mecanismos de transcripción de voz para generación de reportes
-
-2. **Modelar los procesos de negocio** relacionados con la gestión de mantenimiento
+1. **Modelar los procesos de negocio** relacionados con la gestión de mantenimiento
    - Identificar y documentar el flujo de órdenes de trabajo
    - Mapear procesos de mantenimiento preventivo y correctivo
    - Definir ciclo de vida de los activos institucionales
 
-3. **Establecer el marco teórico y tecnológico** del sistema
+2. **Establecer el marco teórico y tecnológico** del sistema
    - Investigar estado del arte en sistemas CMMS (Computerized Maintenance Management System)
    - Seleccionar y justificar stack tecnológico (Next.js, React, IA)
    - Documentar mejores prácticas de arquitectura SaaS
 
-4. **Definir la estructura organizacional** para el desarrollo del proyecto
+3. **Definir la estructura organizacional** para el desarrollo del proyecto
    - Conformar equipos de trabajo con roles claros
    - Asignar responsabilidades por componentes del sistema
    - Establecer metodología de trabajo colaborativo
 
-5. **Crear un diagrama de actividades detallado** que refleje la distribución de tareas
+4. **Crear un diagrama de actividades detallado** que refleje la distribución de tareas
    - Utilizar metodología PERT o equivalente
    - Asignar tareas específicas a cada miembro del equipo
    - Definir dependencias y secuencia de actividades
+
+5. **Conceptualizar la arquitectura del chatbot multimodal** para asistencia en gestión de mantenimiento
+   - Definir capacidades conversacionales en lenguaje natural
+   - Especificar funcionalidades de visión computacional para análisis de piezas
+   - Diseñar mecanismos de transcripción de voz para generación de reportes
+   -
 
 ---
 
