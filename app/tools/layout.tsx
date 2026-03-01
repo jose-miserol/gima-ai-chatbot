@@ -11,5 +11,5 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
     // notFound();
     // }
 
-    return <>{children}</>;
+    return <><div className="mx-auto px-8">{children}</div></>;
 }

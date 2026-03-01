@@ -37,7 +37,7 @@ export function ChatHeader({ hasMessages, onClearHistory }: ChatHeaderProps) {
       <Image
         src="/logotype.svg"
         alt="GIMA"
-        width={120}
+        width={80}
         height={40}
         className="mx-auto mb-2 dark:invert"
         priority
