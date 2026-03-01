@@ -1,4 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getAuthToken, loginSilent } from '@/app/actions/auth';
+
+// Desactivar validación de certificados local (Herd SSL Self-Signed workaround)
+if (process.env.NODE_ENV === 'development') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 
 import { STREAM_CONFIG } from '@/app/config';
 import { env } from '@/app/config/env';
@@ -90,6 +96,24 @@ export async function POST(req: Request): Promise<NextResponse | Response> {
     rawBody = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+  }
+
+  // 2.5 Ensure Auth Token
+  // Intenta obtener el token; si no existe, ejecuta el login silencioso
+  const currentToken = await getAuthToken();
+  if (!currentToken) {
+    logger.info('No hay token de sesión, intentando login automático (Silent Login).', {
+      component: 'ChatAPIRoute',
+    });
+    const loginSuccess = await loginSilent();
+    if (!loginSuccess) {
+      logger.warn(
+        'El login automático falló. La sesión continuará pero puede tener errores de red con la IA.',
+        {
+          component: 'ChatAPIRoute',
+        }
+      );
+    }
   }
 
   // 3. Process with ChatService

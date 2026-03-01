@@ -12,8 +12,8 @@
  */
 export const AVAILABLE_MODELS = [
   {
-    name: 'Llama 3.3 70B',
-    value: 'llama-3.3-70b-versatile',
+    name: 'Llama 3.1 8B',
+    value: 'llama-3.1-8b-instant',
   },
 ] as const;
 
