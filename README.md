@@ -12,12 +12,14 @@ Asistente inteligente para la gestión de mantenimiento y activos de la Universi
 - Transcripción de voz con Gemini API y fallback Web Speech API
 - Comandos de voz para gestión de órdenes de trabajo
 
-**Herramientas de IA**
+**Herramientas de IA y Conexión al Backend**
 
-- Checklist Builder: Generación de checklists de mantenimiento personalizados
-- Activity Summaries: Resúmenes profesionales de actividades
-- Data Transformation: Transformación y validación de datos con IA
-- Work Order Closeout: Notas de cierre automáticas para órdenes de trabajo
+- Generative UI: Visualización de resultados del backend (activos, inventario, reportes) en tablas interactivas.
+- Checklist Builder: Generación de checklists de mantenimiento personalizados.
+- Activity Summaries: Resúmenes profesionales de actividades.
+- Consultas Naturales: "Muéstrame equipos de aire", "¿Qué repuestos están bajos de stock?", "¿Cuáles son los mantenimientos pendientes?".
+- Work Order Closeout: Notas de cierre automáticas para órdenes de trabajo.
+- Validación Robusta: Manejo automático de coerciones y valores atípicos mediante schemas Zod flexibilizados.
 
 **Tecnología y UX**
 
@@ -127,16 +129,15 @@ gima-ai-chatbot/
 │   ├── actions/           # Server Actions (voice, vision, files)
 │   ├── components/        # Componentes React
 │   │   ├── ui/            # Componentes base (shadcn/ui)
-│   │   ├── ai-elements/   # Componentes de IA
+│   │   ├── ai-elements/   # Componentes de IA (ej. Tablas Generativas)
 │   │   └── features/      # Features (chat, ai-tools, voice)
-│   ├── config/            # Configuración del sistema
+│   ├── config/            # Configuración del sistema (SYSTEM_PROMPT)
 │   ├── constants/         # Constantes (AI models, etc.)
 │   ├── hooks/             # React hooks personalizados
 │   ├── lib/               # Librerías y services
-│   │   ├── ai/            # AI services
-│   │   ├── schemas/       # Validación Zod
-│   │   └── services/      # Lógica de negocio
-│   ├── tools/             # AI Tools pages
+│   │   ├── ai/            # AI services y configuración de tools (`chat-tools.ts`)
+│   │   ├── schemas/       # Validación Zod (`backend-response.schema.ts`)
+│   │   └── services/      # Lógica de negocio y llamadas al API Laravel
 │   ├── types/             # Tipos TypeScript
 │   └── utils/             # Utilidades
 ├── docs/                  # Documentación del proyecto
@@ -203,6 +204,11 @@ Este problema ya fue **solucionado** en versiones recientes. Si aún ocurre:
 1. Asegúrate de tener la última versión del código
 2. Verifica que `use-file-submission.ts` incluya la actualización que agrega mensajes manualmente al estado
 3. Limpia localStorage: `localStorage.clear()` en la consola del navegador
+
+### Error de Validación de Tools (tool_call_validation_failed)
+
+**Causa**: El modelo de IA a veces devuelve datos que no coinciden exactamente con los tipos esperados (ej. envía un string `"1"` en lugar del número de página `1`, o devuelve `null` cuando se esperaba un objeto vacío).
+**Solución**: Se ha implementado `z.preprocess()`, coerciones (`z.coerce.number()`), y tipos unión en `chat-tools.ts` y schemas flexibles con `.nullable().optional()` en `backend-response.schema.ts` para tolerar estas discrepancias del LLM y de lo devuelto por el backend.
 
 ## Documentación
 

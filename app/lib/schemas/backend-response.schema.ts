@@ -18,18 +18,24 @@ import { z } from 'zod';
  */
 export function laravelPaginatedSchema<T extends z.ZodType>(itemSchema: T) {
   return z.object({
-    current_page: z.number(),
     data: z.array(itemSchema),
-    first_page_url: z.string().nullable().optional(),
-    from: z.number().nullable(),
-    last_page: z.number(),
-    last_page_url: z.string().nullable().optional(),
-    next_page_url: z.string().nullable(),
-    path: z.string().optional(),
-    per_page: z.number(),
-    prev_page_url: z.string().nullable(),
-    to: z.number().nullable(),
-    total: z.number(),
+    links: z
+      .object({
+        first: z.string().nullable().optional(),
+        last: z.string().nullable().optional(),
+        prev: z.string().nullable().optional(),
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+    meta: z.object({
+      current_page: z.number(),
+      from: z.number().nullable().optional(),
+      last_page: z.number(),
+      path: z.string().optional(),
+      per_page: z.number(),
+      to: z.number().nullable().optional(),
+      total: z.number(),
+    }),
   });
 }
 
@@ -77,7 +83,7 @@ export type Direccion = z.infer<typeof direccionSchema>;
 
 export const ubicacionSchema = z.object({
   id: z.number(),
-  direccion_id: z.number(),
+  direccion_id: z.number().nullable().optional(),
   edificio: z.string().nullable().optional(),
   piso: z.string().nullable().optional(),
   salon: z.string().nullable().optional(),
@@ -106,9 +112,9 @@ export type Articulo = z.infer<typeof articuloSchema>;
 
 export const activoSchema = z.object({
   id: z.number(),
-  articulo_id: z.number(),
-  ubicacion_id: z.number(),
-  estado: z.string(),
+  articulo_id: z.number().nullable().optional(),
+  ubicacion_id: z.number().nullable().optional(),
+  estado: z.enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja']).nullable().optional(),
   valor: z.number().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
@@ -125,11 +131,11 @@ export type Activo = z.infer<typeof activoSchema>;
 
 export const reporteSchema = z.object({
   id: z.number(),
-  usuario_id: z.number(),
-  activo_id: z.number(),
-  descripcion: z.string(),
+  usuario_id: z.number().nullable().optional(),
+  activo_id: z.number().nullable().optional(),
+  descripcion: z.string().nullable().optional(),
   prioridad: z.string().nullable().optional(),
-  estado: z.string(),
+  estado: z.string().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -142,10 +148,10 @@ export type Reporte = z.infer<typeof reporteSchema>;
 
 export const mantenimientoSchema = z.object({
   id: z.number(),
-  activo_id: z.number(),
-  supervisor_id: z.number().optional(),
-  tecnico_principal_id: z.number().optional(),
-  tipo: z.string(),
+  activo_id: z.number().nullable().optional(),
+  supervisor_id: z.number().nullable().optional(),
+  tecnico_principal_id: z.number().nullable().optional(),
+  tipo: z.string().nullable().optional(),
   reporte_id: z.number().nullable().optional(),
   fecha_apertura: z.string().optional(),
   fecha_cierre: z.string().nullable().optional(),
@@ -157,7 +163,7 @@ export const mantenimientoSchema = z.object({
   updated_at: z.string().optional(),
   // Relaciones
   activo: activoSchema.optional(),
-  reporte: reporteSchema.optional(),
+  reporte: reporteSchema.nullable().optional(),
 });
 
 export type Mantenimiento = z.infer<typeof mantenimientoSchema>;
@@ -168,8 +174,8 @@ export type Mantenimiento = z.infer<typeof mantenimientoSchema>;
 
 export const calendarioSchema = z.object({
   id: z.number(),
-  activo_id: z.number().optional(),
-  tecnico_asignado_id: z.number().optional(),
+  activo_id: z.number().nullable().optional(),
+  tecnico_asignado_id: z.number().nullable().optional(),
   tipo: z.string().nullable().optional(),
   fecha_programada: z.string().nullable().optional(),
   estado: z.string().nullable().optional(),
@@ -200,8 +206,8 @@ export type Proveedor = z.infer<typeof proveedorSchema>;
 
 export const repuestoSchema = z.object({
   id: z.number(),
-  proveedor_id: z.number().optional(),
-  direccion_id: z.number().optional(),
+  proveedor_id: z.number().nullable().optional(),
+  direccion_id: z.number().nullable().optional(),
   descripcion: z.string().nullable().optional(),
   codigo: z.string().nullable().optional(),
   stock: z.number().nullable().optional(),

@@ -109,15 +109,31 @@ export const chatTools = {
 
   consultar_activos: tool({
     description:
-      'Busca activos/equipos registrados en GIMA. Usa esta herramienta cuando el usuario pregunte por equipos, activos, UMAs, bombas, tableros, su estado o ubicación. Devuelve datos paginados — si necesitas más resultados, pide la siguiente página.',
-    inputSchema: z.object({
-      estado: z
-        .enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
-        .optional()
-        .describe('Filtrar por estado del activo'),
-      buscar: z.string().optional().describe('Texto de búsqueda por nombre, código o tipo'),
-      page: z.number().optional().default(1).describe('Número de página para paginación'),
-    }),
+      'Busca activos/equipos registrados en GIMA. Usa esta herramienta para CUALQUIER consulta de equipos, activos, UMAs, bombas, tableros, su estado o ubicación. Puedes listar todos los activos o filtrar por tipo (mobiliario/equipo) si el usuario lo especifica. Devuelve datos paginados.',
+    inputSchema: z.preprocess(
+      (val) => val ?? {},
+      z.object({
+        estado: z
+          .enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
+          .optional()
+          .describe(
+            'Filtrar por estado del activo (operativo, mantenimiento, fuera_servicio, baja)'
+          ),
+        buscar: z
+          .string()
+          .optional()
+          .describe('Texto de búsqueda por nombre, código o descripción'),
+        tipo: z
+          .enum(['mobiliario', 'equipo'])
+          .optional()
+          .describe('Filtrar por categoría principal: "mobiliario" o "equipo"'),
+        page: z
+          .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
+          .optional()
+          .default(1)
+          .describe('Número de página (numérico)'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('consultar_activos', async () => {
         const api = await getAuthenticatedAPI();
@@ -131,43 +147,36 @@ export const chatTools = {
     },
   }),
 
-  consultar_activos_por_categoria: tool({
-    description:
-      'Obtiene activos agrupados por categoría/tipo. Usa cuando pregunten cuántos activos hay por tipo o quieran un resumen por categorías.',
-    inputSchema: z.object({}),
-    execute: async () => {
-      return safeExecute('consultar_activos_por_categoria', async () => {
-        const api = await getAuthenticatedAPI();
-        const categorias = await api.getActivosPorCategoria();
-        return {
-          success: true as const,
-          categorias,
-          summary: `Se encontraron ${categorias.length} categorías de activos`,
-        };
-      });
-    },
-  }),
-
   // -------------------------------------------
   // Mantenimiento
   // -------------------------------------------
 
   consultar_mantenimientos: tool({
     description:
-      'Consulta órdenes de mantenimiento. Usa cuando pregunten por mantenimientos pendientes, en progreso, historial, por tipo (preventivo/correctivo) o por sede. Devuelve datos paginados.',
-    inputSchema: z.object({
-      estado: z
-        .enum(['pendiente', 'en_progreso', 'completado', 'cancelado'])
-        .optional()
-        .describe('Filtrar por estado del mantenimiento'),
-      tipo: z
-        .enum(['preventivo', 'correctivo', 'predictivo'])
-        .optional()
-        .describe('Filtrar por tipo de mantenimiento'),
-      sede_id: z.string().optional().describe('ID de la sede/dirección para filtrar'),
-      prioridad: z.enum(['baja', 'media', 'alta']).optional().describe('Filtrar por prioridad'),
-      page: z.number().optional().default(1).describe('Número de página'),
-    }),
+      'Consulta órdenes de mantenimiento. Usa cuando pregunten por mantenimientos pendientes, en progreso, historial, por tipo (preventivo/correctivo) o por sede. Permite filtrar específicamente por estado: "pendiente", "en_progreso", "completado" o "cancelado". Devuelve datos paginados.',
+    inputSchema: z.preprocess(
+      (val) => val ?? {},
+      z.object({
+        estado: z
+          .enum(['pendiente', 'en_progreso', 'completado', 'cancelado'])
+          .optional()
+          .describe('Estado: pendiente, en_progreso, completado, cancelado'),
+        tipo: z
+          .enum(['preventivo', 'correctivo', 'predictivo'])
+          .optional()
+          .describe('Tipo: preventivo, correctivo, predictivo'),
+        sede_id: z.string().optional().describe('ID de la sede'),
+        prioridad: z
+          .enum(['baja', 'media', 'alta'])
+          .optional()
+          .describe('Prioridad: baja, media, alta'),
+        page: z
+          .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
+          .optional()
+          .default(1)
+          .describe('Número de página (numérico)'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('consultar_mantenimientos', async () => {
         const api = await getAuthenticatedAPI();
@@ -184,9 +193,16 @@ export const chatTools = {
   consultar_calendario: tool({
     description:
       'Consulta el calendario de mantenimientos programados. Usa cuando pregunten por mantenimientos próximos, programaciones o agenda de mantenimiento.',
-    inputSchema: z.object({
-      page: z.number().optional().default(1).describe('Número de página'),
-    }),
+    inputSchema: z.preprocess(
+      (val) => val ?? {},
+      z.object({
+        page: z
+          .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
+          .optional()
+          .default(1)
+          .describe('Número de página (numérico)'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('consultar_calendario', async () => {
         const api = await getAuthenticatedAPI();
@@ -203,17 +219,24 @@ export const chatTools = {
   consultar_reportes: tool({
     description:
       'Consulta reportes de mantenimiento. Usa cuando pregunten por reportes, fallos reportados, incidencias o problemas registrados.',
-    inputSchema: z.object({
-      prioridad: z
-        .enum(['baja', 'media', 'alta'])
-        .optional()
-        .describe('Filtrar por nivel de prioridad'),
-      estado: z
-        .enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
-        .optional()
-        .describe('Filtrar por estado del reporte'),
-      page: z.number().optional().default(1).describe('Número de página'),
-    }),
+    inputSchema: z.preprocess(
+      (val) => val ?? {},
+      z.object({
+        prioridad: z
+          .enum(['baja', 'media', 'alta'])
+          .optional()
+          .describe('Prioridad: baja, media, alta'),
+        estado: z
+          .enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
+          .optional()
+          .describe('Estado: abierto, asignado, en_progreso, resuelto, cerrado'),
+        page: z
+          .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
+          .optional()
+          .default(1)
+          .describe('Número de página (numérico)'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('consultar_reportes', async () => {
         const api = await getAuthenticatedAPI();
@@ -233,17 +256,21 @@ export const chatTools = {
 
   consultar_inventario: tool({
     description:
-      'Busca repuestos en el inventario. Usa cuando pregunten por piezas, repuestos, stock disponible, o busquen un repuesto específico por código o descripción. Devuelve datos paginados.',
-    inputSchema: z.object({
-      buscar: z.string().optional().describe('Buscar por código o descripción del repuesto'),
-      bajo_stock: z
-        .boolean()
-        .optional()
-        .describe('Si es true, solo muestra repuestos con stock igual o menor al mínimo'),
-      proveedor_id: z.string().optional().describe('Filtrar por ID del proveedor'),
-      direccion_id: z.string().optional().describe('Filtrar por ID de la sede/dirección'),
-      page: z.number().optional().default(1).describe('Número de página'),
-    }),
+      'Busca repuestos en el inventario. Usa cuando pregunten por piezas, repuestos, stock disponible, repuestos con stock bajo (alertas de stock), o busquen un repuesto específico por código o descripción. Devuelve datos paginados.',
+    inputSchema: z.preprocess(
+      (val) => val ?? {},
+      z.object({
+        buscar: z.string().optional().describe('Código o descripción'),
+        bajo_stock: z.boolean().optional().describe('true para ver solo bajo stock'),
+        proveedor_id: z.string().optional().describe('ID del proveedor'),
+        direccion_id: z.string().optional().describe('ID de la sede'),
+        page: z
+          .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
+          .optional()
+          .default(1)
+          .describe('Número de página (numérico)'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('consultar_inventario', async () => {
         const api = await getAuthenticatedAPI();
@@ -260,7 +287,7 @@ export const chatTools = {
   consultar_proveedores: tool({
     description:
       'Consulta la lista de proveedores registrados. Usa cuando pregunten por proveedores, contactos de proveedores, o quién suministra repuestos.',
-    inputSchema: z.object({}),
+    inputSchema: z.preprocess((val) => val ?? {}, z.object({})),
     execute: async () => {
       return safeExecute('consultar_proveedores', async () => {
         const api = await getAuthenticatedAPI();
@@ -317,7 +344,6 @@ export const chatTools = {
             error: result.error || 'No se pudo generar el checklist',
           };
         }
-
         return {
           success: true as const,
           checklist: result.checklist,
@@ -373,7 +399,6 @@ export const chatTools = {
           style: params.style as any,
           detailLevel: params.detailLevel as any,
         });
-
         if (!result.success || !result.summary) {
           return {
             success: false as const,
