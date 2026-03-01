@@ -23,6 +23,7 @@ import type {
 export interface ActivosFiltros {
   estado?: string;
   buscar?: string;
+  tipo?: string;
   page?: number;
 }
 
