@@ -24,7 +24,6 @@ import {
   calendarioSchema,
   reporteSchema,
   proveedorSchema,
-  categoriaActivosSchema,
   type PaginatedResult,
   type Activo,
   type Mantenimiento,
@@ -32,7 +31,6 @@ import {
   type CalendarioMantenimiento,
   type Reporte,
   type Proveedor,
-  type CategoriaActivos,
 } from '@/app/lib/schemas/backend-response.schema';
 
 import type {
@@ -212,11 +210,11 @@ export class BackendAPIService {
     return {
       items: parsed.data as T[],
       pagination: {
-        page: parsed.current_page,
-        lastPage: parsed.last_page,
-        perPage: parsed.per_page,
-        total: parsed.total,
-        hasMore: parsed.next_page_url !== null,
+        page: parsed.meta.current_page,
+        lastPage: parsed.meta.last_page,
+        perPage: parsed.meta.per_page,
+        total: parsed.meta.total,
+        hasMore: parsed.links?.next !== null && parsed.links?.next !== undefined,
       },
     };
   }
@@ -241,12 +239,13 @@ export class BackendAPIService {
 
   async getActivos(filtros?: ActivosFiltros): Promise<PaginatedResult<Activo>> {
     const query = this.buildQuery({ ...filtros });
-    return this.requestPaginated(`/api/catalogo/activos${query}`, activoSchema);
-  }
 
-  async getActivosPorCategoria(): Promise<CategoriaActivos[]> {
-    const raw = await this.request<unknown>('/api/catalogo/activos/por-categoria');
-    return z.array(categoriaActivosSchema).parse(raw);
+    // Si estamos filtrando por tipo, Laravel espera usar el endpoint específico
+    if (filtros?.tipo) {
+      return this.requestPaginated(`/api/catalogo/activos/por-categoria${query}`, activoSchema);
+    }
+
+    return this.requestPaginated(`/api/catalogo/activos${query}`, activoSchema);
   }
 
   // -------------------------------------------
