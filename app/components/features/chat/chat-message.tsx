@@ -13,7 +13,8 @@
  * genera partes con type = `tool-<toolName>` y state = input-streaming | input-available | output-available | output-error
  */
 
-import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
+import { CopyIcon, RefreshCcwIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 import {
   Message,
@@ -101,6 +102,36 @@ const DATA_TABLE_TOOLS = new Set([
 ]);
 
 // ===========================================
+// Collapsible LLM Text (when tool results present)
+// ===========================================
+
+/**
+ * Renders the LLM's text response in a collapsible section.
+ * Used when tool results are present to avoid redundant text above tables.
+ * Collapsed by default — the user can expand if they want to read the LLM commentary.
+ */
+function CollapsibleLLMText({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mb-1">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors py-0.5"
+      >
+        {expanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+        {expanded ? 'Ocultar comentario del asistente' : 'Ver comentario del asistente'}
+      </button>
+      {expanded && (
+        <MessageContent>
+          <MessageResponse>{text}</MessageResponse>
+        </MessageContent>
+      )}
+    </div>
+  );
+}
+
+// ===========================================
 // Component
 // ===========================================
 
@@ -154,12 +185,14 @@ export function ChatMessage({
         </MessageAttachments>
       )}
 
-      {/* Texto */}
-      {textContent && (
+      {/* Texto — collapsible when tool results are present */}
+      {textContent && toolParts.length > 0 ? (
+        <CollapsibleLLMText text={textContent} />
+      ) : textContent ? (
         <MessageContent>
           <MessageResponse>{textContent}</MessageResponse>
         </MessageContent>
-      )}
+      ) : null}
 
       {/* Tool Results — Generative UI */}
       {toolParts.map((part) => {
