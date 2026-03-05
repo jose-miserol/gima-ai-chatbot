@@ -57,8 +57,16 @@ export class ChatService {
 
     const { messages: rawMessages, model } = parseResult.data;
 
-    // 3. Sanitization
-    const messages = sanitizeForModel(rawMessages);
+    // 3. Sanitization (con inyección de contexto de tools)
+    // Extraemos los mensajes crudos del body para que sanitizeForModel
+    // pueda leer las tool parts (que Zod descarta) y generar resúmenes ligeros.
+    const rawBodyMessages = (rawBody as { messages?: unknown[] })?.messages;
+    const messages = sanitizeForModel(
+      rawMessages,
+      Array.isArray(rawBodyMessages)
+        ? (rawBodyMessages as { role?: string; content?: unknown; parts?: unknown[] }[])
+        : undefined
+    );
 
     // 4. AI Generation
     try {
