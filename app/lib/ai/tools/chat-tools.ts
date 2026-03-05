@@ -6,10 +6,6 @@
  * - `stopWhen: stepCountIs(N)` para multi-step
  * - `needsApproval: true` para tools de mutación
  * - `cookies()` de Next.js para propagación del token Sanctum
- *
- * Las tools hacen 2 tipos de operaciones:
- * 1. Consultas al backend Laravel (via BackendAPIService)
- * 2. Generación con IA (reutilizando ChecklistAIService, ActivitySummaryAIService)
  */
 
 import { tool, stepCountIs } from 'ai';
@@ -32,10 +28,6 @@ import type { ToolErrorResult } from './tool-types';
 // Helpers
 // ===========================================
 
-/**
- * Obtiene el BackendAPIService con el token Sanctum del usuario actual.
- * El token se extrae de las cookies de la request de Next.js.
- */
 async function getAuthenticatedAPI() {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
@@ -47,10 +39,6 @@ async function getAuthenticatedAPI() {
   return createBackendAPIService({ token });
 }
 
-/**
- * Envuelve la ejecución de una tool con manejo de errores estandarizado.
- * Convierte excepciones en respuestas de error amigables para el LLM.
- */
 async function safeExecute<T>(
   toolName: string,
   fn: () => Promise<T>
@@ -61,16 +49,13 @@ async function safeExecute<T>(
     logger.error(
       `Tool ${toolName} failed`,
       error instanceof Error ? error : new Error(String(error)),
-      {
-        component: 'chatTools',
-        action: toolName,
-      }
+      { component: 'chatTools', action: toolName }
     );
 
     if (error instanceof BackendAuthError) {
       return {
         success: false,
-        error: 'No se pudo autenticar con el backend. Por favor, inicia sesión nuevamente.',
+        error: 'No se pudo autenticar. Inicia sesión nuevamente.',
         suggestion: 'Recarga la página e inicia sesión.',
       };
     }
@@ -79,7 +64,7 @@ async function safeExecute<T>(
       return {
         success: false,
         error: error.message,
-        suggestion: 'Intenta con filtros más específicos o inténtalo de nuevo.',
+        suggestion: 'Intenta con filtros más específicos.',
       };
     }
 
@@ -107,31 +92,34 @@ export const chatTools = {
   // Catálogo
   // -------------------------------------------
 
+  /**
+   * FIX: Descripción acortada (~70% menos tokens) y más restrictiva.
+   * Antes: disparaba ante cualquier mención de "activo" o "equipo".
+   * Ahora: requiere intención explícita de consultar/listar activos.
+   */
   consultar_activos: tool({
     description:
-      'Busca activos/equipos registrados en GIMA. Usa esta herramienta para CUALQUIER consulta de equipos, activos, UMAs, bombas, tableros, su estado o ubicación. Puedes listar todos los activos o filtrar por tipo (mobiliario/equipo) si el usuario lo especifica. Devuelve datos paginados.',
+      'Usa esta herramienta SOLO cuando el usuario quiera consultar, listar o buscar activos/equipos registrados en GIMA (por nombre, código, estado u ubicación). NO la uses si el usuario solo menciona un activo de pasada sin pedir una consulta explícita.',
     inputSchema: z.preprocess(
       (val) => val ?? {},
       z.object({
         estado: z
-          .enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
-          .optional()
-          .describe(
-            'Filtrar por estado del activo (operativo, mantenimiento, fuera_servicio, baja)'
-          ),
-        buscar: z
-          .string()
-          .optional()
-          .describe('Texto de búsqueda por nombre, código o descripción'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
+          )
+          .optional(),
+        buscar: z.string().optional(),
         tipo: z
-          .enum(['mobiliario', 'equipo'])
-          .optional()
-          .describe('Filtrar por categoría principal: "mobiliario" o "equipo"'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['mobiliario', 'equipo'])
+          )
+          .optional(),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
-          .default(1)
-          .describe('Número de página (numérico)'),
+          .default(1),
       })
     ),
     execute: async (params) => {
@@ -140,7 +128,23 @@ export const chatTools = {
         const result = await api.getActivos(params);
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              codigo: item.codigo,
+              estado: item.estado,
+              articulo: {
+                descripcion: item.articulo?.descripcion,
+                modelo: item.articulo?.modelo,
+                tipo: item.articulo?.tipo,
+              },
+              ubicacion: {
+                edificio: item.ubicacion?.edificio,
+                salon: item.ubicacion?.salon,
+              },
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} activos (página ${result.pagination.page} de ${result.pagination.lastPage})`,
         };
       });
@@ -153,28 +157,33 @@ export const chatTools = {
 
   consultar_mantenimientos: tool({
     description:
-      'Consulta órdenes de mantenimiento. Usa cuando pregunten por mantenimientos pendientes, en progreso, historial, por tipo (preventivo/correctivo) o por sede. Permite filtrar específicamente por estado: "pendiente", "en_progreso", "completado" o "cancelado". Devuelve datos paginados.',
+      'Consulta órdenes de mantenimiento. Úsala cuando pregunten por mantenimientos pendientes, en progreso, historial o por tipo (preventivo/correctivo/predictivo).',
     inputSchema: z.preprocess(
       (val) => val ?? {},
       z.object({
         estado: z
-          .enum(['pendiente', 'en_progreso', 'completado', 'cancelado'])
-          .optional()
-          .describe('Estado: pendiente, en_progreso, completado, cancelado'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['pendiente', 'en_progreso', 'completado', 'cancelado'])
+          )
+          .optional(),
         tipo: z
-          .enum(['preventivo', 'correctivo', 'predictivo'])
-          .optional()
-          .describe('Tipo: preventivo, correctivo, predictivo'),
-        sede_id: z.string().optional().describe('ID de la sede'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['preventivo', 'correctivo', 'predictivo'])
+          )
+          .optional(),
+        sede_id: z.string().optional(),
         prioridad: z
-          .enum(['baja', 'media', 'alta'])
-          .optional()
-          .describe('Prioridad: baja, media, alta'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['baja', 'media', 'alta'])
+          )
+          .optional(),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
-          .default(1)
-          .describe('Número de página (numérico)'),
+          .default(1),
       })
     ),
     execute: async (params) => {
@@ -183,7 +192,26 @@ export const chatTools = {
         const result = await api.getMantenimientos(params);
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              estado: item.estado,
+              tipo: item.tipo,
+              fecha_apertura: item.fecha_apertura,
+              fecha_cierre: item.fecha_cierre,
+              costo_total: item.costo_total,
+              validado: item.validado,
+              reporte: {
+                prioridad: item.reporte?.prioridad,
+                titulo: item.reporte?.titulo,
+              },
+              activo: {
+                codigo: item.activo?.codigo,
+                articulo: { descripcion: item.activo?.articulo?.descripcion },
+              },
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} mantenimientos (página ${result.pagination.page} de ${result.pagination.lastPage})`,
         };
       });
@@ -192,15 +220,14 @@ export const chatTools = {
 
   consultar_calendario: tool({
     description:
-      'Consulta el calendario de mantenimientos programados. Usa cuando pregunten por mantenimientos próximos, programaciones o agenda de mantenimiento.',
+      'Consulta el calendario de mantenimientos programados. Úsala para mantenimientos próximos, programaciones o agenda.',
     inputSchema: z.preprocess(
       (val) => val ?? {},
       z.object({
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
-          .default(1)
-          .describe('Número de página (numérico)'),
+          .default(1),
       })
     ),
     execute: async (params) => {
@@ -209,7 +236,19 @@ export const chatTools = {
         const result = await api.getCalendario(params);
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              fecha_programada: item.fecha_programada,
+              estado: item.estado,
+              tipo: item.tipo,
+              activo: {
+                codigo: item.activo?.codigo,
+                articulo: { descripcion: item.activo?.articulo?.descripcion },
+              },
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} entradas en el calendario (página ${result.pagination.page} de ${result.pagination.lastPage})`,
         };
       });
@@ -218,23 +257,26 @@ export const chatTools = {
 
   consultar_reportes: tool({
     description:
-      'Consulta reportes de mantenimiento. Usa cuando pregunten por reportes, fallos reportados, incidencias o problemas registrados.',
+      'Consulta reportes de mantenimiento. Úsala cuando pregunten por reportes, fallos, incidencias o problemas registrados.',
     inputSchema: z.preprocess(
       (val) => val ?? {},
       z.object({
         prioridad: z
-          .enum(['baja', 'media', 'alta'])
-          .optional()
-          .describe('Prioridad: baja, media, alta'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['baja', 'media', 'alta'])
+          )
+          .optional(),
         estado: z
-          .enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
-          .optional()
-          .describe('Estado: abierto, asignado, en_progreso, resuelto, cerrado'),
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
+          )
+          .optional(),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
-          .default(1)
-          .describe('Número de página (numérico)'),
+          .default(1),
       })
     ),
     execute: async (params) => {
@@ -243,7 +285,20 @@ export const chatTools = {
         const result = await api.getReportes(params);
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              titulo: item.titulo,
+              estado: item.estado,
+              prioridad: item.prioridad,
+              fecha_reporte: item.fecha_reporte,
+              activo: {
+                codigo: item.activo?.codigo,
+                articulo: { descripcion: item.activo?.articulo?.descripcion },
+              },
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} reportes (página ${result.pagination.page} de ${result.pagination.lastPage})`,
         };
       });
@@ -256,19 +311,18 @@ export const chatTools = {
 
   consultar_inventario: tool({
     description:
-      'Busca repuestos en el inventario. Usa cuando pregunten por piezas, repuestos, stock disponible, repuestos con stock bajo (alertas de stock), o busquen un repuesto específico por código o descripción. Devuelve datos paginados.',
+      'Busca repuestos en el inventario. Úsala cuando pregunten por piezas, repuestos, stock disponible o alertas de bajo stock.',
     inputSchema: z.preprocess(
       (val) => val ?? {},
       z.object({
-        buscar: z.string().optional().describe('Código o descripción'),
-        bajo_stock: z.boolean().optional().describe('true para ver solo bajo stock'),
-        proveedor_id: z.string().optional().describe('ID del proveedor'),
-        direccion_id: z.string().optional().describe('ID de la sede'),
+        buscar: z.string().optional(),
+        bajo_stock: z.boolean().optional(),
+        proveedor_id: z.string().optional(),
+        direccion_id: z.string().optional(),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
-          .default(1)
-          .describe('Número de página (numérico)'),
+          .default(1),
       })
     ),
     execute: async (params) => {
@@ -277,7 +331,19 @@ export const chatTools = {
         const result = await api.getRepuestos(params);
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              stock: item.stock,
+              stock_minimo: item.stock_minimo,
+              articulo: {
+                codigo: item.articulo?.codigo,
+                descripcion: item.articulo?.descripcion,
+              },
+              almacen: { nombre: item.almacen?.nombre },
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} repuestos (página ${result.pagination.page} de ${result.pagination.lastPage})`,
         };
       });
@@ -286,7 +352,7 @@ export const chatTools = {
 
   consultar_proveedores: tool({
     description:
-      'Consulta la lista de proveedores registrados. Usa cuando pregunten por proveedores, contactos de proveedores, o quién suministra repuestos.',
+      'Lista los proveedores registrados. Úsala cuando pregunten por proveedores o contactos de suministro.',
     inputSchema: z.preprocess((val) => val ?? {}, z.object({})),
     execute: async () => {
       return safeExecute('consultar_proveedores', async () => {
@@ -294,7 +360,15 @@ export const chatTools = {
         const result = await api.getProveedores();
         return {
           success: true as const,
-          data: result,
+          data: {
+            ...result,
+            items: result.items.map((item: any) => ({
+              id: item.id,
+              nombre: item.nombre,
+              estado: item.estado,
+              contacto_principal: item.contacto_principal,
+            })),
+          },
           summary: `Se encontraron ${result.pagination.total} proveedores`,
         };
       });
@@ -302,32 +376,25 @@ export const chatTools = {
   }),
 
   // -------------------------------------------
-  // Generación con IA (servicios existentes)
+  // Generación con IA
   // -------------------------------------------
 
   generar_checklist: tool({
     description:
-      'Genera un checklist de mantenimiento personalizado usando IA. Usa cuando pidan crear, generar o sugerir un checklist/lista de verificación para un tipo de activo y tarea.',
+      'Genera un checklist de mantenimiento con IA. Úsala cuando pidan crear o sugerir un checklist para un tipo de activo y tarea.',
     inputSchema: z.object({
-      assetType: z
-        .enum([
-          'hvac',
-          'bomba',
-          'caldera',
-          'tablero',
-          'generador',
-          'compresor',
-          'motor',
-          'transformador',
-        ])
-        .describe('Tipo de activo para el checklist'),
-      taskType: z
-        .enum(['preventivo', 'correctivo', 'predictivo'])
-        .describe('Tipo de tarea de mantenimiento'),
-      customInstructions: z
-        .string()
-        .optional()
-        .describe('Instrucciones adicionales del usuario para el checklist'),
+      assetType: z.enum([
+        'hvac',
+        'bomba',
+        'caldera',
+        'tablero',
+        'generador',
+        'compresor',
+        'motor',
+        'transformador',
+      ]),
+      taskType: z.enum(['preventivo', 'correctivo', 'predictivo']),
+      customInstructions: z.string().optional(),
     }),
     execute: async (params) => {
       return safeExecute('generar_checklist', async () => {
@@ -356,9 +423,9 @@ export const chatTools = {
 
   generar_resumen_actividad: tool({
     description:
-      'Genera un resumen profesional de notas de actividad usando IA. Usa cuando pidan resumir actividades, notas técnicas, o crear un informe de trabajo realizado.',
+      'Genera un resumen profesional de notas de actividad con IA. Úsala cuando pidan resumir actividades técnicas o crear un informe de trabajo.',
     inputSchema: z.object({
-      activities: z.string().describe('Notas de actividades a resumir (texto libre)'),
+      activities: z.string(),
       assetType: z
         .enum([
           'hvac',
@@ -371,23 +438,10 @@ export const chatTools = {
           'transformador',
         ])
         .optional()
-        .default('hvac')
-        .describe('Tipo de activo relacionado'),
-      taskType: z
-        .enum(['preventivo', 'correctivo', 'predictivo'])
-        .optional()
-        .default('preventivo')
-        .describe('Tipo de tarea'),
-      style: z
-        .enum(['formal', 'technical', 'brief'])
-        .optional()
-        .default('technical')
-        .describe('Estilo de escritura del resumen'),
-      detailLevel: z
-        .enum(['low', 'medium', 'high'])
-        .optional()
-        .default('medium')
-        .describe('Nivel de detalle del resumen'),
+        .default('hvac'),
+      taskType: z.enum(['preventivo', 'correctivo', 'predictivo']).optional().default('preventivo'),
+      style: z.enum(['formal', 'technical', 'brief']).optional().default('technical'),
+      detailLevel: z.enum(['low', 'medium', 'high']).optional().default('medium'),
     }),
     execute: async (params) => {
       return safeExecute('generar_resumen_actividad', async () => {
@@ -399,6 +453,7 @@ export const chatTools = {
           style: params.style as any,
           detailLevel: params.detailLevel as any,
         });
+
         if (!result.success || !result.summary) {
           return {
             success: false as const,
@@ -421,18 +476,15 @@ export const chatTools = {
 
   crear_orden_trabajo: tool({
     description:
-      'Crea una nueva orden de trabajo/mantenimiento en GIMA. SOLO usa esta herramienta cuando el usuario EXPLÍCITAMENTE pida crear una orden de trabajo. Esta acción modifica datos en el sistema.',
+      'Crea una nueva orden de trabajo en GIMA. SOLO úsala cuando el usuario EXPLÍCITAMENTE pida crear una orden de trabajo. Esta acción modifica datos en el sistema.',
     inputSchema: z.object({
-      equipment: z.string().describe('Nombre o identificador del equipo'),
-      description: z.string().describe('Descripción del problema o tarea a realizar'),
-      priority: z
-        .enum(['baja', 'media', 'alta'])
-        .default('media')
-        .describe('Prioridad de la orden'),
-      location: z.string().optional().describe('Ubicación del equipo'),
+      equipment: z.string(),
+      description: z.string(),
+      priority: z.enum(['baja', 'media', 'alta']).default('media'),
+      location: z.string().optional(),
     }),
-    // No execute — this is a client-side tool handled via addToolApprovalResponse.
-    // The client renders an OrderApprovalCard and calls executeWorkOrder on approval.
+    // No execute — client-side tool handled via addToolApprovalResponse.
+    // El cliente renderiza OrderApprovalCard y llama executeWorkOrder al aprobar.
   }),
 };
 
