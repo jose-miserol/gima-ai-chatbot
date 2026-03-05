@@ -5,8 +5,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { useCloseoutHistory } from '@/app/components/features/work-order-closeout/hooks/use-closeout-history';
-import type { CloseoutNotes } from '@/app/components/features/work-order-closeout/types';
+import { useCloseoutHistory } from '@/app/components/features/ai-tools/work-order-closeout/hooks/use-closeout-history';
+import type { CloseoutNotes } from '@/app/components/features/ai-tools/work-order-closeout/types';
 
 describe('useCloseoutHistory', () => {
   beforeEach(() => {

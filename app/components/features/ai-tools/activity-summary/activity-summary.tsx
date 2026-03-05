@@ -14,9 +14,10 @@ import { generateActivitySummary } from '@/app/actions/activity-summary';
 import type {
   ActivitySummaryRequest,
   ActivitySummary,
+  SummarySection,
   SummaryStyle,
   DetailLevel,
-} from '@/app/components/features/activity-summary/types';
+} from '@/app/components/features/ai-tools/activity-summary/types';
 import {
   AIToolLayout,
   AIGenerationForm,
@@ -271,7 +272,7 @@ export function ActivitySummary() {
                 </div>
 
                 {/* Sections */}
-                {summary.sections.map((section) => (
+                {summary.sections.map((section: SummarySection) => (
                   <div key={section.order}>
                     <h4 className="text-sm font-semibold mb-2">{section.title}</h4>
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">

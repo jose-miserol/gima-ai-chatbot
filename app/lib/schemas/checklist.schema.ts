@@ -10,7 +10,7 @@ import { z } from 'zod';
 import {
   CHECKLIST_CATEGORIES,
   CHECKLIST_LIMITS,
-} from '@/app/components/features/checklist-builder/constants';
+} from '@/app/components/features/ai-tools/checklist-builder/constants';
 import { ASSET_TYPES, TASK_TYPES } from '@/app/constants/ai';
 
 /**

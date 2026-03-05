@@ -5,7 +5,7 @@
  * Usa componentes shared de ai-tools.
  */
 
-import { ChecklistBuilder } from '@/app/components/features/checklist-builder/checklist-builder';
+import { ChecklistBuilder } from '@/app/components/features/ai-tools/checklist-builder/checklist-builder';
 
 import type { Metadata } from 'next';
 

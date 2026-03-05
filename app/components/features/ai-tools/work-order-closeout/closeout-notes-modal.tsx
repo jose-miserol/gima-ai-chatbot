@@ -20,7 +20,7 @@ import type {
   CloseoutNotes,
   CloseoutStyle,
   WorkOrderSummary,
-} from '@/app/components/features/work-order-closeout/types';
+} from '@/app/components/features/ai-tools/work-order-closeout/types';
 import {
   Dialog,
   DialogContent,

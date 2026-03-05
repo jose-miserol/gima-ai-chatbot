@@ -1,17 +1,17 @@
 /**
- * useSummaryTemplates - Unit Tests
+ * useChecklistTemplates - Unit Tests
  *
- * Tests para el hook de gestión de templates de resúmenes.
- * Verifica localStorage y operaciones CRUD.
+ * Tests para el hook de gestión de templates.
+ * Verifica localStorage, CRUD operations y límites.
  */
 
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import { useSummaryTemplates } from '@/app/components/features/activity-summary/hooks/use-summary-templates';
-import type { ActivitySummary } from '@/app/components/features/activity-summary/types';
+import { useChecklistTemplates } from '@/app/components/features/ai-tools/checklist-builder/hooks/use-checklist-templates';
+import type { Checklist } from '@/app/components/features/ai-tools/checklist-builder/types';
 
-describe('useSummaryTemplates', () => {
+describe('useChecklistTemplates', () => {
   beforeEach(() => {
     // Clear localStorage antes de cada test
     if (typeof localStorage !== 'undefined') {
@@ -21,14 +21,14 @@ describe('useSummaryTemplates', () => {
 
   describe('Estado Inicial', () => {
     it('debe inicializar con templates vacío', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
       expect(result.current.templates).toEqual([]);
       expect(result.current.isLoading).toBe(false);
     });
 
     it('debe tener todas las funciones disponibles', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
       expect(result.current.saveTemplate).toBeDefined();
       expect(typeof result.current.saveTemplate).toBe('function');
@@ -43,22 +43,21 @@ describe('useSummaryTemplates', () => {
 
   describe('Guardar Template', () => {
     it('debe guardar nuevo template', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
-      const mockSummary: ActivitySummary = {
+      const mockChecklist: Checklist = {
         id: '123',
-        title: 'Test Summary',
-        executive: 'Test executive summary',
-        sections: [],
+        title: 'Test Checklist',
+        description: 'Test description',
         assetType: 'bomba',
         taskType: 'preventivo',
-        style: 'tecnico',
-        detailLevel: 'medio',
+        items: [],
         createdAt: new Date(),
+        isTemplate: false,
       };
 
       act(() => {
-        result.current.saveTemplate('Mi Template', mockSummary);
+        result.current.saveTemplate('Mi Template', mockChecklist);
       });
 
       expect(result.current.templates).toHaveLength(1);
@@ -67,22 +66,21 @@ describe('useSummaryTemplates', () => {
     });
 
     it('debe incrementar usageCount', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
-      const mockSummary: ActivitySummary = {
+      const mockChecklist: Checklist = {
         id: '123',
         title: 'Test',
-        executive: 'Test',
-        sections: [],
+        description: 'Test',
         assetType: 'bomba',
         taskType: 'preventivo',
-        style: 'tecnico',
-        detailLevel: 'medio',
+        items: [],
         createdAt: new Date(),
+        isTemplate: false,
       };
 
       act(() => {
-        result.current.saveTemplate('Template 1', mockSummary);
+        result.current.saveTemplate('Template 1', mockChecklist);
       });
 
       const templateId = result.current.templates[0].id;
@@ -97,22 +95,21 @@ describe('useSummaryTemplates', () => {
 
   describe('Eliminar Template', () => {
     it('debe eliminar template por ID', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
-      const mockSummary: ActivitySummary = {
+      const mockChecklist: Checklist = {
         id: '123',
         title: 'Test',
-        executive: 'Test',
-        sections: [],
+        description: 'Test',
         assetType: 'bomba',
         taskType: 'preventivo',
-        style: 'tecnico',
-        detailLevel: 'medio',
+        items: [],
         createdAt: new Date(),
+        isTemplate: false,
       };
 
       act(() => {
-        result.current.saveTemplate('Template to Delete', mockSummary);
+        result.current.saveTemplate('Template to Delete', mockChecklist);
       });
 
       const templateId = result.current.templates[0].id;
@@ -129,22 +126,21 @@ describe('useSummaryTemplates', () => {
 
   describe('Obtener Template', () => {
     it('debe retornar template por ID', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
-      const mockSummary: ActivitySummary = {
+      const mockChecklist: Checklist = {
         id: '123',
         title: 'Test',
-        executive: 'Test',
-        sections: [],
+        description: 'Test',
         assetType: 'bomba',
         taskType: 'preventivo',
-        style: 'tecnico',
-        detailLevel: 'medio',
+        items: [],
         createdAt: new Date(),
+        isTemplate: false,
       };
 
       act(() => {
-        result.current.saveTemplate('Test Template', mockSummary);
+        result.current.saveTemplate('Test Template', mockChecklist);
       });
 
       const templateId = result.current.templates[0].id;
@@ -155,7 +151,7 @@ describe('useSummaryTemplates', () => {
     });
 
     it('debe retornar undefined para ID inexistente', () => {
-      const { result } = renderHook(() => useSummaryTemplates());
+      const { result } = renderHook(() => useChecklistTemplates());
 
       const template = result.current.getTemplate('non-existent-id');
 

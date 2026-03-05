@@ -5,7 +5,7 @@
  * Usa componentes shared de ai-tools.
  */
 
-import { ActivitySummary } from '@/app/components/features/activity-summary/activity-summary';
+import { ActivitySummary } from '@/app/components/features/ai-tools/activity-summary/activity-summary';
 
 import type { Metadata } from 'next';
 

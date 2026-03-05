@@ -1,7 +1,7 @@
 'use client';
 
 import { ALLOWED_OPERATIONS } from './constants';
-import { AIGenerationForm } from '../ai-tools/shared/ai-generation-form';
+import { AIGenerationForm } from '../shared/ai-generation-form';
 
 import type { TransformationRequest } from './types';
 

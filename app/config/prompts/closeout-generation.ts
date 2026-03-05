@@ -5,7 +5,7 @@
  * con diferentes estilos.
  */
 
-import type { CloseoutStyle } from '@/app/components/features/work-order-closeout/types';
+import type { CloseoutStyle } from '@/app/components/features/ai-tools/work-order-closeout/types';
 
 /**
  * System prompt base para generación de notas de cierre

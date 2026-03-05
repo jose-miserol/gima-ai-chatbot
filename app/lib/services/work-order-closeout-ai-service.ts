@@ -8,7 +8,7 @@
 import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 
-import type { CloseoutNotes } from '@/app/components/features/work-order-closeout/types';
+import type { CloseoutNotes } from '@/app/components/features/ai-tools/work-order-closeout/types';
 import {
   CLOSEOUT_SYSTEM_PROMPT,
   buildCloseoutPrompt,

@@ -3,7 +3,7 @@
 import { google } from '@ai-sdk/google';
 import { generateObject } from 'ai';
 
-import { ALLOWED_OPERATIONS } from '@/app/components/features/data-transformation/constants';
+import { ALLOWED_OPERATIONS } from '@/app/components/features/ai-tools/data-transformation/constants';
 import { logger } from '@/app/lib/logger';
 import {
   transformationActionSchema,

@@ -21,8 +21,9 @@ import {
 } from '@/app/components/features/ai-tools/shared';
 import type {
   Checklist,
+  ChecklistItem,
   ChecklistGenerationRequest,
-} from '@/app/components/features/checklist-builder/types';
+} from '@/app/components/features/ai-tools/checklist-builder/types';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/components/ui/toast';
 
@@ -218,7 +219,7 @@ export function ChecklistBuilder() {
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">{checklist.description}</p>
                 <div className="space-y-2">
-                  {checklist.items.map((item, index) => (
+                  {checklist.items.map((item: ChecklistItem, index: number) => (
                     <div key={item.id} className="flex gap-2 text-sm">
                       <span className="font-medium text-muted-foreground">{index + 1}.</span>
                       <div className="flex-1">
@@ -234,7 +235,7 @@ export function ChecklistBuilder() {
             }
             metadata={{
               generatedAt: checklist.createdAt,
-              wordCount: checklist.items.reduce((acc, i) => acc + i.description.split(' ').length, 0),
+              wordCount: checklist.items.reduce((acc: number, i: ChecklistItem) => acc + i.description.split(' ').length, 0),
               model: 'llama-3.3-70b',
             }}
             actions={{

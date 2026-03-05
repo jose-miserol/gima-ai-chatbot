@@ -15,12 +15,12 @@ import { Database } from 'lucide-react';
 import { useState, useCallback, useMemo } from 'react';
 
 import { AIToolLayout, AIHistoryList, type HistoryItem } from '@/app/components/features/ai-tools/shared';
-import { DataTransformationForm } from '@/app/components/features/data-transformation/data-transformation-form';
-import { DataTransformationPreview } from '@/app/components/features/data-transformation/data-transformation-preview';
-import { useDataSnapshots } from '@/app/components/features/data-transformation/hooks/use-data-snapshots';
-import { useDataTransformation } from '@/app/components/features/data-transformation/hooks/use-data-transformation';
+import { DataTransformationForm } from '@/app/components/features/ai-tools/data-transformation/data-transformation-form';
+import { DataTransformationPreview } from '@/app/components/features/ai-tools/data-transformation/data-transformation-preview';
+import { useDataSnapshots } from '@/app/components/features/ai-tools/data-transformation/hooks/use-data-snapshots';
+import { useDataTransformation } from '@/app/components/features/ai-tools/data-transformation/hooks/use-data-transformation';
 
-import type { TransformationRequest } from '@/app/components/features/data-transformation/types';
+import type { TransformationRequest, DataSnapshot } from '@/app/components/features/ai-tools/data-transformation/types';
 
 /**
  * Main Data Transformation Client Component
@@ -66,7 +66,7 @@ export function DataTransformation() {
     }, [reset]);
 
     const historyItems: HistoryItem[] = useMemo(() => {
-        return snapshots.map((snap) => ({
+        return snapshots.map((snap: DataSnapshot) => ({
             id: snap.id,
             title: snap.name || 'Transformación sin nombre',
             createdAt: new Date(snap.timestamp),

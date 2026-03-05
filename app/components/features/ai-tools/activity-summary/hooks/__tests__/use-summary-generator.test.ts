@@ -8,7 +8,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { useSummaryGenerator } from '@/app/components/features/activity-summary/hooks/use-summary-generator';
+import { useSummaryGenerator } from '@/app/components/features/ai-tools/activity-summary/hooks/use-summary-generator';
 
 describe('useSummaryGenerator', () => {
   describe('Estado Inicial', () => {

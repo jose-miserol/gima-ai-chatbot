@@ -5,7 +5,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 
-import { useCloseoutGenerator } from '@/app/components/features/work-order-closeout/hooks/use-closeout-generator';
+import { useCloseoutGenerator } from '@/app/components/features/ai-tools/work-order-closeout/hooks/use-closeout-generator';
 
 describe('useCloseoutGenerator', () => {
   describe('Estado Inicial', () => {
