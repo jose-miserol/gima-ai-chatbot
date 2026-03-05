@@ -25,7 +25,7 @@ import {
     Copy,
     Check,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 // ===========================================
 // Loading Card
@@ -35,9 +35,9 @@ interface ToolLoadingCardProps {
     toolName: string;
 }
 
+// FIX: Eliminada la entrada 'tool-consultar_activos_por_categoria' — la tool no existe en chat-tools.ts.
 const TOOL_LABELS: Record<string, string> = {
     'tool-consultar_activos': 'Buscando activos...',
-    'tool-consultar_activos_por_categoria': 'Agrupando activos por categoría...',
     'tool-consultar_mantenimientos': 'Consultando mantenimientos...',
     'tool-consultar_calendario': 'Cargando calendario...',
     'tool-consultar_reportes': 'Consultando reportes...',
@@ -130,7 +130,6 @@ function PriorityBadge({ value }: { value: string }) {
     );
 }
 
-/** Renders stock level with color coding */
 function StockIndicator({ stock, stockMin }: { stock: number; stockMin?: number }) {
     const isCritical = stockMin !== undefined && stock <= stockMin;
     const isWarning = stockMin !== undefined && stock <= stockMin * 1.5;
@@ -156,24 +155,25 @@ function StockIndicator({ stock, stockMin }: { stock: number; stockMin?: number 
 interface ColumnDef {
     key: string;
     label: string;
-    render?: (value: unknown, item: Record<string, unknown>) => React.ReactNode;
+    render?: (value: unknown, item: Record<string, unknown>) => ReactNode;
 }
 
 /**
- * Returns the optimal columns for each tool type.
- * Falls back to generic auto-detected columns.
+ * Devuelve las columnas optimizadas para cada tool.
+ * FIX: Eliminado el case 'tool-consultar_activos_por_categoria' — la tool no existe.
  */
 function getToolColumns(toolName: string, items: Record<string, unknown>[]): ColumnDef[] {
     switch (toolName) {
         case 'tool-consultar_activos':
-        case 'tool-consultar_activos_por_categoria':
             return [
                 { key: 'id', label: 'ID' },
                 {
                     key: 'nombre', label: 'Descripción',
                     render: (_, item) => {
                         const articulo = item.articulo as Record<string, unknown> | undefined;
-                        return articulo?.descripcion ? String(articulo.descripcion) : (articulo?.modelo ? String(articulo.modelo) : '—');
+                        return articulo?.descripcion
+                            ? String(articulo.descripcion)
+                            : (articulo?.modelo ? String(articulo.modelo) : '—');
                     }
                 },
                 {
@@ -197,6 +197,7 @@ function getToolColumns(toolName: string, items: Record<string, unknown>[]): Col
                     }
                 },
             ];
+
         case 'tool-consultar_inventario':
             return [
                 { key: 'codigo', label: 'Código' },
@@ -210,11 +211,46 @@ function getToolColumns(toolName: string, items: Record<string, unknown>[]): Col
                 { key: 'stock_minimo', label: 'Mín.' },
                 { key: 'costo', label: 'Costo' },
             ];
+
         case 'tool-consultar_mantenimientos':
             return [
                 { key: 'id', label: 'ID' },
                 { key: 'descripcion', label: 'Descripción' },
                 { key: 'tipo', label: 'Tipo' },
+                {
+                    key: 'prioridad', label: 'Prioridad',
+                    render: (_, item) => {
+                        const reporte = item.reporte as Record<string, unknown> | undefined;
+                        return reporte?.prioridad ? <PriorityBadge value={String(reporte.prioridad)} /> : '—';
+                    }
+                },
+                {
+                    key: 'estado', label: 'Estado',
+                    render: (v) => v ? <StatusBadge value={String(v)} /> : '—',
+                },
+            ];
+
+        case 'tool-consultar_proveedores':
+            return [
+                { key: 'nombre', label: 'Proveedor' },
+                { key: 'contacto', label: 'Contacto' },
+                { key: 'email', label: 'Email' },
+                { key: 'telefono', label: 'Teléfono' },
+            ];
+
+        case 'tool-consultar_reportes':
+            return [
+                { key: 'id', label: 'ID' },
+                {
+                    key: 'activo', label: 'Activo',
+                    render: (_, item) => {
+                        const activo = item.activo as Record<string, unknown> | undefined;
+                        const articulo = activo?.articulo as Record<string, unknown> | undefined;
+                        return articulo?.descripcion
+                            ? String(articulo.descripcion)
+                            : (articulo?.modelo ? String(articulo.modelo) : '—');
+                    }
+                },
                 {
                     key: 'prioridad', label: 'Prioridad',
                     render: (v) => v ? <PriorityBadge value={String(v)} /> : '—',
@@ -223,21 +259,39 @@ function getToolColumns(toolName: string, items: Record<string, unknown>[]): Col
                     key: 'estado', label: 'Estado',
                     render: (v) => v ? <StatusBadge value={String(v)} /> : '—',
                 },
+                { key: 'descripcion', label: 'Descripción' },
             ];
-        case 'tool-consultar_proveedores':
+
+        case 'tool-consultar_calendario':
             return [
-                { key: 'nombre', label: 'Proveedor' },
-                { key: 'contacto', label: 'Contacto' },
-                { key: 'email', label: 'Email' },
-                { key: 'telefono', label: 'Teléfono' },
+                {
+                    key: 'fecha_programada', label: 'Fecha',
+                    render: (v) => v ? formatCellValue(v) : '—',
+                },
+                {
+                    key: 'activo', label: 'Activo',
+                    render: (_, item) => {
+                        const activo = item.activo as Record<string, unknown> | undefined;
+                        const articulo = activo?.articulo as Record<string, unknown> | undefined;
+                        return articulo?.descripcion
+                            ? String(articulo.descripcion)
+                            : (articulo?.modelo ? String(articulo.modelo) : '—');
+                    }
+                },
+                { key: 'tipo', label: 'Tipo' },
+                {
+                    key: 'estado', label: 'Estado',
+                    render: (v) => v ? <StatusBadge value={String(v)} /> : '—',
+                },
             ];
+
         default:
             return getGenericColumns(items);
     }
 }
 
 /**
- * Fallback: auto-detect columns from data (original logic).
+ * Fallback: auto-detect columns from data.
  */
 function getGenericColumns(items: Record<string, unknown>[]): ColumnDef[] {
     if (items.length === 0) return [];
@@ -279,7 +333,7 @@ function getGenericColumns(items: Record<string, unknown>[]): ColumnDef[] {
 }
 
 // ===========================================
-// Data Result Card (Tablas con columnas específicas)
+// Data Result Card
 // ===========================================
 
 interface DataResultCardProps {

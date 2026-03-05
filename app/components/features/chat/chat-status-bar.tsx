@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/app/lib/utils';
@@ -53,6 +54,13 @@ export function ChatStatusIndicators({
   chatError,
   mode = 'native',
 }: ChatStatusIndicatorsProps) {
+  // Log error to console for debugging when it occurs
+  useEffect(() => {
+    if (chatError) {
+      console.error('[GIMA Chat Error]:', chatError);
+    }
+  }, [chatError]);
+
   return (
     <div className="min-h-[36px] flex items-center justify-center">
       {voiceError && (
