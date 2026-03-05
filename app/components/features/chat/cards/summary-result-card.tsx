@@ -2,6 +2,7 @@
 
 import { CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { CopyButton } from '../tool-result-cards';
 
 interface SummaryResultCardProps {
     summary: {
@@ -18,6 +19,18 @@ interface SummaryResultCardProps {
         };
     };
     cached?: boolean;
+}
+
+/**
+ * Formats summary as plain text for clipboard
+ */
+function formatSummaryAsText(summary: SummaryResultCardProps['summary']): string {
+    let text = `📊 ${summary.title}\n\n`;
+    text += `Resumen Ejecutivo:\n${summary.executive}\n\n`;
+    summary.sections.forEach(section => {
+        text += `── ${section.title} ──\n${section.content}\n\n`;
+    });
+    return text;
 }
 
 export function SummaryResultCard({ summary, cached }: SummaryResultCardProps) {
@@ -37,6 +50,7 @@ export function SummaryResultCard({ summary, cached }: SummaryResultCardProps) {
 
     return (
         <div className="rounded-lg border border-border overflow-hidden my-2">
+            {/* Header */}
             <div className="px-4 py-3 bg-teal-50 dark:bg-teal-950/20 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <CheckCircle className="size-4 text-teal-500" />
@@ -48,11 +62,20 @@ export function SummaryResultCard({ summary, cached }: SummaryResultCardProps) {
                             ~{summary.metadata.readingTime} min lectura
                         </span>
                     )}
+                    {summary.metadata?.wordCount && (
+                        <span className="text-xs text-muted-foreground">
+                            {summary.metadata.wordCount} palabras
+                        </span>
+                    )}
                     {cached && (
                         <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
                             Caché
                         </span>
                     )}
+                    <CopyButton
+                        text={formatSummaryAsText(summary)}
+                        label="Copiar"
+                    />
                 </div>
             </div>
 
