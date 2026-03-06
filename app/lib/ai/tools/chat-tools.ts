@@ -28,6 +28,36 @@ import type { ToolErrorResult } from './tool-types';
 // Helpers
 // ===========================================
 
+/**
+ * Strips ALL null values from params object before Zod validation.
+ *
+ * WHY: The LLM (Groq) sends `null` for unused optional fields.
+ * The AI SDK validates against JSON Schema BEFORE our Zod runs.
+ * By stripping nulls at the outermost preprocess, no field ever sees `null`.
+ */
+function stripNulls(val: unknown): Record<string, unknown> {
+  if (!val || typeof val !== 'object') return {};
+  const obj = val as Record<string, unknown>;
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== null && v !== undefined));
+}
+
+/**
+ * Creates a z.preprocess that silently drops values not in the allowed enum list.
+ * Invalid values become `undefined`, making the optional field omitted from the query.
+ */
+function safeEnum<T extends string>(allowedValues: readonly [T, ...T[]]) {
+  return z
+    .preprocess((val) => {
+      const raw = Array.isArray(val) ? val[0] : val;
+      if (raw === null || raw === undefined || raw === '') return undefined;
+      if (typeof raw === 'string' && (allowedValues as readonly string[]).includes(raw)) {
+        return raw;
+      }
+      return undefined;
+    }, z.enum(allowedValues).nullable().optional())
+    .optional();
+}
+
 async function getAuthenticatedAPI() {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
@@ -101,21 +131,11 @@ export const chatTools = {
     description:
       'Usa esta herramienta SOLO cuando el usuario quiera consultar, listar o buscar activos/equipos registrados en GIMA (por nombre, código, estado u ubicación). NO la uses si el usuario solo menciona un activo de pasada sin pedir una consulta explícita.',
     inputSchema: z.preprocess(
-      (val) => val ?? {},
+      stripNulls,
       z.object({
-        estado: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja'])
-          )
-          .optional(),
+        estado: safeEnum(['operativo', 'mantenimiento', 'fuera_servicio', 'baja']),
         buscar: z.string().optional(),
-        tipo: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['mobiliario', 'equipo'])
-          )
-          .optional(),
+        tipo: safeEnum(['mobiliario', 'equipo']),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
@@ -159,27 +179,12 @@ export const chatTools = {
     description:
       'Consulta órdenes de mantenimiento. Úsala cuando pregunten por mantenimientos pendientes, en progreso, historial o por tipo (preventivo/correctivo/predictivo).',
     inputSchema: z.preprocess(
-      (val) => val ?? {},
+      stripNulls,
       z.object({
-        estado: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['pendiente', 'en_progreso', 'completado', 'cancelado'])
-          )
-          .optional(),
-        tipo: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['preventivo', 'correctivo', 'predictivo'])
-          )
-          .optional(),
+        estado: safeEnum(['pendiente', 'en_progreso', 'completado', 'cancelado']),
+        tipo: safeEnum(['preventivo', 'correctivo', 'predictivo']),
         sede_id: z.string().optional(),
-        prioridad: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['baja', 'media', 'alta'])
-          )
-          .optional(),
+        prioridad: safeEnum(['baja', 'media', 'alta']),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
@@ -222,7 +227,7 @@ export const chatTools = {
     description:
       'Consulta el calendario de mantenimientos programados. Úsala para mantenimientos próximos, programaciones o agenda.',
     inputSchema: z.preprocess(
-      (val) => val ?? {},
+      stripNulls,
       z.object({
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
@@ -259,20 +264,10 @@ export const chatTools = {
     description:
       'Consulta reportes de mantenimiento. Úsala cuando pregunten por reportes, fallos, incidencias o problemas registrados.',
     inputSchema: z.preprocess(
-      (val) => val ?? {},
+      stripNulls,
       z.object({
-        prioridad: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['baja', 'media', 'alta'])
-          )
-          .optional(),
-        estado: z
-          .preprocess(
-            (val) => (Array.isArray(val) ? val[0] : val),
-            z.enum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado'])
-          )
-          .optional(),
+        prioridad: safeEnum(['baja', 'media', 'alta']),
+        estado: safeEnum(['abierto', 'asignado', 'en_progreso', 'resuelto', 'cerrado']),
         page: z
           .union([z.number(), z.string().transform((v) => parseInt(v, 10))])
           .optional()
@@ -313,7 +308,7 @@ export const chatTools = {
     description:
       'Busca repuestos en el inventario. Úsala cuando pregunten por piezas, repuestos, stock disponible o alertas de bajo stock.',
     inputSchema: z.preprocess(
-      (val) => val ?? {},
+      stripNulls,
       z.object({
         buscar: z.string().optional(),
         bajo_stock: z.boolean().optional(),
@@ -353,7 +348,7 @@ export const chatTools = {
   consultar_proveedores: tool({
     description:
       'Lista los proveedores registrados. Úsala cuando pregunten por proveedores o contactos de suministro.',
-    inputSchema: z.preprocess((val) => val ?? {}, z.object({})),
+    inputSchema: z.preprocess(stripNulls, z.object({})),
     execute: async () => {
       return safeExecute('consultar_proveedores', async () => {
         const api = await getAuthenticatedAPI();
@@ -381,21 +376,21 @@ export const chatTools = {
 
   generar_checklist: tool({
     description:
-      'Genera un checklist de mantenimiento con IA. Úsala cuando pidan crear o sugerir un checklist para un tipo de activo y tarea.',
-    inputSchema: z.object({
-      assetType: z.enum([
-        'hvac',
-        'bomba',
-        'caldera',
-        'tablero',
-        'generador',
-        'compresor',
-        'motor',
-        'transformador',
-      ]),
-      taskType: z.enum(['preventivo', 'correctivo', 'predictivo']),
-      customInstructions: z.string().optional(),
-    }),
+      'Genera un checklist de mantenimiento con IA. Úsala cuando pidan crear o sugerir un checklist para un tipo de activo y tarea. Tipos de activo sugeridos: hvac, bomba, caldera, tablero, generador, compresor, motor, transformador. Si el usuario menciona otro tipo, mapéalo al más cercano.',
+    inputSchema: z.preprocess(
+      stripNulls,
+      z.object({
+        assetType: z.string().default('hvac'),
+        taskType: z
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['preventivo', 'correctivo', 'predictivo'])
+          )
+          .optional()
+          .default('preventivo'),
+        customInstructions: z.string().optional(),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('generar_checklist', async () => {
         const service = new ChecklistAIService();
@@ -423,26 +418,35 @@ export const chatTools = {
 
   generar_resumen_actividad: tool({
     description:
-      'Genera un resumen profesional de notas de actividad con IA. Úsala cuando pidan resumir actividades técnicas o crear un informe de trabajo.',
-    inputSchema: z.object({
-      activities: z.string(),
-      assetType: z
-        .enum([
-          'hvac',
-          'bomba',
-          'caldera',
-          'tablero',
-          'generador',
-          'compresor',
-          'motor',
-          'transformador',
-        ])
-        .optional()
-        .default('hvac'),
-      taskType: z.enum(['preventivo', 'correctivo', 'predictivo']).optional().default('preventivo'),
-      style: z.enum(['formal', 'technical', 'brief']).optional().default('technical'),
-      detailLevel: z.enum(['low', 'medium', 'high']).optional().default('medium'),
-    }),
+      'Genera un resumen profesional de notas de actividad con IA. Úsala cuando pidan resumir actividades técnicas o crear un informe de trabajo. Tipos de activo sugeridos: hvac, bomba, caldera, tablero, generador, compresor, motor, transformador. Si el usuario menciona otro tipo (ej: "Test de Aire"), usa el valor más cercano (ej: "hvac") o escribe el tipo tal cual.',
+    inputSchema: z.preprocess(
+      stripNulls,
+      z.object({
+        activities: z.string().default(''),
+        assetType: z.string().optional().default('general'),
+        taskType: z
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['preventivo', 'correctivo', 'predictivo'])
+          )
+          .optional()
+          .default('preventivo'),
+        style: z
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['formal', 'technical', 'brief'])
+          )
+          .optional()
+          .default('technical'),
+        detailLevel: z
+          .preprocess(
+            (val) => (Array.isArray(val) ? val[0] : val),
+            z.enum(['low', 'medium', 'high'])
+          )
+          .optional()
+          .default('medium'),
+      })
+    ),
     execute: async (params) => {
       return safeExecute('generar_resumen_actividad', async () => {
         const service = new ActivitySummaryAIService();
@@ -477,12 +481,15 @@ export const chatTools = {
   crear_orden_trabajo: tool({
     description:
       'Crea una nueva orden de trabajo en GIMA. SOLO úsala cuando el usuario EXPLÍCITAMENTE pida crear una orden de trabajo. Esta acción modifica datos en el sistema.',
-    inputSchema: z.object({
-      equipment: z.string(),
-      description: z.string(),
-      priority: z.enum(['baja', 'media', 'alta']).default('media'),
-      location: z.string().optional(),
-    }),
+    inputSchema: z.preprocess(
+      stripNulls,
+      z.object({
+        equipment: z.string().default('Sin especificar'),
+        description: z.string().default(''),
+        priority: safeEnum(['baja', 'media', 'alta']).default('media'),
+        location: z.string().optional(),
+      })
+    ),
     // No execute — client-side tool handled via addToolApprovalResponse.
     // El cliente renderiza OrderApprovalCard y llama executeWorkOrder al aprobar.
   }),

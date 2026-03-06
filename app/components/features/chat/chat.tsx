@@ -284,6 +284,16 @@ export function Chat() {
     prevIsProcessing.current = isProcessing;
   }, [isListening, isProcessing, transcript]);
 
+  // ============================================================================
+  // Voice System Architecture (Problem 14: Dual Voice System)
+  // ============================================================================
+  // We use a dual approach for voice interaction to balance friction and power:
+  // 1. Proactive Dictation (ChatInputArea): Default behavior. Translates voice to text 
+  //    in the input box. If confidence > 0.9, it shows a "Command Detected" popup (Problem 14).
+  // 2. Dedicated Command Mode (VoiceCommandMode): Specialized UI for maintenance tasks.
+  //    This separation prevents accidental execution during general chat (Problem 11).
+  // ============================================================================
+
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full h-screen">
       <div className="flex flex-col h-full">

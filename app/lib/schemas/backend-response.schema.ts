@@ -17,26 +17,64 @@ import { z } from 'zod';
  * Laravel retorna `{ current_page, data: [...], last_page, per_page, total, ... }`
  */
 export function laravelPaginatedSchema<T extends z.ZodType>(itemSchema: T) {
-  return z.object({
-    data: z.array(itemSchema),
-    links: z
-      .object({
-        first: z.string().nullable().optional(),
-        last: z.string().nullable().optional(),
-        prev: z.string().nullable().optional(),
-        next: z.string().nullable().optional(),
-      })
-      .optional(),
-    meta: z.object({
-      current_page: z.number(),
-      from: z.number().nullable().optional(),
-      last_page: z.number(),
-      path: z.string().optional(),
-      per_page: z.number(),
-      to: z.number().nullable().optional(),
-      total: z.number(),
-    }),
+  // Laravel puede devolver paginación en dos formatos:
+  // 1. API Resource Collection: { data: [...], links: {first, last, ...}, meta: {current_page, ...} }
+  // 2. Paginator plano: { data: [...], current_page, last_page, per_page, total, links: [...] }
+  // Este schema acepta ambos formatos.
+
+  const metaShape = z.object({
+    current_page: z.number(),
+    from: z.number().nullable().optional(),
+    last_page: z.number(),
+    path: z.string().optional(),
+    per_page: z.number(),
+    to: z.number().nullable().optional(),
+    total: z.number(),
   });
+
+  return z.preprocess(
+    (raw: unknown) => {
+      if (!raw || typeof raw !== 'object') return raw;
+      const obj = raw as Record<string, unknown>;
+
+      // Si ya tiene `meta` como objeto, asumimos formato API Resource
+      if (obj.meta && typeof obj.meta === 'object' && !Array.isArray(obj.meta)) {
+        // Normalizar links: si es array, convertir a objeto vacío
+        if (Array.isArray(obj.links)) {
+          obj.links = {};
+        }
+        return obj;
+      }
+
+      // Formato plano: {data, current_page, last_page, ...}
+      // Transformar a formato estructurado
+      return {
+        data: obj.data,
+        links: Array.isArray(obj.links) ? {} : obj.links || {},
+        meta: {
+          current_page: obj.current_page,
+          from: obj.from ?? null,
+          last_page: obj.last_page,
+          path: obj.path,
+          per_page: obj.per_page,
+          to: obj.to ?? null,
+          total: obj.total,
+        },
+      };
+    },
+    z.object({
+      data: z.array(itemSchema),
+      links: z
+        .object({
+          first: z.string().nullable().optional(),
+          last: z.string().nullable().optional(),
+          prev: z.string().nullable().optional(),
+          next: z.string().nullable().optional(),
+        })
+        .optional(),
+      meta: metaShape,
+    })
+  );
 }
 
 /** Tipo inferido de una respuesta paginada */

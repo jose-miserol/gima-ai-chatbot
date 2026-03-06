@@ -47,7 +47,8 @@ export function ChatInputArea({
       onSubmit={onSubmit}
       className="mt-2"
       globalDrop
-      multiple
+      multiple={false}
+      maxFiles={1}
       accept="image/*,application/pdf"
     >
       <PromptInputHeader>

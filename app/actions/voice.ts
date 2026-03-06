@@ -114,6 +114,26 @@ export async function executeVoiceCommand(
   transcript: string,
   options?: { minConfidence?: number; context?: string }
 ) {
+  // Validar API key antes de intentar parsear (Problem 12: API Key error)
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  if (!apiKey) {
+    logger.error(
+      'API Key de Google AI no configurada',
+      new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY'),
+      {
+        component: 'actions',
+        action: 'executeVoiceCommand',
+      }
+    );
+    return {
+      success: false,
+      error:
+        'La API Key de Google AI no está configurada. Verifica la variable de entorno GOOGLE_GENERATIVE_AI_API_KEY.',
+      code: 'MISSING_API_KEY',
+      recoverable: false,
+    };
+  }
+
   try {
     const parser = VoiceCommandParserService.getInstance();
     const result = await parser.parseCommand(transcript, {

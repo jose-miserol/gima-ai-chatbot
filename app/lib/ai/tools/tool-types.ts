@@ -21,17 +21,17 @@ import type {
 // ===========================================
 
 export interface ActivosFiltros {
-  estado?: string;
+  estado?: string | null;
   buscar?: string;
-  tipo?: string;
+  tipo?: string | null;
   page?: number;
 }
 
 export interface MantenimientosFiltros {
-  estado?: string;
-  tipo?: string;
+  estado?: string | null;
+  tipo?: string | null;
   sede_id?: string;
-  prioridad?: string;
+  prioridad?: string | null;
   page?: number;
 }
 
@@ -44,8 +44,8 @@ export interface RepuestosFiltros {
 }
 
 export interface ReportesFiltros {
-  prioridad?: string;
-  estado?: string;
+  prioridad?: string | null;
+  estado?: string | null;
   page?: number;
 }
 
