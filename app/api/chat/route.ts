@@ -21,7 +21,7 @@ import { ChatService, RateLimitError, ValidationError } from '@/app/lib/services
  * Tiempo máximo permitido para respuestas streaming (segundos)
  * @see https://vercel.com/docs/functions/runtimes#max-duration
  */
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 // ===========================================
 // Helper Functions
