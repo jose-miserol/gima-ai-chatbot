@@ -15,7 +15,7 @@
 'use client';
 
 import {
-    Package, ClipboardList, AlertTriangle, Wrench, FileText, PlusCircle,
+    Package, ClipboardList, AlertTriangle, Wrench, FileText,
     Sparkles, Send, X,
 } from 'lucide-react';
 import { type ReactNode, useState, useRef, useEffect, useCallback } from 'react';
