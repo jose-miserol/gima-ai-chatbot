@@ -166,6 +166,24 @@ function safeEnum<T extends string>(allowedValues: readonly [T, ...T[]]) {
 }
 
 /**
+ * Valida un valor contra una lista de permitidos.
+ * Retorna el valor si coincide, o undefined si no.
+ * Se usa dentro de execute() para normalizar valores enviados por el LLM.
+ *
+ * FIX: `safeEnum` con z.preprocess() genera un JSON Schema incompatible con Groq
+ * (el LLM rechazaba valores no-enum ANTES de llegar a Zod).
+ * Esta función valida en execute() en lugar de en el schema.
+ */
+function validateEnum<T extends string>(
+  value: unknown,
+  allowedValues: readonly T[]
+): T | undefined {
+  if (value === null || value === undefined || value === '') return undefined;
+  const str = String(value).trim().toLowerCase();
+  return (allowedValues as readonly string[]).includes(str) ? (str as T) : undefined;
+}
+
+/**
  * Normaliza respuestas paginadas del backend, tolerando las variantes de Laravel:
  *   - Resource con { data[], links: object, meta: object }
  *   - Simple con { data[], current_page, total, ... }
@@ -334,7 +352,14 @@ export const chatTools = {
     execute: async (params) => {
       return safeExecute('consultar_activos', async () => {
         const api = await getAuthenticatedAPI();
-        const raw = await api.getActivos(params);
+        // Validar enum en execute para evitar schema rejection por el LLM
+        const estado = validateEnum(params.estado, [
+          'operativo',
+          'mantenimiento',
+          'fuera_servicio',
+          'baja',
+        ] as const);
+        const raw = await api.getActivos({ ...params, estado });
         const result = normalizePaginatedResponse(raw);
         // FIX ERROR 2: Limitar items para evitar TPM overflow
         const items = result.items.slice(0, MAX_ITEMS_PER_RESPONSE);
@@ -394,7 +419,15 @@ export const chatTools = {
     execute: async (params) => {
       return safeExecute('consultar_mantenimientos', async () => {
         const api = await getAuthenticatedAPI();
-        const raw = await api.getMantenimientos(params);
+        const estado = validateEnum(params.estado, [
+          'pendiente',
+          'en_progreso',
+          'completado',
+          'cancelado',
+        ] as const);
+        const tipo = validateEnum(params.tipo, ['preventivo', 'correctivo', 'predictivo'] as const);
+        const prioridad = validateEnum(params.prioridad, ['baja', 'media', 'alta'] as const);
+        const raw = await api.getMantenimientos({ ...params, estado, tipo, prioridad });
         const result = normalizePaginatedResponse(raw);
         const items = result.items.slice(0, MAX_ITEMS_PER_RESPONSE);
         return {
@@ -402,6 +435,8 @@ export const chatTools = {
           data: {
             items: items.map((item: any) => ({
               id: item.id,
+              descripcion: item.descripcion || truncate(item.reporte?.descripcion),
+              prioridad: item.prioridad || item.reporte?.prioridad,
               estado: item.estado,
               tipo: item.tipo,
               fecha_apertura: item.fecha_apertura,
@@ -488,7 +523,15 @@ export const chatTools = {
     execute: async (params) => {
       return safeExecute('consultar_reportes', async () => {
         const api = await getAuthenticatedAPI();
-        const raw = await api.getReportes(params);
+        const prioridad = validateEnum(params.prioridad, ['baja', 'media', 'alta'] as const);
+        const estado = validateEnum(params.estado, [
+          'abierto',
+          'asignado',
+          'en_progreso',
+          'resuelto',
+          'cerrado',
+        ] as const);
+        const raw = await api.getReportes({ ...params, prioridad, estado });
         const result = normalizePaginatedResponse(raw);
         const items = result.items.slice(0, MAX_ITEMS_PER_RESPONSE);
         return {

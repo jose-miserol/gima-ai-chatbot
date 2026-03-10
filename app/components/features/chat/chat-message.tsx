@@ -153,7 +153,9 @@ export function ChatMessage({
   onToolApproval?: (approvalId: string, approved: boolean, input?: any) => void;
 }) {
   const parts = (message.parts as unknown[]) || [];
-  const textContent = getTextContent(parts);
+  let textContent = getTextContent(parts);
+
+  const isGroqSchemaError = textContent.includes('Failed to call a function') || textContent.includes('failed_generation');
 
   const imageParts = parts.filter(
     (part: any): part is ImagePart => part?.type === 'image'
@@ -186,7 +188,9 @@ export function ChatMessage({
       )}
 
       {/* Texto — collapsible when tool results are present */}
-      {textContent && toolParts.length > 0 ? (
+      {isGroqSchemaError ? (
+        <ToolErrorCard error={textContent} />
+      ) : textContent && toolParts.length > 0 ? (
         <CollapsibleLLMText text={textContent} />
       ) : textContent ? (
         <MessageContent>

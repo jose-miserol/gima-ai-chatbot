@@ -68,21 +68,27 @@ interface ToolErrorCardProps {
     suggestion?: string;
 }
 
-export function ToolErrorCard({ error }: ToolErrorCardProps) {
+export function ToolErrorCard({ error, suggestion }: ToolErrorCardProps) {
     // Log raw error to console for debugging
     if (typeof window !== 'undefined') {
         console.error('[GIMA Chat Error]:', error);
     }
+
+    const isContextError =
+        error?.includes('Failed to call a function') ||
+        error?.includes('failed_generation') ||
+        error === 'Error en la herramienta' ||
+        error === 'Error desconocido';
 
     return (
         <div className="flex items-start gap-2 p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
             <AlertCircle className="size-4 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
             <div>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    El modelo no pudo analizar el contexto.
+                    {isContextError ? 'El modelo no pudo analizar el contexto.' : error}
                 </p>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
-                    Si esto continúa, recargue la página.
+                    {suggestion || (isContextError ? 'Si esto continúa, recargue la página.' : 'Intente de nuevo o consulte al administrador.')}
                 </p>
             </div>
         </div>
