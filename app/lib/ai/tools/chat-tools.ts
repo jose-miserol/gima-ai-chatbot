@@ -151,16 +151,9 @@ function normalizeAssetType(val: unknown): unknown {
  */
 function safeEnum<T extends string>(allowedValues: readonly [T, ...T[]]) {
   return z
-    .preprocess(
-      (val) => {
-        const raw = Array.isArray(val) ? val[0] : val;
-        if (raw === null || raw === undefined || raw === '') return undefined;
-        if (typeof raw === 'string' && (allowedValues as readonly string[]).includes(raw)) {
-          return raw;
-        }
-        return undefined;
-      },
-      z.string().describe(`Valores permitidos: ${allowedValues.join(' | ')}`)
+    .string()
+    .describe(
+      `Valores permitidos: ${allowedValues.join(' | ')}. Si el valor está vacío o no coincide, envíalo tal cual o vacío.`
     )
     .optional();
 }
