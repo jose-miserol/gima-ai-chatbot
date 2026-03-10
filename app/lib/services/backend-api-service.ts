@@ -205,7 +205,33 @@ export class BackendAPIService {
   ): Promise<PaginatedResult<T>> {
     const raw = await this.request<unknown>(endpoint);
     const paginatedSchema = laravelPaginatedSchema(schema);
-    const parsed = paginatedSchema.parse(raw);
+    const result = paginatedSchema.safeParse(raw);
+
+    if (!result.success) {
+      // Log warning instead of crashing — graceful degradation
+      logger.warn('Schema parse failed for paginated response, using raw data fallback', {
+        component: 'BackendAPIService',
+        action: 'requestPaginated',
+        endpoint,
+        errors: result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).slice(0, 3),
+      });
+
+      // Fallback: extract data directly from raw response
+      const obj = raw as Record<string, unknown>;
+      const items = Array.isArray(obj.data) ? obj.data : [];
+      return {
+        items: items as T[],
+        pagination: {
+          page: Number(obj.current_page ?? 1),
+          lastPage: Number(obj.last_page ?? 1),
+          perPage: Number(obj.per_page ?? 15),
+          total: Number(obj.total ?? 0),
+          hasMore: false,
+        },
+      };
+    }
+
+    const parsed = result.data;
 
     return {
       items: parsed.data as T[],

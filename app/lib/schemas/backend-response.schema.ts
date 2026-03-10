@@ -49,16 +49,16 @@ export function laravelPaginatedSchema<T extends z.ZodType>(itemSchema: T) {
       // Formato plano: {data, current_page, last_page, ...}
       // Transformar a formato estructurado
       return {
-        data: obj.data,
+        data: obj.data ?? [],
         links: Array.isArray(obj.links) ? {} : obj.links || {},
         meta: {
-          current_page: obj.current_page,
+          current_page: obj.current_page ?? 1,
           from: obj.from ?? null,
-          last_page: obj.last_page,
+          last_page: obj.last_page ?? 1,
           path: obj.path,
-          per_page: obj.per_page,
+          per_page: obj.per_page ?? 15,
           to: obj.to ?? null,
-          total: obj.total,
+          total: obj.total ?? 0,
         },
       };
     },

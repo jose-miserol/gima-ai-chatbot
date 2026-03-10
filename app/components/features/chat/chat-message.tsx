@@ -203,13 +203,12 @@ export function ChatMessage({
           return <ToolLoadingCard key={key} toolName={part.type} />;
         }
 
-        // Error state
+        // Error state — show friendly gray message, log raw error to console
         if (part.state === 'output-error') {
           return (
             <ToolErrorCard
               key={key}
               error={part.errorText || 'Error desconocido'}
-              suggestion="Intenta reformular tu consulta"
             />
           );
         }

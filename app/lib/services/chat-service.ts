@@ -70,7 +70,7 @@ export class ChatService {
 
     // Mantener solo los últimos mensajes para evitar saturar el límite de tokens (TPM)
     // Especialmente importante en Groq (llama-3.1-8b-instant) que tiene límite de 6000 TPM
-    const MAX_HISTORY_MESSAGES = 8;
+    const MAX_HISTORY_MESSAGES = 6;
     const recentMessages = messages.slice(-MAX_HISTORY_MESSAGES);
 
     // 4. AI Generation
@@ -80,7 +80,7 @@ export class ChatService {
         messages: recentMessages,
         system: SYSTEM_PROMPT,
         tools: chatTools,
-        stopWhen: stepCountIs(5),
+        stopWhen: stepCountIs(2),
       });
 
       return result;

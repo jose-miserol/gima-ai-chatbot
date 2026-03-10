@@ -107,8 +107,8 @@ export function ChatStatusIndicators({
         </div>
       )}
       {chatError && (
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs">
-          <span>❌ Error de conexión - Intenta de nuevo</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-xs">
+          <span>El modelo no pudo analizar el contexto. Si esto continúa, recargue la página.</span>
         </div>
       )}
     </div>
