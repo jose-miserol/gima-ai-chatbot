@@ -1,7 +1,25 @@
 /**
- * AI Tools Dashboard Client
+ * @file dashboard.tsx
+ * @module app/components/features/ai-tools
  *
- * Muestra cards de todas las herramientas AI disponibles con stats y tips.
+ * ============================================================
+ * CLIENTE DEL DASHBOARD DE HERRAMIENTAS DE IA
+ * ============================================================
+ *
+ * QUÉ HACE:
+ * Renderiza la pantalla principal panorámica del panel `/tools`.
+ * Despliega un repositorio (grid) de acceso al ecosistema funcional de la IA.
+ *
+ * CONTEXTO EN GIMA:
+ * Emula la vista modular `StatCard` usada por GIMA Projects original.
+ * Asegura la inmersión del usuario preservando las sombras suaves,
+ * el layout en cuadrícula y la paleta de colores corporativos en blanco tiza.
+ *
+ * CÓMO FUNCIONA:
+ * - Consume una variable estática local `aiTools` con la biblioteca de acciones.
+ * - Consume el componente común `DashboardHeader`.
+ * - Pinta tarjetas estilizadas que muestran viñetas y descripciones precisas,
+ *   junto a llamadas de acción dinámicas de redireccionamiento.
  */
 
 'use client';
@@ -137,103 +155,70 @@ function getGreeting(): string {
   return '¡Buenas noches!';
 }
 
+import { DashboardHeader } from '@/app/components/layout/dashboard-header';
+
 /**
  *
  */
 export function AIToolsDashboardClient() {
-  // Greeting personalizado según hora
   const greeting = useMemo(() => getGreeting(), []);
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      {/* Hero Section con Greeting */}
-      <div className="text-center space-y-4 py-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gima-blue/10 rounded-full border border-gima-blue/20">
-          <Zap className="h-4 w-4 text-gima-blue" />
-          <span className="text-sm font-medium text-gima-blue">Impulsado por IA</span>
-        </div>
+    <div className="min-h-screen bg-gray-50/50 -m-4 md:-m-8">
+      <DashboardHeader title="Herramientas de IA" subtitle={`${greeting} Selecciona una herramienta para comenzar.`} />
 
-        <h1 className="text-4xl font-bold tracking-tight">{greeting} Herramientas de IA</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Potencia tu gestión de mantenimiento con inteligencia artificial de última generación
-        </p>
-      </div>
+      <div className="p-8 space-y-8">
+        {/* Tools Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {aiTools.map((tool) => (
+            <Card key={tool.id} className="flex flex-col bg-white border border-gray-200 text-gray-900 hover:shadow-md transition-all duration-200 rounded-2xl group overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                    {tool.icon}
+                  </div>
+                  {tool.badge && (
+                    <Badge
+                      variant={tool.badge === 'Herramienta' ? 'default' : 'secondary'}
+                      className="text-xs font-medium"
+                    >
+                      {tool.badge}
+                    </Badge>
+                  )}
+                </div>
+                <CardTitle className="mt-5 text-xl">{tool.title}</CardTitle>
+                <CardDescription className="text-sm text-gray-500 line-clamp-2">{tool.description}</CardDescription>
+              </CardHeader>
 
-      {/* Tools Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {aiTools.map((tool) => (
-          <Card key={tool.id} className="flex flex-col hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="p-3 bg-gima-blue/10 rounded-lg">{tool.icon}</div>
-                {tool.badge && (
-                  <Badge
-                    variant={tool.badge === 'Herramienta' ? 'default' : 'secondary'}
-                    className="text-xs"
-                  >
-                    {tool.badge}
-                  </Badge>
+              <CardContent className="flex-1 pb-6">
+                <ul className="space-y-2.5">
+                  {tool.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+
+              <CardFooter className="pt-0 border-t border-gray-100 bg-gray-50/50">
+                {tool.href === '#modal' ? (
+                  <Button variant="ghost" className="w-full mt-4 justify-between text-gray-500 hover:text-gray-700" disabled>
+                    <span className="flex items-center gap-2">
+                      Disponible en OT
+                    </span>
+                  </Button>
+                ) : (
+                  <Button asChild variant="ghost" className="w-full mt-4 justify-between hover:bg-blue-50 hover:text-blue-700">
+                    <Link href={tool.href} className="flex items-center">
+                      Abrir herramienta
+                      <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
                 )}
-              </div>
-              <CardTitle className="mt-4">{tool.title}</CardTitle>
-              <CardDescription>{tool.description}</CardDescription>
-            </CardHeader>
-
-            <CardContent className="flex-1">
-              <ul className="space-y-2">
-                {tool.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-gima-blue flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-
-            <CardFooter>
-              {tool.href === '#modal' ? (
-                <Button variant="outline" className="w-full" disabled>
-                  <span className="flex items-center gap-2">
-                    Disponible en Detalle de OT
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                </Button>
-              ) : (
-                <Button asChild className="w-full">
-                  <Link href={tool.href} className="flex items-center gap-2">
-                    Abrir herramienta
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      {/* Info Section */}
-      <div className="mt-12 text-center space-y-4 p-8 bg-muted/50 rounded-lg border">
-        <h2 className="text-2xl font-semibold">¿Cómo funcionan estas herramientas?</h2>
-        <p className="text-muted-foreground max-w-3xl mx-auto">
-          Todas nuestras herramientas utilizan <strong>llama-3.3-70b-versatile</strong> a través de
-          GROQ, uno de los modelos de lenguaje más avanzados disponibles. La IA analiza tus datos de
-          mantenimiento y genera contenido profesional en segundos, ahorrándote tiempo y mejorando
-          la consistencia de tu documentación.
-        </p>
-
-        <div className="flex flex-wrap gap-4 justify-center mt-6">
-          <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <Sparkles className="h-4 w-4 text-gima-blue" />
-            <span className="text-sm font-medium">Generación instantánea</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <CheckCircle2 className="h-4 w-4 text-gima-blue" />
-            <span className="text-sm font-medium">Resultados consistentes</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <Zap className="h-4 w-4 text-gima-blue" />
-            <span className="text-sm font-medium">Caché inteligente</span>
-          </div>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
