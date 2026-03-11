@@ -353,16 +353,6 @@ export function Chat() {
           </div>
         )}
 
-        {/* Toggle Command Mode Button */}
-        {!isCommandMode && (
-          <button
-            onClick={() => setIsCommandMode(true)}
-            className="mb-2 text-xs text-zinc-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 transition-colors"
-          >
-            🎤 Usar comando de voz para órdenes de trabajo
-          </button>
-        )}
-
         {/* Auto-detected Command Alert */}
         {detectedCommand && (
           <div className="absolute bottom-24 left-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in">

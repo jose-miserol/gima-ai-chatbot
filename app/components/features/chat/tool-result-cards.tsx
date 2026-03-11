@@ -25,7 +25,7 @@ import {
     Copy,
     Check,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 
 // ===========================================
 // Loading Card
@@ -69,10 +69,12 @@ interface ToolErrorCardProps {
 }
 
 export function ToolErrorCard({ error, suggestion }: ToolErrorCardProps) {
-    // Log raw error to console for debugging
-    if (typeof window !== 'undefined') {
-        console.error('[GIMA Chat Error]:', error);
-    }
+    // Log raw error to console for debugging, avoiding render-phase side effects
+    useEffect(() => {
+        if (typeof window !== 'undefined' && error) {
+            console.error('[GIMA Chat Error]:', error);
+        }
+    }, [error]);
 
     const isContextError =
         error?.includes('Failed to call a function') ||

@@ -83,7 +83,14 @@ interface ToolPart {
 function getTextContent(parts: unknown[] | undefined): string {
   if (!parts || parts.length === 0) return '';
   const textParts = parts.filter((part: any): part is TextPart => part?.type === 'text');
-  return textParts.map((part) => part.text).join('\n\n');
+  let text = textParts.map((part) => part.text).join('\n\n');
+
+  // Limpiar artefactos de llamadas a herramientas (ej. Llama 3 "función=consultar_mantenimientos>{...}")
+  // que a veces se filtran como texto antes de ser parseados correctamente.
+  text = text.replace(/(?:función|function)=[\w_]+>\{.*?\}/gi, '');
+  text = text.replace(/<tool_call>.*?<\/tool_call>/gs, '');
+
+  return text.trim();
 }
 
 function isToolPart(part: any): part is ToolPart {

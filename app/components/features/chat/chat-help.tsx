@@ -7,13 +7,13 @@ import {
     Image as ImageIcon,
     History,
     Keyboard,
-    Radio,
+    Sparkles,
     HelpCircle,
-    Command,
     Copy,
     Check
 } from 'lucide-react';
 import { cn } from '@/app/lib/utils';
+import { QUICK_ACTIONS } from './chat-quick-actions';
 import { Button } from '@/app/components/ui/button';
 import {
     Dialog,
@@ -28,7 +28,7 @@ import {
 import { ScrollArea } from '@/app/components/ui/scroll-area';
 
 export function ChatHelp() {
-    const [activeTab, setActiveTab] = useState<'features' | 'commands'>('features');
+    const [activeTab, setActiveTab] = useState<'features' | 'quickActions'>('features');
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const handleCopy = (text: string, id: string) => {
@@ -64,44 +64,13 @@ export function ChatHelp() {
             description: 'Presiona Ctrl+Enter para enviar mensajes rápidamente.'
         },
         {
-            icon: Radio,
-            title: 'Comandos de Voz',
-            description: 'Di "Crear orden de trabajo para..." para generar órdenes automáticamente.'
+            icon: Sparkles,
+            title: 'Acciones Rápidas',
+            description: 'Herramientas integradas y prompts predefinidos a un solo clic para tareas comunes de GIMA.'
         }
     ];
 
-    const commands = [
-        {
-            id: 'cmd-create',
-            action: 'Crear Orden',
-            example: 'Crear orden de trabajo para aire acondicionado en sala de juntas',
-            description: 'Genera una nueva orden. Especifica equipo y ubicación.'
-        },
-        {
-            id: 'cmd-status',
-            action: 'Verificar Estado',
-            example: 'Verificar estado de la orden del ascensor',
-            description: 'Consulta el estatus actual de una orden específica.'
-        },
-        {
-            id: 'cmd-list',
-            action: 'Listar Pendientes',
-            example: 'Listar órdenes pendientes de alta prioridad',
-            description: 'Muestra un listado de órdenes filtrarles por prioridad.'
-        },
-        {
-            id: 'cmd-update',
-            action: 'Actualizar Prioridad',
-            example: 'Actualizar prioridad de orden UMAG-001 a urgente',
-            description: 'Modifica la prioridad de una orden existente.'
-        },
-        {
-            id: 'cmd-nav',
-            action: 'Navegación',
-            example: 'Ir al dashboard de métricas',
-            description: 'Navega rápidamente a otras secciones de la app.'
-        }
-    ];
+
 
     return (
         <Dialog>
@@ -119,7 +88,7 @@ export function ChatHelp() {
                     <div className="flex flex-col gap-1 mb-4">
                         <DialogTitle className="text-xl">Ayuda del Chat</DialogTitle>
                         <DialogDescription className="text-sm text-muted-foreground">
-                            Guía completa de funcionalidades y comandos de voz.
+                            Guía completa de funcionalidades y acciones rápidas disponibles.
                         </DialogDescription>
                     </div>
                     <div className="flex p-1 bg-muted/50 rounded-lg">
@@ -135,15 +104,15 @@ export function ChatHelp() {
                             Funcionalidades
                         </button>
                         <button
-                            onClick={() => setActiveTab('commands')}
+                            onClick={() => setActiveTab('quickActions')}
                             className={cn(
                                 "flex-1 text-sm font-medium py-1.5 px-3 rounded-md transition-all",
-                                activeTab === 'commands'
+                                activeTab === 'quickActions'
                                     ? "bg-background text-foreground shadow-sm"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
-                            Comandos de Voz
+                            Acciones Rápidas
                         </button>
                     </div>
                 </DialogHeader>
@@ -176,40 +145,45 @@ export function ChatHelp() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 mb-6">
+                                <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 mb-6">
                                     <div className="flex gap-3">
-                                        <div className="mt-0.5 bg-blue-100 dark:bg-blue-900/40 p-1.5 rounded-full shrink-0 h-fit">
-                                            <Command className="size-4 text-blue-600 dark:text-blue-400" />
+                                        <div className="mt-0.5 bg-purple-100 dark:bg-purple-900/40 p-1.5 rounded-full shrink-0 h-fit">
+                                            <Sparkles className="size-4 text-purple-600 dark:text-purple-400" />
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-sm text-blue-900 dark:text-blue-100 mb-1">
-                                                Control por Voz Inteligente
+                                            <h4 className="font-medium text-sm text-purple-900 dark:text-purple-100 mb-1">
+                                                Herramientas y Acciones Rápidas
                                             </h4>
-                                            <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                                                Puedes controlar la aplicación hablando naturalmente. Intenta usar estas frases exactas o variaciones similares.
+                                            <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+                                                Usa los atajos predefinidos desde el menú de herramientas al inicio del chat para realizar rápidamente tareas del sistema GIMA.
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="grid gap-3">
-                                    {commands.map((cmd) => (
+                                    {QUICK_ACTIONS.map((action, index) => (
                                         <div
-                                            key={cmd.id}
+                                            key={index}
                                             className="group flex flex-col gap-2 p-3 rounded-xl border bg-card hover:bg-accent/5 transition-colors"
                                         >
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                                    {cmd.action}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-muted-foreground">
+                                                        {action.icon}
+                                                    </div>
+                                                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                                        {action.label}
+                                                    </span>
+                                                </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    onClick={() => handleCopy(cmd.example, cmd.id)}
-                                                    title="Copiar ejemplo"
+                                                    onClick={() => handleCopy(action.prompt, action.label)}
+                                                    title="Copiar prompt"
                                                 >
-                                                    {copiedId === cmd.id ? (
+                                                    {copiedId === action.label ? (
                                                         <Check className="size-3 text-green-500" />
                                                     ) : (
                                                         <Copy className="size-3 text-muted-foreground" />
@@ -217,11 +191,13 @@ export function ChatHelp() {
                                                 </Button>
                                             </div>
                                             <code className="text-sm font-medium bg-muted/50 p-2 rounded-md text-primary block">
-                                                "{cmd.example}"
+                                                "{action.prompt}{action.formFields ? ' [...]' : ''}"
                                             </code>
-                                            <p className="text-xs text-muted-foreground">
-                                                {cmd.description}
-                                            </p>
+                                            {action.formFields && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    * Despliega un formulario para completar información.
+                                                </p>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
