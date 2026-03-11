@@ -12,9 +12,6 @@ import {
   Sparkles,
   ArrowRight,
   Zap,
-  Clock,
-  TrendingUp,
-  Lightbulb,
   ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -129,28 +126,6 @@ const aiTools: AITool[] = [
   },
 ];
 
-const proTips = [
-  {
-    title: 'Usa atajos de teclado',
-    description: 'Presiona Ctrl+Enter para generar contenido rápidamente en cualquier formulario.',
-    icon: <Zap className="h-5 w-5" />,
-  },
-  {
-    title: 'Activa el guardado automático',
-    description: 'Tus borradores se guardan cada 30 segundos para que nunca pierdas tu trabajo.',
-    icon: <Clock className="h-5 w-5" />,
-  },
-  {
-    title: 'Exporta en múltiples formatos',
-    description: 'Cada resultado puede exportarse como JSON o Markdown con un solo clic.',
-    icon: <FileText className="h-5 w-5" />,
-  },
-  {
-    title: 'Revisa el historial',
-    description: 'Todas tus generaciones se guardan en el historial para acceso rápido.',
-    icon: <TrendingUp className="h-5 w-5" />,
-  },
-];
 
 /**
  * Obtiene saludo personalizado según hora del día
@@ -169,14 +144,6 @@ export function AIToolsDashboardClient() {
   // Greeting personalizado según hora
   const greeting = useMemo(() => getGreeting(), []);
 
-  // Tip aleatorio del día (basado en día del mes)
-  const tipOfTheDay = useMemo(() => {
-    const dayIndex = new Date().getDate() % proTips.length;
-    return proTips[dayIndex];
-  }, []);
-
-
-
   return (
     <div className="container mx-auto py-8 space-y-8">
       {/* Hero Section con Greeting */}
@@ -191,21 +158,6 @@ export function AIToolsDashboardClient() {
           Potencia tu gestión de mantenimiento con inteligencia artificial de última generación
         </p>
       </div>
-
-      {/* Tip del Día */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="flex items-start gap-4 p-4">
-          <div className="p-2 bg-primary/10 rounded-lg text-primary">
-            <Lightbulb className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
-              💡 Tip del día: {tipOfTheDay.title}
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">{tipOfTheDay.description}</p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Tools Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
