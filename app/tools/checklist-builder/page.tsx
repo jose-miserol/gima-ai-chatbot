@@ -10,7 +10,7 @@ import { ChecklistBuilder } from '@/app/components/features/ai-tools/checklist-b
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Checklist Builder | GIMA AI',
+  title: 'Generador de Checklists | GIMA',
   description: 'Genera checklists de mantenimiento con inteligencia artificial',
 };
 

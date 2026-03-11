@@ -92,7 +92,7 @@ export function DataTransformation() {
 
     return (
         <AIToolLayout
-            title="Data Transformation"
+            title="Transformación de Datos"
             description="Limpia, formatea y transforma tus datos usando instrucciones en lenguaje natural"
             icon={<Database className="h-8 w-8" />}
             showAIBadge={true}

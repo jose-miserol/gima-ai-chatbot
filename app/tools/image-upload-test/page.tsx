@@ -9,8 +9,8 @@ import { ImageUploadTestClient } from '@/app/components/features/ai-tools/image-
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Image Upload Test | GIMA AI',
-    description: 'Test image analysis with Gemini Vision',
+    title: 'Análisis de Imágenes | GIMA',
+    description: 'Analiza imágenes de equipos y activos con Gemini Vision',
 };
 
 /**

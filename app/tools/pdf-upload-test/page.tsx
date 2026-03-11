@@ -9,8 +9,8 @@ import { PdfUploadTestClient } from '@/app/components/features/ai-tools/pdf-uplo
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'PDF Upload Test | GIMA AI',
-    description: 'Test PDF content extraction and analysis',
+    title: 'Análisis de PDF | GIMA',
+    description: 'Extrae y analiza contenido de documentos PDF',
 };
 
 /**

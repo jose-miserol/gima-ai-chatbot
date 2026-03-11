@@ -216,7 +216,7 @@ export function ActivitySummary() {
 
   return (
     <AIToolLayout
-      title="Activity Summaries"
+      title="Resúmenes de Actividad"
       description="Genera resúmenes profesionales de actividades de mantenimiento con inteligencia artificial"
       icon={<FileText className="h-8 w-8" />}
       // stats={{

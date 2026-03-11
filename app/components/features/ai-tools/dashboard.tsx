@@ -45,11 +45,11 @@ interface AITool {
 const aiTools: AITool[] = [
   {
     id: 'checklist-builder',
-    title: 'Checklist Builder',
+    title: 'Generador de Checklists',
     description: 'Genera checklists de mantenimiento personalizados con IA',
-    icon: <CheckCircle2 className="h-8 w-8 text-primary" />,
+    icon: <CheckCircle2 className="h-8 w-8 text-gima-blue" />,
     href: '/tools/checklist-builder',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
       'Checklists personalizados por activo',
       'Múltiples tipos de mantenimiento',
@@ -59,11 +59,11 @@ const aiTools: AITool[] = [
   },
   {
     id: 'activity-summaries',
-    title: 'Activity Summaries',
+    title: 'Resúmenes de Actividad',
     description: 'Resúmenes profesionales de actividades de mantenimiento',
-    icon: <FileText className="h-8 w-8 text-primary" />,
+    icon: <FileText className="h-8 w-8 text-gima-blue" />,
     href: '/tools/activity-summaries',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
       '3 estilos profesionales',
       '3 niveles de detalle',
@@ -73,11 +73,11 @@ const aiTools: AITool[] = [
   },
   {
     id: 'data-transformation',
-    title: 'Data Transformation',
+    title: 'Transformación de Datos',
     description: 'Limpia, formatea y transforma datos con instrucciones en lenguaje natural',
-    icon: <Zap className="h-8 w-8 text-primary" />,
+    icon: <Zap className="h-8 w-8 text-gima-blue" />,
     href: '/tools/data-transformation',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
       'Transformación con IA (Gemini)',
       'Vista previa antes de aplicar',
@@ -87,44 +87,44 @@ const aiTools: AITool[] = [
   },
   {
     id: 'work-order-closeout',
-    title: 'Work Order Closeout',
+    title: 'Cierre de Orden de Trabajo',
     description: 'Notas de cierre profesionales para órdenes de trabajo',
-    icon: <Sparkles className="h-8 w-8 text-primary" />,
+    icon: <Sparkles className="h-8 w-8 text-gima-blue" />,
     href: '#modal',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
       'Notas de cierre detalladas',
       'Análisis de hallazgos',
       'Recomendaciones automáticas',
-      'Integrado en WO detail',
+      'Integrado en detalle de OT',
     ],
   },
   {
     id: 'image-upload-test',
-    title: 'Image Upload Test',
-    description: 'Test image analysis with Gemini Vision',
-    icon: <ImageIcon className="h-8 w-8 text-primary" />,
+    title: 'Análisis de Imágenes',
+    description: 'Analiza imágenes de equipos y activos con Gemini Vision',
+    icon: <ImageIcon className="h-8 w-8 text-gima-blue" />,
     href: '/tools/image-upload-test',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
-      'Upload & analyze images',
-      'Gemini Vision integration',
-      'File validation (10MB max)',
-      'Drag & drop support',
+      'Sube y analiza imágenes',
+      'Integración con Gemini Vision',
+      'Validación de archivo (máx. 10MB)',
+      'Arrastrar y soltar',
     ],
   },
   {
     id: 'pdf-upload-test',
-    title: 'PDF Upload Test',
-    description: 'Test PDF content extraction and analysis',
-    icon: <FileText className="h-8 w-8 text-primary" />,
+    title: 'Análisis de PDF',
+    description: 'Extrae y analiza contenido de documentos PDF',
+    icon: <FileText className="h-8 w-8 text-gima-blue" />,
     href: '/tools/pdf-upload-test',
-    badge: 'Tools',
+    badge: 'Herramienta',
     features: [
-      'Upload & analyze PDFs',
-      'Custom prompt support',
-      'File validation (20MB max)',
-      'Content extraction',
+      'Sube y analiza PDFs',
+      'Instrucciones personalizadas',
+      'Validación de archivo (máx. 20MB)',
+      'Extracción de contenido',
     ],
   },
 ];
@@ -181,9 +181,9 @@ export function AIToolsDashboardClient() {
     <div className="container mx-auto py-8 space-y-8">
       {/* Hero Section con Greeting */}
       <div className="text-center space-y-4 py-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-          <Zap className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Powered by AI</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gima-blue/10 rounded-full border border-gima-blue/20">
+          <Zap className="h-4 w-4 text-gima-blue" />
+          <span className="text-sm font-medium text-gima-blue">Impulsado por IA</span>
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight">{greeting} Herramientas de IA</h1>
@@ -213,10 +213,10 @@ export function AIToolsDashboardClient() {
           <Card key={tool.id} className="flex flex-col hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
-                <div className="p-3 bg-primary/10 rounded-lg">{tool.icon}</div>
+                <div className="p-3 bg-gima-blue/10 rounded-lg">{tool.icon}</div>
                 {tool.badge && (
                   <Badge
-                    variant={tool.badge === 'Tools' ? 'default' : 'secondary'}
+                    variant={tool.badge === 'Herramienta' ? 'default' : 'secondary'}
                     className="text-xs"
                   >
                     {tool.badge}
@@ -231,7 +231,7 @@ export function AIToolsDashboardClient() {
               <ul className="space-y-2">
                 {tool.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-gima-blue flex-shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -242,7 +242,7 @@ export function AIToolsDashboardClient() {
               {tool.href === '#modal' ? (
                 <Button variant="outline" className="w-full" disabled>
                   <span className="flex items-center gap-2">
-                    Disponible en WO Detail
+                    Disponible en Detalle de OT
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 </Button>
@@ -271,15 +271,15 @@ export function AIToolsDashboardClient() {
 
         <div className="flex flex-wrap gap-4 justify-center mt-6">
           <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-gima-blue" />
             <span className="text-sm font-medium">Generación instantánea</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <CheckCircle2 className="h-4 w-4 text-gima-blue" />
             <span className="text-sm font-medium">Resultados consistentes</span>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border">
-            <Zap className="h-4 w-4 text-primary" />
+            <Zap className="h-4 w-4 text-gima-blue" />
             <span className="text-sm font-medium">Caché inteligente</span>
           </div>
         </div>

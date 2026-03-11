@@ -9,7 +9,7 @@ import { AIToolsDashboardClient } from '@/app/components/features/ai-tools/dashb
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'AI Tools | GIMA AI',
+  title: 'Herramientas IA | GIMA',
   description: 'Herramientas de inteligencia artificial para mantenimiento',
 };
 

@@ -9,7 +9,7 @@ import type { Metadata } from 'next';
 import { DataTransformation } from '@/app/components/features/ai-tools/data-transformation/data-transformation';
 
 export const metadata: Metadata = {
-  title: 'Data Transformation | GIMA AI',
+  title: 'Transformación de Datos | GIMA',
   description: 'Transforma y limpia datos usando instrucciones en lenguaje natural',
 };
 

@@ -10,7 +10,7 @@ import { ActivitySummary } from '@/app/components/features/ai-tools/activity-sum
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Activity Summaries | GIMA AI',
+  title: 'Resúmenes de Actividad | GIMA',
   description: 'Genera resúmenes profesionales de actividades de mantenimiento',
 };
 

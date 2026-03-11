@@ -130,7 +130,7 @@ function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
             className="hover:text-foreground transition-colors flex items-center gap-1"
           >
             <Home className="h-3.5 w-3.5" />
-            <span>AI Tools</span>
+            <span>Herramientas IA</span>
           </Link>
         </li>
         {items.map((item, index) => (
@@ -215,7 +215,7 @@ export function AIToolLayout({
         <header className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             {icon && (
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+              <div className="p-2 bg-gima-blue/10 rounded-lg text-gima-blue">
                 {icon}
               </div>
             )}
@@ -225,7 +225,7 @@ export function AIToolLayout({
                 {showAIBadge && (
                   <Badge variant="secondary" className="gap-1">
                     <Sparkles className="h-3 w-3" />
-                    AI-Powered
+                    IA Integrada
                   </Badge>
                 )}
                 {helpContent && (

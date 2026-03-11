@@ -178,7 +178,7 @@ export function ChecklistBuilder() {
 
   return (
     <AIToolLayout
-      title="Checklist Builder"
+      title="Generador de Checklists"
       description="Genera checklists de mantenimiento personalizados con inteligencia artificial"
       icon={<CheckCircle2 className="h-8 w-8" />}
       helpContent={
