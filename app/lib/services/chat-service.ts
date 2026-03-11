@@ -56,6 +56,7 @@
  */
 
 import { createGroq } from '@ai-sdk/groq';
+import { google } from '@ai-sdk/google';
 import { streamText, stepCountIs, type LanguageModel } from 'ai';
 
 import { sanitizeForModel } from '@/app/components/features/chat/utils';
@@ -116,7 +117,14 @@ export class ChatService {
     this.deps = {
       logger: dependencies.logger || logger,
       rateLimiter: dependencies.rateLimiter || chatRateLimiter,
-      modelProvider: dependencies.modelProvider || createGroq({ apiKey: env.GROQ_API_KEY }),
+      modelProvider:
+        dependencies.modelProvider ||
+        ((modelId: string) => {
+          if (modelId.startsWith('google:')) {
+            return google(modelId.replace('google:', ''));
+          }
+          return createGroq({ apiKey: env.GROQ_API_KEY })(modelId);
+        }),
     };
   }
 

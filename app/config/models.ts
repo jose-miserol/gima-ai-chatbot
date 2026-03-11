@@ -59,8 +59,8 @@
  */
 export const AVAILABLE_MODELS = [
   {
-    name: 'Llama 3.1 8B', // Nombre mostrado en el selector de UI
-    value: 'llama-3.1-8b-instant', // Identificador exacto en la API de GROQ
+    name: 'Gemini 2.5 Flash', // Nombre mostrado en el selector de UI
+    value: 'google:gemini-2.5-flash', // Identificador para el manejador de modelos
   },
 ] as const; // `as const` habilita inferencia de tipos literales para ModelValue
 
