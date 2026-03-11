@@ -1,75 +1,132 @@
 /**
- * BaseAIService - Clase abstracta para servicios de IA
+ * @file base-ai-service.ts
+ * @module app/lib/ai/base-ai-service
  *
- * Proporciona funcionalidad común para todos los servicios que usan IA:
- * - Retry logic con backoff exponencial
- * - Caching de respuestas
- * - Rate limiting awareness
- * - Validación con Zod
- * - Logging estructurado
- * - Error handling tipado
- * @example
- * ```typescript
- * export class ChecklistAIService extends BaseAIService {
- *   async generateChecklist(request: ChecklistRequest) {
- *     const validated = this.validate(ChecklistRequestSchema, request);
+ * ============================================================
+ * CLASE ABSTRACTA — BASE PARA TODOS LOS SERVICIOS DE IA
+ * ============================================================
  *
- *     return this.executeWithRetry(async () => {
- *       const cached = await this.checkCache(cacheKey);
- *       if (cached) return cached;
+ * QUÉ HACE ESTE MÓDULO:
+ *   Define `BaseAIService`, la clase abstracta de la que heredan todos los
+ *   servicios de IA de GIMA (checklist, resúmenes, cierre de OT, parser de
+ *   voz, etc.). Concentra la lógica transversal que de otro modo estaría
+ *   duplicada en cada servicio:
+ *     - Retry con backoff exponencial para errores recuperables.
+ *     - Cache con TTL configurable (localStorage en cliente, Redis/Upstash en servidor).
+ *     - Validación de entrada/salida con Zod.
+ *     - Logging estructurado por componente.
  *
- *       const result = await this.callAI(prompt);
- *       await this.setCache(cacheKey, result);
- *       return result;
- *     });
- *   }
- * }
- * ```
+ * CONTEXTO EN GIMA:
+ *   GIMA cuenta con múltiples features de IA (generación de checklists,
+ *   resúmenes de actividades, cierre de OT, parser de comandos de voz).
+ *   Todas comparten el mismo ciclo: validar → consultar cache → llamar LLM →
+ *   cachear → retornar. `BaseAIService` abstrae ese ciclo para que cada
+ *   servicio concreto solo implemente la lógica de negocio específica.
+ *
+ * JERARQUÍA DE SERVICIOS:
+ *   BaseAIService (abstracta)
+ *   ├── ChecklistAIService          → genera checklists con GROQ
+ *   ├── ActivitySummaryAIService    → genera resúmenes con GROQ
+ *   ├── WorkOrderCloseoutAIService  → genera notas de cierre con GROQ
+ *   └── VoiceCommandParserService   → parsea comandos de voz con Gemini
+ *
+ * POR QUÉ INYECCIÓN DE DEPENDENCIAS:
+ *   Todos los componentes externos (logger, cache) se inyectan via `deps`
+ *   para que los tests puedan sustituirlos sin mocks globales. El patrón
+ *   permite tests unitarios rápidos y deterministas.
+ *
+ * ESTRATEGIA DE CACHE:
+ *   En cliente: localStorage con TTL manual (expiry en el propio JSON).
+ *   En servidor (Next.js): se debe inyectar un cliente Redis/Upstash via deps.
+ *   Si localStorage no está disponible (SSR), el cache devuelve null silenciosamente
+ *   y el servicio llama a la API sin cache.
+ *
+ * ESTRATEGIA DE RETRY:
+ *   Solo se reintenta en errores marcados como `recoverable: true`:
+ *   - Timeouts (AITimeoutError).
+ *   - Errores de red transitorios.
+ *   - Errores 5xx del LLM provider.
+ *   Los errores de validación (AIValidationError) NO se reintentan porque
+ *   volver a enviar los mismos datos producirá el mismo error.
+ *
+ * ERRORES EXPORTADOS:
+ *   - AIServiceError     → Error base tipado. Incluye `serviceName` y `recoverable`.
+ *   - AITimeoutError     → Request al LLM superó `timeoutMs`. Recuperable.
+ *   - AIValidationError  → Zod rechazó los datos. No recuperable.
+ *
  */
 
 import { z } from 'zod';
 
 import { logger } from '@/app/lib/logger';
 
+// ============================================================
+// INTERFACES DE CONFIGURACIÓN Y DEPENDENCIAS
+// ============================================================
+
 /**
- * Configuración base para servicios de IA
+ * Configuración base que recibe cualquier servicio de IA concreto.
+ *
+ * TODOS LOS CAMPOS CON DEFAULT son opcionales — el servicio concreto
+ * solo necesita pasar `serviceName` como mínimo, y puede sobrescribir
+ * cualquier valor según sus necesidades (ej. un servicio de audio puede
+ * necesitar `timeoutMs: 60000` por la duración del procesamiento).
  */
 export interface AIServiceConfig {
   /**
-   * Nombre del servicio para logging
+   * Nombre del servicio para logging.
+   * Se usa como prefijo en todos los mensajes de log y en las cache keys,
+   * asegurando que distintos servicios no compartan entradas de cache.
    */
   serviceName: string;
 
   /**
-   * Timeout en milisegundos para requests a IA
+   * Timeout en milisegundos para requests a la API del LLM.
+   * Pasado este límite se lanza AITimeoutError (recoverable).
    * @default 30000 (30 segundos)
    */
   timeoutMs?: number;
 
   /**
-   * Número máximo de reintentos
+   * Número máximo de reintentos ante errores recuperables.
+   * Después del último intento fallido se propaga el error al caller.
    * @default 3
    */
   maxRetries?: number;
 
   /**
-   * Habilitar caching de responses
+   * Habilitar caching de respuestas del LLM.
+   * Deshabilitar en servicios donde los datos cambian frecuentemente
+   * o donde la frescura es crítica (ej. datos de inventario en tiempo real).
    * @default true
    */
   enableCaching?: boolean;
 
   /**
-   * TTL del cache en segundos
+   * TTL del cache en segundos.
+   * Pasado este tiempo, la entrada se considera expirada y se llama al LLM.
+   * Ajustar según la volatilidad del contenido generado:
+   * - Checklists: 3600s (cambian poco)
+   * - Resúmenes: 3600s
+   * - Notas de cierre: 1800s (más específicas por OT)
    * @default 3600 (1 hora)
    */
   cacheTTL?: number;
 }
 
 /**
- * Dependencias inyectables para testing
+ * Dependencias inyectables para testing y extensión.
+ *
+ * En producción las dependencias por defecto son suficientes.
+ * En tests se inyectan doubles (stubs, spies) para:
+ * - Verificar que el logger recibe los mensajes correctos.
+ * - Simular un cache vacío o con datos pre-populados.
+ * - Evitar llamadas reales a localStorage en JSDOM.
  */
 export interface AIServiceDeps {
+  /** Logger estructurado. Por defecto usa el logger global del proyecto. */
   logger?: typeof logger;
+  /** Implementación de cache. Por defecto usa localStorage con TTL. */
   cache?: {
     get: (key: string) => Promise<string | null>;
     set: (key: string, value: string, ttl?: number) => Promise<void>;
@@ -77,16 +134,28 @@ export interface AIServiceDeps {
   };
 }
 
+// ============================================================
+// ERRORES PERSONALIZADOS
+// ============================================================
+
 /**
- * Error personalizado para servicios de IA
+ * Error base para todos los servicios de IA de GIMA.
+ *
+ * Extiende Error con tres propiedades adicionales que el caller puede
+ * usar para decidir si reintentar, mostrar un mensaje de error específico,
+ * o registrar el error original para debugging.
+ *
+ * CUÁNDO USARLO:
+ *   Lanzar directamente cuando el error no encaja en AITimeoutError o
+ *   AIValidationError. El caller comprueba `recoverable` para decidir
+ *   si tiene sentido reintentar la operación.
  */
 export class AIServiceError extends Error {
   /**
-   *
-   * @param message
-   * @param serviceName
-   * @param recoverable
-   * @param originalError
+   * @param message        - Mensaje legible del error.
+   * @param serviceName    - Nombre del servicio que lo originó (para logging).
+   * @param recoverable    - Si es `true`, el servicio reintentará la operación.
+   * @param originalError  - Error original (útil para stack trace en Sentry).
    */
   constructor(
     message: string,
@@ -100,54 +169,102 @@ export class AIServiceError extends Error {
 }
 
 /**
- * Error de timeout en llamada a IA
+ * Error de timeout en llamada al LLM.
+ *
+ * Se lanza cuando el request al proveedor de IA supera `timeoutMs`.
+ * Marcado como `recoverable: true` porque el LLM puede haber estado
+ * temporalmente sobrecargado; un reintento suele resolver el problema.
+ *
+ * CUÁNDO OCURRE:
+ *   - PDFs o audios muy grandes que tardan más de lo esperado en procesar.
+ *   - Picos de carga en la API del proveedor (Gemini/GROQ).
+ *   - Conexiones lentas en entornos de staging.
  */
 export class AITimeoutError extends AIServiceError {
   /**
-   *
-   * @param serviceName
-   * @param timeoutMs
+   * @param serviceName - Nombre del servicio para logging.
+   * @param timeoutMs   - Límite de tiempo configurado (para incluir en el mensaje).
    */
   constructor(serviceName: string, timeoutMs: number) {
     super(
       `AI request timed out after ${timeoutMs}ms`,
       serviceName,
-      true // Timeout es recuperable
+      true // Timeout es recuperable — el reintento puede llegar en un momento de menor carga
     );
     this.name = 'AITimeoutError';
   }
 }
 
 /**
- * Error de validación de schema
+ * Error de validación del schema Zod.
+ *
+ * Se lanza cuando los datos (request o response) no superan la validación
+ * con el schema Zod correspondiente. Marcado como `recoverable: false`
+ * porque volver a enviar los mismos datos inválidos producirá el mismo error.
+ *
+ * CUÁNDO OCURRE:
+ *   - El LLM devuelve un JSON con campos faltantes o de tipo incorrecto.
+ *   - El caller pasa parámetros de entrada con valores fuera del enum.
+ *   - El schema evolucionó y los datos en cache son del formato antiguo.
  */
 export class AIValidationError extends AIServiceError {
   /**
-   *
-   * @param serviceName
-   * @param zodError
+   * @param serviceName - Nombre del servicio para logging.
+   * @param zodError    - Error de Zod con detalle de qué campo falló.
    */
   constructor(serviceName: string, zodError: z.ZodError) {
     super(
       `Validation failed: ${zodError.message}`,
       serviceName,
-      false // Validation errors no son recuperables
+      false // Validación fallida no es recuperable con retry
     );
     this.name = 'AIValidationError';
   }
 }
 
+// ============================================================
+// CLASE ABSTRACTA: BaseAIService
+// ============================================================
+
 /**
- * BaseAIService - Clase abstracta con funcionalidad común
+ * Clase abstracta con funcionalidad transversal para servicios de IA.
+ *
+ * CÓMO EXTENDER:
+ *   1. Crear la clase concreta extendiendo BaseAIService.
+ *   2. Llamar a `super()` con la configuración específica del servicio.
+ *   3. Implementar la lógica de negocio usando los métodos protegidos
+ *      `validate`, `executeWithRetry`, `checkCache`, `setCache` y `buildCacheKey`.
+ *
+ * @example
+ * ```typescript
+ * export class MyAIService extends BaseAIService {
+ *   constructor() {
+ *     super({ serviceName: 'MyAIService', cacheTTL: 1800 });
+ *   }
+ *
+ *   async generate(input: MyInput): Promise<MyOutput> {
+ *     const validated = this.validate(myInputSchema, input);
+ *     const cacheKey = this.buildCacheKey([validated.id, validated.type]);
+ *
+ *     return this.executeWithRetry(async () => {
+ *       const cached = await this.checkCache<MyOutput>(cacheKey);
+ *       if (cached) return cached;
+ *
+ *       const result = await callLLM(validated);
+ *       await this.setCache(cacheKey, result);
+ *       return result;
+ *     });
+ *   }
+ * }
+ * ```
  */
 export abstract class BaseAIService {
   protected config: Required<AIServiceConfig>;
   protected deps: AIServiceDeps;
 
   /**
-   *
-   * @param config
-   * @param deps
+   * @param config - Configuración del servicio. Solo `serviceName` es obligatorio.
+   * @param deps   - Dependencias inyectables. En producción se usan los defaults.
    */
   constructor(config: AIServiceConfig, deps?: AIServiceDeps) {
     this.config = {
@@ -164,11 +281,25 @@ export abstract class BaseAIService {
     };
   }
 
+  // ============================================================
+  // MÉTODOS PROTEGIDOS — Para uso en subclases
+  // ============================================================
+
   /**
-   * Valida datos con un schema Zod
-   * @param schema
-   * @param data
-   * @throws AIValidationError si la validación falla
+   * Valida datos contra un schema Zod.
+   *
+   * Si la validación falla lanza AIValidationError (no recuperable),
+   * que el retry loop de `executeWithRetry` no reintentará.
+   *
+   * CUÁNDO USARLO:
+   *   - Antes de llamar al LLM: para validar el input del usuario.
+   *   - Después de recibir la respuesta del LLM: para garantizar que el
+   *     JSON devuelto tiene la estructura correcta antes de retornarlo al caller.
+   *
+   * @param schema - Schema Zod que define la forma esperada de los datos.
+   * @param data   - Datos a validar (pueden ser `unknown` del JSON.parse).
+   * @returns Los datos validados y tipados como `T`.
+   * @throws AIValidationError si la validación falla.
    */
   protected validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
     try {
@@ -182,14 +313,21 @@ export abstract class BaseAIService {
   }
 
   /**
-   * Ejecuta función con retry logic
+   * Ejecuta una función con retry logic y backoff exponencial.
    *
-   * Solo reintentar en errores recuperables:
-   * - Timeouts
-   * - Errores de red
-   * - Errores 5xx del server
-   * @param fn
-   * @param correlationId
+   * CUÁNDO REINTENTA:
+   *   Solo reintenta si el error lanzado es `recoverable: true`. Esto incluye
+   *   AITimeoutError y cualquier AIServiceError con `recoverable: true`.
+   *   Los errores de validación (recoverable: false) se propagan inmediatamente.
+   *
+   * CÁLCULO DE BACKOFF:
+   *   `backoffMs = min(2^attempt * 1000, 30000)`
+   *   Intento 1 → 2s, Intento 2 → 4s, Intento 3 → 8s... hasta 30s máximo.
+   *
+   * @param fn              - Función async a ejecutar con retry.
+   * @param correlationId   - ID opcional para tracing distribuido en los logs.
+   * @returns El resultado de `fn` si tiene éxito dentro del límite de reintentos.
+   * @throws El último error si se agotaron todos los reintentos.
    */
   protected async executeWithRetry<T>(fn: () => Promise<T>, correlationId?: string): Promise<T> {
     let lastError: Error | undefined;
@@ -201,7 +339,6 @@ export abstract class BaseAIService {
         lastError = error as Error;
         const isLastAttempt = attempt === this.config.maxRetries;
 
-        // Solo recuperable si es AIServiceError con flag o es timeout
         const isRecoverable =
           error instanceof AITimeoutError || (error instanceof AIServiceError && error.recoverable);
 
@@ -209,7 +346,6 @@ export abstract class BaseAIService {
           throw error;
         }
 
-        // Backoff exponencial
         const backoffMs = Math.min(Math.pow(2, attempt) * 1000, 30000);
 
         this.deps.logger?.warn('Retrying AI request', {
@@ -228,8 +364,16 @@ export abstract class BaseAIService {
   }
 
   /**
-   * Verifica cache (solo si caching está habilitado)
-   * @param key
+   * Verifica si existe una respuesta cacheada para la clave dada.
+   *
+   * Retorna `null` silenciosamente (sin lanzar) en los siguientes casos:
+   *   - Caching deshabilitado en la configuración (`enableCaching: false`).
+   *   - No hay implementación de cache disponible.
+   *   - La entrada ha expirado (TTL superado en localStorage).
+   *   - Error al leer el cache (corrupción de datos, quota exceeded, etc.).
+   *
+   * @param key - Clave de cache generada con `buildCacheKey`.
+   * @returns El valor cacheado deserializado, o `null` si no existe/expiró.
    */
   protected async checkCache<T>(key: string): Promise<T | null> {
     if (!this.config.enableCaching || !this.deps.cache) {
@@ -257,9 +401,14 @@ export abstract class BaseAIService {
   }
 
   /**
-   * Guarda en cache
-   * @param key
-   * @param value
+   * Almacena un valor en cache serializado como JSON.
+   *
+   * Falla silenciosamente si el cache no está disponible o hay un error
+   * de escritura (quota exceeded, localStorage lleno, etc.). El fallo
+   * del cache no debe interrumpir el flujo principal del servicio.
+   *
+   * @param key   - Clave de cache generada con `buildCacheKey`.
+   * @param value - Valor a cachear. Debe ser serializable a JSON.
    */
   protected async setCache(key: string, value: unknown): Promise<void> {
     if (!this.config.enableCaching || !this.deps.cache) {
@@ -284,28 +433,52 @@ export abstract class BaseAIService {
   }
 
   /**
-   * Genera clave de cache consistente
-   * @param parts
+   * Genera una clave de cache con namespace por servicio.
+   *
+   * El formato `serviceName:part1:part2:...` garantiza que servicios
+   * distintos no colisionen aunque usen los mismos parámetros.
+   *
+   * @example
+   *   // En ChecklistAIService:
+   *   this.buildCacheKey(['bomba', 'preventivo', 'default'])
+   *   // → "ChecklistAIService:bomba:preventivo:default"
+   *
+   * @param parts - Componentes de la clave (tipos de activo, IDs, estilos, etc.).
+   * @returns Clave de cache namespaceada y consistente.
    */
   protected buildCacheKey(parts: Array<string | number>): string {
     return `${this.config.serviceName}:${parts.join(':')}`;
   }
 
   /**
-   * Sleep helper
-   * @param ms
+   * Helper de pausa asíncrona para el backoff entre reintentos.
+   * @param ms - Milisegundos a esperar.
    */
   protected sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  // ============================================================
+  // MÉTODOS PRIVADOS
+  // ============================================================
+
   /**
-   * Crea implementación simple de cache con localStorage
-   * (Solo para cliente, en servidor usar Redis/Upstash)
+   * Crea una implementación de cache basada en localStorage.
+   *
+   * LIMITACIONES:
+   *   - Solo disponible en cliente (window !== undefined).
+   *   - En SSR (Next.js Server Components / Route Handlers) retorna
+   *     un no-op cache que siempre devuelve null.
+   *   - Para producción en servidor, inyectar un cliente Redis/Upstash via deps.
+   *
+   * IMPLEMENTACIÓN DEL TTL:
+   *   Almacena `{ value, expiry }` donde `expiry` es el timestamp de expiración
+   *   en ms. Al leer, compara `Date.now()` con `expiry` y elimina la entrada
+   *   si está expirada, evitando que datos obsoletos se sirvan indefinidamente.
    */
   private createLocalStorageCache() {
-    // Check if localStorage is available (client-side)
     if (typeof window === 'undefined' || !window.localStorage) {
+      // Entorno SSR: no-op cache para evitar errores en el servidor
       return {
         get: async () => null,
         set: async () => {},
@@ -321,7 +494,7 @@ export abstract class BaseAIService {
 
           const { value, expiry } = JSON.parse(item);
           if (expiry && Date.now() > expiry) {
-            localStorage.removeItem(key);
+            localStorage.removeItem(key); // Limpiar entrada expirada
             return null;
           }
 
@@ -335,14 +508,14 @@ export abstract class BaseAIService {
           const expiry = ttl ? Date.now() + ttl * 1000 : null;
           localStorage.setItem(key, JSON.stringify({ value, expiry }));
         } catch {
-          // Silently fail (quota exceeded, etc.)
+          // Fallo silencioso: quota exceeded, modo privado, etc.
         }
       },
       delete: async (key: string) => {
         try {
           localStorage.removeItem(key);
         } catch {
-          // Silently fail
+          // Fallo silencioso
         }
       },
     };

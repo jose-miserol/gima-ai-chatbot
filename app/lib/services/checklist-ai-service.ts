@@ -1,8 +1,52 @@
 /**
- * ChecklistAIService - Servicio de generación de checklists con IA
+ * @file checklist-ai-service.ts
+ * @module app/lib/ai/checklist-ai-service
  *
- * Extiende BaseAIService para proporcionar funcionalidad específica
- * de generación de checklists de mantenimiento usando GROQ.
+ * ============================================================
+ * SERVICIO DE IA — GENERACIÓN DE CHECKLISTS DE MANTENIMIENTO
+ * ============================================================
+ *
+ * QUÉ HACE ESTE MÓDULO:
+ *   Expone `ChecklistAIService`, que genera checklists de mantenimiento
+ *   personalizados usando GROQ (llama). Dado el tipo de activo y el tipo
+ *   de tarea, el modelo produce un checklist completo con ítems ordenados,
+ *   categorizados y con indicador de obligatoriedad.
+ *
+ *   El resultado se valida con Zod antes de retornarlo al caller, garantizando
+ *   que la UI siempre recibe datos con el formato correcto.
+ *
+ * CONTEXTO EN GIMA:
+ *   Los técnicos de mantenimiento necesitan checklists específicos para cada
+ *   combinación de activo + tarea. Un mantenimiento preventivo en una bomba
+ *   hidráulica tiene ítems completamente diferentes a uno en un compresor de
+ *   aire. En lugar de mantener cientos de plantillas estáticas, GIMA genera
+ *   checklists dinámicos con IA bajo demanda.
+ *
+ *   El flujo es: [ChecklistBuilder UI] → generateChecklist → [cache hit?] →
+ *   [GROQ API] → [validación Zod] → [Checklist tipado]
+ *
+ * POR QUÉ GROQ Y NO GEMINI:
+ *   Los checklists son texto estructurado puro (sin imágenes ni PDFs).
+ *   GROQ con llama ofrece latencia < 1s para este tipo de output, lo que
+ *   hace la experiencia de generación percibida como instantánea. Gemini
+ *   se reserva para las features multimodales del proyecto.
+ *
+ * ESTRATEGIA DE CACHE:
+ *   Los checklists para la misma combinación [assetType + taskType +
+ *   customInstructions] son deterministas: el mismo input produce el mismo
+ *   output. Se cachean durante `AI_CACHE_TTL.CHECKLIST` segundos para evitar
+ *   llamadas redundantes a la API. La cache key incluye las instrucciones
+ *   personalizadas (o 'default' si no hay) para evitar colisiones.
+ *
+ * FLUJO INTERNO (generateChecklist):
+ *   1. Validar request con checklistGenerationRequestSchema.
+ *   2. Buscar en cache (si hay hit → retornar con cached: true).
+ *   3. Llamar a GROQ via callAI() con retry logic (BaseAIService).
+ *   4. Parsear respuesta JSON limpiando bloques markdown.
+ *   5. Validar con aiChecklistResponseSchema → convertir a Checklist completo.
+ *   6. Validar Checklist completo con checklistSchema.
+ *   7. Guardar en cache y retornar.
+ *
  */
 
 import { createGroq } from '@ai-sdk/groq';
@@ -24,8 +68,18 @@ import {
   type Checklist,
 } from '@/app/lib/schemas/checklist.schema';
 
+// ============================================================
+// TIPOS DE RESULTADO
+// ============================================================
+
 /**
- * Resultado de generación de checklist
+ * Resultado de la generación de un checklist.
+ *
+ * @property success   - Indica si la generación fue exitosa.
+ * @property checklist - Checklist generado y validado. Presente si success=true.
+ * @property error     - Mensaje de error legible. Presente si success=false.
+ * @property cached    - True si el resultado vino del cache (no se llamó al LLM).
+ *                       Útil para métricas de uso y debugging.
  */
 export interface ChecklistGenerationResult {
   success: boolean;
@@ -34,47 +88,73 @@ export interface ChecklistGenerationResult {
   cached?: boolean;
 }
 
+// ============================================================
+// SERVICIO: ChecklistAIService
+// ============================================================
+
 /**
- * Servicio para generar checklists con IA
+ * Servicio de generación de checklists de mantenimiento con IA.
+ *
+ * Extiende `BaseAIService` para heredar retry logic, cache y validación Zod.
+ * Cada instancia tiene su propio cliente GROQ configurado con la API key del entorno.
+ *
  * @example
  * ```typescript
  * const service = new ChecklistAIService();
  * const result = await service.generateChecklist({
  *   assetType: 'bomba',
  *   taskType: 'preventivo',
- *   customInstructions: 'Incluir verificación de temperatura'
+ *   customInstructions: 'Incluir verificación de temperatura del motor'
  * });
+ *
+ * if (result.success) {
+ *   preloadForm(result.checklist);
+ * }
  * ```
  */
 export class ChecklistAIService extends BaseAIService {
+  /** Cliente GROQ configurado con la API key del entorno. */
   private groq: ReturnType<typeof createGroq>;
 
-  /**
-   *
-   */
   constructor() {
     super({
       serviceName: 'ChecklistAIService',
-      timeoutMs: AI_TIMEOUTS.NORMAL,
+      timeoutMs: AI_TIMEOUTS.NORMAL, // Timeout estándar: suficiente para un checklist de ~20 ítems
       maxRetries: 3,
       enableCaching: true,
-      cacheTTL: AI_CACHE_TTL.CHECKLIST,
+      cacheTTL: AI_CACHE_TTL.CHECKLIST, // Definido en constants/ai.ts
     });
 
     this.groq = createGroq({ apiKey: env.GROQ_API_KEY });
   }
 
+  // ============================================================
+  // MÉTODO PÚBLICO
+  // ============================================================
+
   /**
-   * Genera un checklist de mantenimiento con IA
-   * @param request - Parámetros de generación
-   * @returns Resultado con checklist generado
+   * Genera un checklist de mantenimiento personalizado con IA.
+   *
+   * Implementa el flujo completo: validación → cache → LLM → validación → cache.
+   * Captura todos los errores internamente y los retorna como `{ success: false, error }`,
+   * de modo que el caller no necesita envolver la llamada en try/catch.
+   *
+   * @param request - Parámetros de generación:
+   *   - `assetType`          → Tipo de activo ('bomba', 'compresor', 'hvac', etc.)
+   *   - `taskType`           → Tipo de tarea ('preventivo', 'correctivo', 'predictivo')
+   *   - `customInstructions` → Instrucciones adicionales del técnico (máx 500 chars)
+   *   - `context`            → Contexto adicional del equipo (máx 200 chars)
+   * @returns Resultado con el checklist tipado o mensaje de error.
    */
   async generateChecklist(request: ChecklistGenerationRequest): Promise<ChecklistGenerationResult> {
     try {
-      // 1. Validar request
+      // Paso 1: Validar request con schema Zod.
+      // Rechaza tipos de activo/tarea fuera del enum y textos demasiado largos.
       const validatedRequest = this.validate(checklistGenerationRequestSchema, request);
 
-      // 2. Verificar cache
+      // Paso 2: Verificar cache antes de llamar al LLM.
+      // La key incluye las instrucciones personalizadas para no mezclar
+      // checklists con diferentes instrucciones del mismo assetType+taskType.
       const cacheKey = this.buildCacheKey([
         validatedRequest.assetType,
         validatedRequest.taskType,
@@ -90,7 +170,8 @@ export class ChecklistAIService extends BaseAIService {
         return { success: true, checklist: cached, cached: true };
       }
 
-      // 3. Generar con IA y retry logic
+      // Paso 3: Generar con GROQ + retry logic.
+      // executeWithRetry (BaseAIService) gestiona los reintentos automáticamente.
       const checklist = await this.executeWithRetry(async () => {
         return this.callAI(
           validatedRequest.assetType,
@@ -99,7 +180,7 @@ export class ChecklistAIService extends BaseAIService {
         );
       });
 
-      // 4. Cachear resultado
+      // Paso 4: Guardar en cache para futuras solicitudes idénticas.
       await this.setCache(cacheKey, checklist);
 
       return { success: true, checklist };
@@ -121,11 +202,23 @@ export class ChecklistAIService extends BaseAIService {
     }
   }
 
+  // ============================================================
+  // MÉTODOS PRIVADOS
+  // ============================================================
+
   /**
-   * Llama a la API de GROQ para generar checklist
-   * @param assetType
-   * @param taskType
-   * @param customInstructions
+   * Llama a la API de GROQ para generar el checklist y lo retorna validado.
+   *
+   * Responsabilidades:
+   *   1. Construir el prompt del usuario con `buildChecklistPrompt`.
+   *   2. Llamar a `generateText` con el modelo y temperatura del config.
+   *   3. Parsear y validar la respuesta con `parseAIResponse`.
+   *
+   * @param assetType          - Tipo de activo del checklist.
+   * @param taskType           - Tipo de tarea del checklist.
+   * @param customInstructions - Instrucciones personalizadas del técnico.
+   * @returns Checklist completo validado con checklistSchema.
+   * @throws Error si GROQ falla o la respuesta tiene formato inválido.
    */
   private async callAI(
     assetType: AssetType,
@@ -146,43 +239,48 @@ export class ChecklistAIService extends BaseAIService {
       model: this.groq(modelConfig.model),
       temperature: modelConfig.temperature,
       messages: [
-        {
-          role: 'system',
-          content: CHECKLIST_SYSTEM_PROMPT,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
+        { role: 'system', content: CHECKLIST_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
       ],
     });
 
-    // Parsear y validar respuesta
-    const checklist = this.parseAIResponse(result.text, assetType, taskType);
-
-    return checklist;
+    return this.parseAIResponse(result.text, assetType, taskType);
   }
 
   /**
-   * Parsea y valida la respuesta de la IA
-   * @param rawText
-   * @param assetType
-   * @param taskType
+   * Parsea el texto JSON devuelto por GROQ y lo convierte en un Checklist tipado.
+   *
+   * PASOS:
+   *   1. Limpiar bloques de código markdown (```json ... ```) si el modelo los incluye.
+   *   2. JSON.parse para obtener el objeto crudo.
+   *   3. Validar contra aiChecklistResponseSchema (formato mínimo del LLM).
+   *   4. Construir el Checklist completo añadiendo UUIDs, timestamps y metadata.
+   *   5. Validar el Checklist completo con checklistSchema (formato final de GIMA).
+   *
+   * POR QUÉ DOS VALIDACIONES:
+   *   - `aiChecklistResponseSchema` valida el formato que el LLM debe retornar
+   *     (más permisivo, sin campos como `id` o `createdAt` que el LLM no genera).
+   *   - `checklistSchema` valida el Checklist completo que se almacena y retorna
+   *     a la UI (incluye todos los campos requeridos por la aplicación).
+   *
+   * @param rawText   - Texto crudo de la respuesta del LLM.
+   * @param assetType - Tipo de activo para incluir en el Checklist final.
+   * @param taskType  - Tipo de tarea para incluir en el Checklist final.
+   * @returns Checklist completo y validado.
+   * @throws Error si el JSON es inválido o no cumple el schema.
    */
   private parseAIResponse(rawText: string, assetType: AssetType, taskType: TaskType): Checklist {
     try {
-      // Limpiar markdown si está presente
       const cleanJson = rawText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
         .trim();
 
       const parsed = JSON.parse(cleanJson);
-
-      // Validar contra schema de IA
       const aiResponse = this.validate(aiChecklistResponseSchema, parsed);
 
-      // Convertir a formato Checklist completo
+      // Construir Checklist completo enriqueciendo la respuesta del LLM
+      // con los campos que la aplicación necesita (IDs, timestamps, metadata).
       const checklist: Checklist = {
         id: crypto.randomUUID(),
         title: aiResponse.title,
@@ -192,7 +290,7 @@ export class ChecklistAIService extends BaseAIService {
         items: aiResponse.items.map((item, index) => ({
           id: crypto.randomUUID(),
           description: item.description,
-          category: item.category as any, // Será validado por checklistSchema
+          category: item.category as any, // Será validado por checklistSchema abajo
           order: index,
           required: item.required,
           notes: item.notes,
@@ -205,12 +303,13 @@ export class ChecklistAIService extends BaseAIService {
         },
       };
 
-      // Validar checklist completo
+      // Validación final: asegura que el checklist construido cumple con el
+      // schema completo de GIMA, incluyendo rangos de items y longitudes de texto.
       return this.validate(checklistSchema, checklist);
     } catch (error) {
       this.deps.logger?.error('Failed to parse AI response', error as Error, {
         serviceName: this.config.serviceName,
-        rawText: rawText.slice(0, 200),
+        rawText: rawText.slice(0, 200), // Solo los primeros 200 chars para no saturar el log
       });
       throw new Error('La IA generó un formato inválido');
     }
