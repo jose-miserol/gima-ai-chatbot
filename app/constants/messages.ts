@@ -138,7 +138,7 @@ export const VOICE_MESSAGES = {
 export const ERROR_MESSAGES = {
   /** Descripción amigable para el usuario cuando se excede el rate limit */
   QUOTA_EXCEEDED_DESCRIPTION:
-    'Has excedido el límite de solicitudes. Intenta nuevamente en unos segundos.',
+    'GIMA Chatbot ha tenido dificultades para procesar tu solicitud. Por favor, inténtalo de nuevo en unos segundos.',
 
   /** Código de error HTTP estándar para rate limiting (campo `error` en JSON 429) */
   RATE_LIMIT: 'Too Many Requests',

@@ -103,12 +103,12 @@ export function ChatStatusIndicators({
       {isAnalyzingImage && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
           <Loader2 className="size-3 animate-spin" />
-          {fileType === 'pdf' ? '📄 Extrayendo contenido del PDF...' : '📷 Analizando contenido de la imagen...'}
+          {fileType === 'pdf' ? 'Extrayendo contenido del PDF...' : '📷 Analizando contenido de la imagen...'}
         </div>
       )}
       {chatError && (
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-xs">
-          <span>El modelo no pudo analizar el contexto. Si esto continúa, recargue la página.</span>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs">
+          <span>GIMA Chatbot ha tenido dificultades para procesar tu solicitud. Inténtalo de nuevo en unos segundos.</span>
         </div>
       )}
     </div>

@@ -308,6 +308,22 @@ export async function POST(req: Request): Promise<NextResponse | Response> {
     // Error genérico inesperado (error de red, timeout de GROQ, etc.)
     // Se loguea el error completo en el servidor pero solo se expone
     // el mensaje sanitizado al cliente (sin stack trace por seguridad).
+
+    // Detectar rate limit de GROQ (viene como Error genérico del SDK, no como RateLimitError).
+    // El mensaje contiene "Rate limit" o "429" cuando GROQ rechaza por TPM excedido.
+    const errorMsg = error instanceof Error ? error.message : '';
+    if (errorMsg.toLowerCase().includes('rate limit') || errorMsg.includes('429')) {
+      logger.warn('GROQ rate limit detectado', {
+        component: 'ChatAPIRoute',
+        action: 'POST',
+        errorMessage: errorMsg,
+      });
+      // Extraer segundos de espera del mensaje de GROQ (ej: "try again in 40.74s")
+      const retryMatch = errorMsg.match(/try again in ([\d.]+)s/i);
+      const retryAfter = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) : 60;
+      return createRateLimitResponse(retryAfter);
+    }
+
     logger.error(
       'Error en API de chat',
       error instanceof Error ? error : new Error(String(error)),
