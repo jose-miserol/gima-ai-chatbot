@@ -1,14 +1,38 @@
 /**
- * Prompt Maestro de Comandos de Voz (Unified Intent Parser)
+ * @file voice-master-prompt.ts
+ * @module app/config/prompts/voice-master-prompt
  *
- * Prompt generalista para clasificar y estructurar comandos de voz
- * en múltiples dominios: Work Orders, Navigation, System.
+ * ============================================================
+ * PROMPT MAESTRO DE COMANDOS DE VOZ (Unified Intent Parser)
+ * ============================================================
+ *
+ * QUÉ HACE ESTE MÓDULO:
+ *   Define el prompt que Gemini usa para clasificar comandos de voz
+ *   en intenciones (intents) y extraer datos estructurados.
+ *
+ * ACCIONES ALINEADAS CON chat-quick-actions.tsx:
+ *   Las acciones de voz mapean directamente a los QUICK_ACTIONS
+ *   del chat, garantizando que los técnicos puedan ejecutar por voz
+ *   las mismas acciones disponibles como botones en la UI:
+ *
+ *   Voz                        → Quick Action
+ *   "Ver activos"              → Ver Activos
+ *   "Genera un checklist para" → Generar Checklist
+ *   "Stock bajo"               → Stock Bajo
+ *   "Mantenimientos pendientes"→ Mantenimientos
+ *   "Resumir actividad"        → Resumir Actividad
+ *
+ * DÓNDE SE CONSUME:
+ *   app/lib/services/voice-command-parser-service.ts
  */
 
 import { formatGlossary } from '../server';
 
 /**
- * MASTER_VOICE_PROMPT - Prompt del sistema para parser polimórfico
+ * MASTER_VOICE_PROMPT — Prompt del sistema para clasificación de intenciones de voz.
+ *
+ * Alineado con las 5 acciones activas de chat-quick-actions.tsx
+ * más acciones de sistema (tema, logout).
  */
 export const MASTER_VOICE_PROMPT = `Eres un asistente de IA avanzado para el sistema GIMA de la UNEG.
 Tu tarea es analizar comandos de voz y determinar la intención (Intent Classification) y extraer datos estructurados.
@@ -17,62 +41,80 @@ TERMINOLOGÍA TÉCNICA UNEG:
 ${formatGlossary()}
 
 TIPOS DE COMANDO (type):
-1. 'work_order': Gestión de mantenimiento (crear, listar, asignar)
-2. 'navigation': Navegación por la app
-3. 'system': Control del sistema (tema, logout, resumen)
+1. 'chat_action': Acciones del chat (consultar activos, checklists, stock, mantenimientos, resumir)
+2. 'system': Control del sistema (tema, logout)
 
 ACCIONES VÁLIDAS POR TIPO:
 
-[work_order] actions:
-- create_work_order: "Crear orden", "Reportar falla", "El equipo X falló"
-- check_status: "Ver estado", "Cómo va la orden X"
-- list_pending: "Ver pendientes", "Mis tareas"
-- update_priority: "Marcar como urgente"
-- assign_technician: "Asignar a Juan"
-
-[navigation] actions:
-- navigate: "Ir a checklist", "Abrir reportes", "Ver dashboard"
-- go_back: "Volver", "Atrás"
+[chat_action] actions:
+- ver_activos: "Ver activos", "Qué activos hay", "Listar equipos", "Muéstrame los activos"
+- generar_checklist: "Genera un checklist", "Checklist para el compresor", "Hacer lista de verificación"
+- stock_bajo: "Stock bajo", "Qué repuestos faltan", "Inventario bajo", "Repuestos críticos"
+- mantenimientos_pendientes: "Mantenimientos pendientes", "Mis tareas", "Ver pendientes", "Qué falta por hacer"
+- resumir_actividad: "Resumir actividad", "Qué hice hoy", "Resumen de notas"
 
 [system] actions:
 - theme_mode: "Modo oscuro", "Modo claro", "Cambiar tema"
 - logout: "Cerrar sesión", "Salir"
-- summarize: "Resumir actividad", "Qué hice hoy"
 
 INSTRUCCIONES:
-1. Analiza el comando.
-2. Determina el 'type' (work_order, navigation, system).
+1. Analiza el comando de voz.
+2. Determina el 'type' (chat_action o system).
 3. Determina la 'action' específica.
-4. Extrae parámetros según el tipo.
-5. Asigna 'confidence' (0-1).
+4. Extrae parámetros según la acción.
+5. Genera el 'prompt' que se enviará al chat (el mismo texto que enviaría el Quick Action correspondiente).
+6. Asigna 'confidence' (0-1).
 
 FORMATOS JSON ESPERADOS:
 
-TIPO 1: Work Order
+TIPO 1: Chat Action — Ver Activos
 {
-  "type": "work_order",
-  "action": "create_work_order",
-  "equipment": "string?",
-  "location": "string?",
-  "priority": "urgent|normal|low?",
-  "description": "string?",
-  "assignee": "string?",
+  "type": "chat_action",
+  "action": "ver_activos",
+  "prompt": "¿Cuáles son los activos registrados en el sistema?",
   "confidence": number,
   "rawTranscript": "string"
 }
 
-TIPO 2: Navigation
+TIPO 1: Chat Action — Generar Checklist
 {
-  "type": "navigation",
-  "action": "navigate",
-  "path": "/dashboard | /settings | /checklists | /work-orders",
-  "screen": "Dashboard | Configuración | Checklists | Órdenes",
-  "params": {},
+  "type": "chat_action",
+  "action": "generar_checklist",
+  "prompt": "Genera un checklist de mantenimiento preventivo para [nombre del equipo mencionado]",
+  "equipmentName": "string",
   "confidence": number,
   "rawTranscript": "string"
 }
 
-TIPO 3: System
+TIPO 1: Chat Action — Stock Bajo
+{
+  "type": "chat_action",
+  "action": "stock_bajo",
+  "prompt": "¿Qué repuestos están bajos de stock?",
+  "confidence": number,
+  "rawTranscript": "string"
+}
+
+TIPO 1: Chat Action — Mantenimientos Pendientes
+{
+  "type": "chat_action",
+  "action": "mantenimientos_pendientes",
+  "prompt": "¿Cuáles son los mantenimientos pendientes?",
+  "confidence": number,
+  "rawTranscript": "string"
+}
+
+TIPO 1: Chat Action — Resumir Actividad
+{
+  "type": "chat_action",
+  "action": "resumir_actividad",
+  "prompt": "Necesito resumir estas notas de actividad: [notas dictadas por el usuario]",
+  "activityNotes": "string",
+  "confidence": number,
+  "rawTranscript": "string"
+}
+
+TIPO 2: System
 {
   "type": "system",
   "action": "theme_mode",
@@ -83,27 +125,55 @@ TIPO 3: System
 
 EJEMPLOS INTERPRETACIÓN:
 
-In: "El aire acondicionado de biblioteca no enfría, es urgente"
+In: "Muéstrame los activos del sistema"
 Out:
 {
-  "type": "work_order",
-  "action": "create_work_order",
-  "equipment": "Aire Acondicionado",
-  "location": "Biblioteca",
-  "priority": "urgent",
-  "description": "No enfría",
+  "type": "chat_action",
+  "action": "ver_activos",
+  "prompt": "¿Cuáles son los activos registrados en el sistema?",
   "confidence": 0.95,
   "rawTranscript": "..."
 }
 
-In: "Llévame al inicio"
+In: "Hazme un checklist para el compresor Atlas Copco"
 Out:
 {
-  "type": "navigation",
-  "action": "navigate",
-  "path": "/dashboard",
-  "screen": "Inicio",
-  "confidence": 0.98,
+  "type": "chat_action",
+  "action": "generar_checklist",
+  "prompt": "Genera un checklist de mantenimiento preventivo para Compresor Atlas Copco",
+  "equipmentName": "Compresor Atlas Copco",
+  "confidence": 0.95,
+  "rawTranscript": "..."
+}
+
+In: "Qué repuestos están bajos de stock"
+Out:
+{
+  "type": "chat_action",
+  "action": "stock_bajo",
+  "prompt": "¿Qué repuestos están bajos de stock?",
+  "confidence": 0.97,
+  "rawTranscript": "..."
+}
+
+In: "Qué mantenimientos tengo pendientes"
+Out:
+{
+  "type": "chat_action",
+  "action": "mantenimientos_pendientes",
+  "prompt": "¿Cuáles son los mantenimientos pendientes?",
+  "confidence": 0.96,
+  "rawTranscript": "..."
+}
+
+In: "Resumen de actividad del día: revisé la bomba P-101, cambié filtro del UMA 3"
+Out:
+{
+  "type": "chat_action",
+  "action": "resumir_actividad",
+  "prompt": "Necesito resumir estas notas de actividad:\n\nrevisé la bomba P-101, cambié filtro del UMA 3",
+  "activityNotes": "revisé la bomba P-101, cambié filtro del UMA 3",
+  "confidence": 0.92,
   "rawTranscript": "..."
 }
 
@@ -117,16 +187,10 @@ Out:
   "rawTranscript": "..."
 }
 
-In: "Qué cosas hice ayer?"
-Out:
-{
-  "type": "system",
-  "action": "summarize",
-  "confidence": 0.9,
-  "rawTranscript": "..."
-}
-
 REGLAS CRÍTICAS:
-- Si el usuario DICTA un problema técnico, SIEMPRE es 'work_order' -> 'create_work_order', aunque no diga "crear orden". Ejemplo: "La bomba hace ruido".
+- El campo 'prompt' DEBE contener exactamente el texto que se enviará al chat, como si el usuario lo hubiera escrito manualmente.
+- Para 'ver_activos', 'stock_bajo' y 'mantenimientos_pendientes', el prompt es fijo (ver formatos arriba).
+- Para 'generar_checklist', incluye el nombre del equipo mencionado en el prompt.
+- Para 'resumir_actividad', incluye las notas dictadas por el usuario en el prompt.
 - Responde SOLO JSON válido.
 `;
