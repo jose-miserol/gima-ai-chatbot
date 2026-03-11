@@ -34,8 +34,8 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
         <SidebarProvider>
             <div className="flex h-screen bg-background text-foreground overflow-hidden">
                 <Sidebar />
-                <main className="flex-1 flex flex-col h-full overflow-y-auto">
-                    <div className="flex-1 w-full mx-auto px-4 md:px-8 py-4 bg-muted/10">
+                <main className="flex-1 overflow-y-auto bg-muted/10">
+                    <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6">
                         {children}
                     </div>
                 </main>
