@@ -34,7 +34,6 @@ import {
     FileText,
     Zap,
     ImageIcon,
-    Sparkles,
     Menu,
     ChevronLeft
 } from 'lucide-react';
@@ -47,54 +46,56 @@ export function Sidebar() {
     const router = useRouter();
 
     // Menu Options adapted for the AI Tools section
-    const menuItems = [
-        {
-            group: 'Principal',
-            items: [
-                {
-                    icon: LayoutDashboard,
-                    label: 'Dashboard IA',
-                    href: '/tools',
-                },
-            ]
-        },
-        {
-            group: 'Herramientas de IA',
-            items: [
-                {
-                    icon: CheckCircle2,
-                    label: 'Generador Checklists',
-                    href: '/tools/checklist-builder',
-                },
-                {
-                    icon: FileText,
-                    label: 'Resúmenes Actividad',
-                    href: '/tools/activity-summaries',
-                },
-                {
-                    icon: Zap,
-                    label: 'Transformar Datos',
-                    href: '/tools/data-transformation',
-                },
-                {
-                    icon: ImageIcon,
-                    label: 'Análisis Imágenes',
-                    href: '/tools/image-upload-test',
-                },
-                {
-                    icon: FileText,
-                    label: 'Análisis PDF',
-                    href: '/tools/pdf-upload-test',
-                },
-                {
-                    icon: Sparkles,
-                    label: 'Cierre OT (Detalle)',
-                    href: '#modal',
-                    disabled: true,
-                },
-            ]
-        }
-    ];
+    const menuItems: {
+        group: string;
+        items: {
+            icon: any;
+            label: string;
+            href: string;
+            disabled?: boolean;
+        }[];
+    }[] = [
+            {
+                group: 'Principal',
+                items: [
+                    {
+                        icon: LayoutDashboard,
+                        label: 'Dashboard IA',
+                        href: '/tools',
+                    },
+                ]
+            },
+            {
+                group: 'Herramientas de IA',
+                items: [
+                    {
+                        icon: CheckCircle2,
+                        label: 'Generador Checklists',
+                        href: '/tools/checklist-builder',
+                    },
+                    {
+                        icon: FileText,
+                        label: 'Resúmenes Actividad',
+                        href: '/tools/activity-summaries',
+                    },
+                    {
+                        icon: Zap,
+                        label: 'Transformar Datos',
+                        href: '/tools/data-transformation',
+                    },
+                    {
+                        icon: ImageIcon,
+                        label: 'Análisis Imágenes',
+                        href: '/tools/image-upload-test',
+                    },
+                    {
+                        icon: FileText,
+                        label: 'Análisis PDF',
+                        href: '/tools/pdf-upload-test',
+                    },
+                ]
+            }
+        ];
 
     const handleReturnToApp = () => {
         // Navigates back to the main app dashboard (if exists) or just the chat root
@@ -105,7 +106,7 @@ export function Sidebar() {
         <aside
             className={cn(
                 "bg-[#001F3F] text-white flex flex-col h-screen sticky top-0 shadow-2xl z-50",
-                "transition-all duration-300 ease-in-out shrink-0 rounded-r-3xl",
+                "transition-all duration-300 ease-in-out shrink-0 rounded-r-3xl border-r border-white/5",
                 isSidebarOpen ? "w-64" : "w-20"
             )}
         >
@@ -170,8 +171,8 @@ export function Sidebar() {
                                                 !isSidebarOpen && "justify-center",
                                                 item.disabled && "opacity-50 cursor-not-allowed",
                                                 isActive
-                                                    ? "bg-white text-[#001F3F] font-bold shadow-md"
-                                                    : "text-gray-300 hover:text-white hover:bg-white/10"
+                                                    ? "bg-white text-[#001F3F] font-semibold shadow-md"
+                                                    : "text-gray-400 font-medium hover:text-white hover:bg-white/10"
                                             )}
                                             aria-disabled={item.disabled}
                                             tabIndex={item.disabled ? -1 : 0}
@@ -206,7 +207,7 @@ export function Sidebar() {
                 <button
                     onClick={handleReturnToApp}
                     className={cn(
-                        "flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-200 text-gray-300 hover:text-white hover:bg-white/10 whitespace-nowrap",
+                        "flex items-center gap-3 w-full px-3 py-3 rounded-xl transition-all duration-200 text-gray-400 font-medium hover:text-white hover:bg-white/10 whitespace-nowrap",
                         !isSidebarOpen && "justify-center"
                     )}
                     title="Volver a GIMA"
