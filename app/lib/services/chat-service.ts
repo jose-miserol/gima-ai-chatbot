@@ -85,11 +85,26 @@ export class ChatService {
 
       return result;
     } catch (error) {
-      this.deps.logger.error(
-        'Error generando respuesta AI',
-        error instanceof Error ? error : new Error(String(error)),
-        { component: 'ChatService', action: 'processMessage' }
-      );
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      const isRateLimit = errorMsg.toLowerCase().includes('rate limit') || errorMsg.includes('429');
+
+      if (isRateLimit) {
+        // Rate limit de GROQ: loguear como advertencia (es un estado esperado, no un bug)
+        this.deps.logger.warn(
+          'Rate limit de GROQ alcanzado. El usuario debe esperar unos segundos.',
+          {
+            component: 'ChatService',
+            action: 'processMessage',
+            errorMessage: errorMsg,
+          }
+        );
+      } else {
+        this.deps.logger.error(
+          'Error generando respuesta AI',
+          error instanceof Error ? error : new Error(errorMsg),
+          { component: 'ChatService', action: 'processMessage' }
+        );
+      }
       throw error;
     }
   }

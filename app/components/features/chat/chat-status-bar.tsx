@@ -57,7 +57,7 @@ export function ChatStatusIndicators({
   // Log error to console for debugging when it occurs
   useEffect(() => {
     if (chatError) {
-      console.error('[GIMA Chat Error]:', chatError);
+      console.warn('[GIMA Chat]:', chatError.message);
     }
   }, [chatError]);
 
@@ -103,7 +103,7 @@ export function ChatStatusIndicators({
       {isAnalyzingImage && (
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs">
           <Loader2 className="size-3 animate-spin" />
-          {fileType === 'pdf' ? 'Extrayendo contenido del PDF...' : '📷 Analizando contenido de la imagen...'}
+          {fileType === 'pdf' ? 'Extrayendo contenido del PDF...' : 'Analizando contenido de la imagen...'}
         </div>
       )}
       {chatError && (
