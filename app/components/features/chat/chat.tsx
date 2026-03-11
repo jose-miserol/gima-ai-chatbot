@@ -443,6 +443,9 @@ export function Chat() {
         variant="destructive"
         onConfirm={handleClear}
       />
+      <p className="text-xs text-muted-foreground py-4 text-center">
+        GIMA es una IA y puede cometer errores. Por favor, verifica nuevamente las respuestas.
+      </p>
     </div>
   );
 }
