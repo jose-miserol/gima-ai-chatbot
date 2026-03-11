@@ -52,7 +52,7 @@ import { useEffect } from 'react';
  *
  * @example
  * ```typescript
- * const shortcuts: KeyboardShortcut[] = [
+ * const shortcuts: KeyboardShortcut[] =[
  *   {
  *     key: 'm',
  *     ctrlKey: true,
@@ -123,8 +123,11 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcut[], enabled = tr
         const ctrlMatch = shortcut.ctrlKey === undefined || shortcut.ctrlKey === event.ctrlKey;
         const shiftMatch = shortcut.shiftKey === undefined || shortcut.shiftKey === event.shiftKey;
         const altMatch = shortcut.altKey === undefined || shortcut.altKey === event.altKey;
-        // Comparación insensible a mayúsculas para ignorar el estado de Caps Lock
-        const keyMatch = shortcut.key.toLowerCase() === event.key.toLowerCase();
+
+        // FIX: Comprobamos que event.key exista antes de hacer toLowerCase()
+        // para evitar errores por autocompletado del navegador u orígenes anómalos.
+        // Comparación insensible a mayúsculas para ignorar el estado de Caps Lock.
+        const keyMatch = !!event.key && shortcut.key.toLowerCase() === event.key.toLowerCase();
 
         if (ctrlMatch && shiftMatch && altMatch && keyMatch) {
           event.preventDefault(); // Evitar comportamiento nativo (ej: Ctrl+K no abre barra de URL)

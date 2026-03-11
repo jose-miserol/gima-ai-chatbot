@@ -295,8 +295,15 @@ export function sanitizeForModel(
     .map((msg, index) => {
       let content = extractTextContent(msg.content, msg.parts);
 
+      // NUEVO: Detectar si es el último mensaje del array
+      const isLastMessage = index === parsedMessages.length - 1;
+
+      // NUEVO: Marcar los mensajes pasados del usuario como resueltos
+      if (msg.role === 'user' && !isLastMessage) {
+        content = `[CONSULTA ANTERIOR YA RESUELTA]: ${content}`;
+      }
+
       // Inyectar resumen de tools en mensajes del asistente
-      // Envuelto en try-catch para nunca romper el flujo del chat
       if (msg.role === 'assistant' && rawMessages && rawMessages[index]) {
         try {
           const rawParts = rawMessages[index].parts;
@@ -304,7 +311,7 @@ export function sanitizeForModel(
             content += summarizeToolParts(rawParts);
           }
         } catch {
-          // Silently ignore - tool summaries are a best-effort enhancement
+          // Silently ignore
         }
       }
 
@@ -312,7 +319,6 @@ export function sanitizeForModel(
     })
     .filter((msg) => msg.content.trim().length > 0);
 }
-
 /**
  * Valida que un mensaje tenga contenido no vacío
  * @param message - Mensaje a validar

@@ -143,3 +143,12 @@
 .animate-music-bar {
   animation: music-bar 0.8s ease-in-out infinite;
 }
+
+/* Ocultar el Dev Overlay de errores de Next.js en desarrollo */
+nextjs-portal {
+  display: none !important;
+}
+
+#nextjs-portal {
+  display: none !important;
+}
