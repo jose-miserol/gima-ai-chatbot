@@ -64,7 +64,7 @@ Voice-Activated Requests es una funcionalidad que permite **crear órdenes de tr
 
 ```
 app/
-├── components/features/voice/              # ⭐ Reutilizado de Voice Fill
+├── components/features/ai-tools/voice/              # ⭐ Reutilizado de Voice Fill
 │   ├── voice-command-mode.tsx              # ⭐ Modo comandos
 │   ├── voice-button.tsx
 │   └── hooks/
@@ -112,7 +112,7 @@ flowchart TD
 
 | Capa               | Responsabilidad         | Ubicación                              |
 | ------------------ | ----------------------- | -------------------------------------- |
-| **UI**             | Modo comandos, preview  | `components/features/voice/`           |
+| **UI**             | Modo comandos, preview  | `components/features/ai-tools/voice/`           |
 | **Hooks**          | Flujo de comandos       | `use-voice-command-flow.ts`            |
 | **Server Actions** | Transcripción + parsing | `actions/voice.ts`                     |
 | **Servicios**      | Lógica de parsing       | `lib/services/voice-command-parser.ts` |

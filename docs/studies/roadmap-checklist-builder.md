@@ -76,7 +76,7 @@ app/
 ├── tools/checklist-builder/              # ⭐ Página principal
 │   └── page.tsx
 │
-├── components/features/checklist-builder/  # ⭐ Componentes UI
+├── components/features/ai-tools/checklist-builder/  # ⭐ Componentes UI
 │   ├── checklist-form.tsx                 # Form de input
 │   ├── checklist-preview.tsx              # Preview generado
 │   ├── checklist-history.tsx              # Historial
@@ -127,7 +127,7 @@ flowchart TD
 
 | Capa               | Responsabilidad                | Ubicación                                |
 | ------------------ | ------------------------------ | ---------------------------------------- |
-| **UI**             | Form inputs, preview checklist | `components/features/checklist-builder/` |
+| **UI**             | Form inputs, preview checklist | `components/features/ai-tools/checklist-builder/` |
 | **Server Actions** | Llamada a IA                   | `tools/checklist-builder/actions.ts`     |
 | **Servicios**      | Lógica de generación           | `lib/services/checklist-ai-service.ts`   |
 | **Validación**     | Schemas Zod                    | `lib/schemas/checklist.schema.ts`        |

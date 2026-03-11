@@ -65,7 +65,7 @@ app/
 ├── tools/activity-summaries/              # ⭐ Página principal
 │   └── page.tsx
 │
-├── components/features/activity-summary/   # ⭐ Componentes UI
+├── components/features/ai-tools/activity-summary/   # ⭐ Componentes UI
 │   ├── summary-form.tsx                   # Form de input
 │   ├── summary-preview.tsx                # Preview generado
 │   ├── summary-history.tsx                # Historial
@@ -106,7 +106,7 @@ flowchart TD
 
 | Capa               | Responsabilidad           | Ubicación                                     |
 | ------------------ | ------------------------- | --------------------------------------------- |
-| **UI**             | Form inputs, preview      | `components/features/activity-summary/`       |
+| **UI**             | Form inputs, preview      | `components/features/ai-tools/activity-summary/`       |
 | **Server Actions** | Generación con IA         | `actions/activity-summary.ts`                 |
 | **Servicios**      | Lógica de prompt building | `lib/services/activity-summary-ai-service.ts` |
 | **Validación**     | Schemas Zod               | `lib/schemas/activity-summary.schema.ts`      |

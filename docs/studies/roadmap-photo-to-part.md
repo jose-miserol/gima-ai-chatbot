@@ -68,14 +68,11 @@ Photo-to-Part Creation es una funcionalidad que permite **analizar imágenes de 
 
 ```
 app/
-├── tools/photo-to-part/                  # ⭐ Página principal
+├── tools/image-upload-test/              # ⭐ Página principal
 │   └── page.tsx
 │
-├── components/features/photo-to-part/     # ⭐ Componentes UI
-│   ├── image-uploader.tsx                # Upload/camera
-│   ├── part-preview.tsx                  # Preview análisis
-│   ├── inventory-form.tsx                # Form editable
-│   └── __tests__/
+├── components/features/ai-tools/         # ⭐ Componente UI consolidado
+│   └── image-upload-test.tsx             # Upload/camera, preview y form
 │
 ├── actions/
 │   └── vision.ts                         # ⭐ analyzePartImage()
@@ -95,12 +92,12 @@ app/
 
 ```mermaid
 flowchart TD
-    A[Usuario] -->|Toma foto/sube imagen| B[ImageUploader Component]
-    B -->|Convierte a base64| C[analyzePartImage Server Action]
+    A[Usuario] -->|Toma foto/sube imagen| B[ImageUploadTest Component]
+    B -->|Convierte a FormData| C[analyzePartImage Server Action]
     C -->|Envía imagen| D[Gemini 2.5 Flash Vision]
     D -->|JSON análisis| E[Parseo y Validación]
-    E -->|Datos estructurados| F[PartPreview Component]
-    F -->|Usuario edita| G[InventoryForm]
+    E -->|Datos estructurados| F[Preview del Componente]
+    F -->|Usuario edita| G[Resultado Form]
     G -->|Confirma| H[Crea item en inventario]
 
     style D fill:#4285f4,color:#fff
@@ -110,12 +107,12 @@ flowchart TD
 
 ### Capas del Sistema
 
-| Capa               | Responsabilidad         | Ubicación                              |
-| ------------------ | ----------------------- | -------------------------------------- |
-| **UI**             | Captura imagen, preview | `components/features/photo-to-part/`   |
-| **Server Actions** | Análisis con Vision AI  | `actions/vision.ts`                    |
-| **Servicios**      | Lógica de inventario    | `lib/services/inventory-ai-service.ts` |
-| **Validación**     | Estructura de datos     | `lib/schemas/part.schema.ts`           |
+| Capa               | Responsabilidad         | Ubicación                                            |
+| ------------------ | ----------------------- | ---------------------------------------------------- |
+| **UI**             | Captura imagen, preview | `components/features/ai-tools/image-upload-test.tsx` |
+| **Server Actions** | Análisis con Vision AI  | `actions/vision.ts`                                  |
+| **Servicios**      | Lógica de inventario    | `lib/services/inventory-ai-service.ts`               |
+| **Validación**     | Estructura de datos     | `lib/schemas/part.schema.ts`                         |
 
 ---
 
@@ -124,17 +121,21 @@ flowchart TD
 ### Paso 1: Captura de Imagen
 
 ```typescript
-// En ImageUploader
-const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+// En ImageUploadTestClient
+const handleAnalyze = async () => {
+    if (!selectedFile || !preview) return;
 
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const base64Image = reader.result as string;
-    await analyzeImage(base64Image);
-  };
-  reader.readAsDataURL(file);
+    setIsAnalyzing(true);
+    setResult(null);
+    setError('');
+
+    try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        const response = await analyzePartImage(formData);
+
+        // ... manejo del resultado ...
+    }
 };
 ```
 
@@ -194,42 +195,17 @@ export async function analyzePartImage(imageDataUrl: string) {
 
 ## Componentes Principales
 
-### `ImageUploader.tsx`
+### `image-upload-test.tsx`
 
-**Props:**
-
-```typescript
-interface ImageUploaderProps {
-  onImageAnalyzed: (analysis: PartAnalysis) => void;
-  maxFileSize?: number; // Default 10MB
-}
-```
+**Componente consolidado (`ImageUploadTestClient`)** que maneja toda la lógica:
 
 **Features:**
 
-- Drag & drop
-- Preview thumbnail
-- Progress indicator durante análisis
+- Drag & drop de imágenes
+- Preview thumbnail de la foto cargada
+- Progress indicator durante análisis a Gemini Vision
+- Formulario de vista previa (Resultados: Tipo, Marca, Cantidad, etc)
 - Error handling (tamaño, formato)
-
-### `PartPreview.tsx`
-
-**Props:**
-
-```typescript
-interface PartPreviewProps {
-  analysis: PartAnalysis;
-  imageUrl: string;
-  onAccept: (analysis: PartAnalysis) => void;
-  onRetake: () => void;
-}
-```
-
-**Display:**
-
-- Imagen original
-- Campos extraídos por IA
-- Botones de acción (aceptar/reanalizar)
 
 ---
 
@@ -309,21 +285,10 @@ Si la imagen no es clara o no es una pieza, confidence debe ser < 0.5
 ### Ejemplo 1: Flujo Completo
 
 ```typescript
-import { PhotoToPartUploader } from '@/app/components/features/photo-to-part';
+import { ImageUploadTestClient } from '@/app/components/features/ai-tools/image-upload-test';
 
 function InventoryPage() {
-  const handlePartCreated = async (analysis: PartAnalysis) => {
-    // Guardar en DB
-    await createInventoryItem({
-      ...analysis,
-      createdBy: user.id,
-      location: currentLocation
-    });
-
-    toast.success(`Item "${analysis.name}" agregado al inventario`);
-  };
-
-  return <PhotoToPartUploader onPartCreated={handlePartCreated} />;
+  return <ImageUploadTestClient />;
 }
 ```
 

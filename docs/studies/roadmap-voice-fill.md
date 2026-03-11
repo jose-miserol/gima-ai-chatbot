@@ -157,7 +157,7 @@ app/
 │   └── __tests__/
 │       └── actions-voice.test.ts         # Tests de server actions
 │
-├── components/features/voice/            # ⭐ Componentes UI de voz
+├── components/features/ai-tools/voice/            # ⭐ Componentes UI de voz
 │   ├── voice-button.tsx                  # Botón de entrada de voz
 │   ├── voice-command-mode.tsx            # Modo comandos de voz
 │   ├── hooks/
@@ -252,7 +252,7 @@ graph LR
 
 | Capa               | Responsabilidad                 | Ubicación                              |
 | ------------------ | ------------------------------- | -------------------------------------- |
-| **UI**             | Captura de audio, visualización | `components/features/voice/`           |
+| **UI**             | Captura de audio, visualización | `components/features/ai-tools/voice/`           |
 | **Hooks**          | Lógica de estado y efectos      | `hooks/use-voice-input.ts`             |
 | **Server Actions** | Comunicación con IA             | `actions/voice.ts`                     |
 | **Servicios**      | Parsing de comandos             | `lib/services/voice-command-parser.ts` |

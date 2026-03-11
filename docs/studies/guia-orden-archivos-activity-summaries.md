@@ -11,7 +11,7 @@
 
  ①  app/tools/activity-summaries/page.tsx          ← PUNTO DE ENTRADA (la URL)
                     │
- ②  app/components/features/activity-summary/
+ ②  app/components/features/ai-tools/activity-summary/
     │   ├── activity-summary.tsx                   ← ORQUESTADOR (maneja todo)
     │   ├── activity-summary-form.tsx              ← FORMULARIO (input del usuario)
     │   ├── activity-summary-preview.tsx           ← PREVIEW (muestra resultado)
@@ -20,7 +20,7 @@
     │   ├── constants.ts                           ← CONSTANTES (estilos, límites)
     │   └── index.ts                               ← BARREL EXPORT
     │
- ③  app/components/features/activity-summary/hooks/
+ ③  app/components/features/ai-tools/activity-summary/hooks/
     │   ├── use-summary-generator.ts               ← HOOK GENERACIÓN (llama al servicio)
     │   ├── use-summary-templates.ts               ← HOOK TEMPLATES (localStorage)
     │   └── index.ts                               ← BARREL EXPORT
@@ -56,7 +56,7 @@ Código clave:
 ### Paso 2: Se carga el componente orquestador
 
 ```
-ARCHIVO: app/components/features/activity-summary/activity-summary.tsx
+ARCHIVO: app/components/features/ai-tools/activity-summary/activity-summary.tsx
 
 ¿Qué hace?
 - Es 'use client' (componente de cliente)
@@ -78,7 +78,7 @@ Usa el shared component <AIToolPage> de:
 ### Paso 3: El usuario llena el formulario
 
 ```
-ARCHIVO: app/components/features/activity-summary/activity-summary-form.tsx
+ARCHIVO: app/components/features/ai-tools/activity-summary/activity-summary-form.tsx
 
 ¿Qué hace?
 - Renderiza los campos: Tipo Activo, Tipo Tarea, Actividades, Estilo, Detalle
@@ -95,7 +95,7 @@ Usa:
 ### Paso 4: El hook llama al servicio de IA
 
 ```
-ARCHIVO: app/components/features/activity-summary/hooks/use-summary-generator.ts
+ARCHIVO: app/components/features/ai-tools/activity-summary/hooks/use-summary-generator.ts
 
 ¿Qué hace?
 - Maneja el estado de la generación (isGenerating, summary, error, progress)
@@ -225,7 +225,7 @@ ARCHIVO: app/config/prompts/activity-summary-generation.ts
 ### Paso 9: El resultado se muestra en preview
 
 ```
-ARCHIVO: app/components/features/activity-summary/activity-summary-preview.tsx
+ARCHIVO: app/components/features/ai-tools/activity-summary/activity-summary-preview.tsx
 
 ¿Qué hace?
 - Muestra el resumen generado en un modal overlay
@@ -239,7 +239,7 @@ Cuando el usuario presiona "Guardar" → se guarda como template
 ### Paso 10: Templates guardados se muestran en lista
 
 ```
-ARCHIVO: app/components/features/activity-summary/activity-summary-list.tsx
+ARCHIVO: app/components/features/ai-tools/activity-summary/activity-summary-list.tsx
 
 ¿Qué hace?
 - Muestra templates guardados previamente

@@ -36,12 +36,12 @@ Todas las AI Tools siguen el mismo patrón de 5 capas. Entender esto es clave pa
 │  → Punto de entrada, metadata SEO, renderiza componente      │
 ├──────────────────────────────────────────────────────────────┤
 │  CAPA 2: COMPONENTES (UI)                                    │
-│  app/components/features/<feature>/                           │
+│  app/components/features/ai-tools/<feature>/                 │
 │  → Componente principal, form, preview, lista/historial      │
 │  → types.ts, constants.ts, index.ts (barrel exports)         │
 ├──────────────────────────────────────────────────────────────┤
 │  CAPA 3: HOOKS (Estado Cliente)                              │
-│  app/components/features/<feature>/hooks/                     │
+│  app/components/features/ai-tools/<feature>/hooks/           │
 │  → Manejo de estado, llamadas al server action               │
 │  → Templates/historial en localStorage                       │
 ├──────────────────────────────────────────────────────────────┤

@@ -75,7 +75,7 @@ app/
 ├── tools/data-transformation/            # ⭐ Página principal
 │   └── page.tsx
 │
-├── components/features/data-transformation/ # ⭐ Componentes UI
+├── components/features/ai-tools/data-transformation/ # ⭐ Componentes UI
 │   ├── data-input.tsx                    # Input de datos
 │   ├── transformation-prompt.tsx         # Descripción transformación
 │   ├── preview-grid.tsx                  # Preview antes/después
@@ -118,7 +118,7 @@ flowchart TD
 
 | Capa               | Responsabilidad              | Ubicación                                        |
 | ------------------ | ---------------------------- | ------------------------------------------------ |
-| **UI**             | Input datos, preview         | `components/features/data-transformation/`       |
+| **UI**             | Input datos, preview         | `components/features/ai-tools/data-transformation/` |
 | **Server Actions** | Generación de transformación | `actions/data-transformation.ts`                 |
 | **Servicios**      | Ejecución segura de código   | `lib/services/data-transformation-ai-service.ts` |
 | **Validación**     | Schema validation            | `lib/schemas/transformation.schema.ts`           |
