@@ -163,6 +163,7 @@ export function ChatMessage({
   let textContent = getTextContent(parts);
 
   const isGroqSchemaError = textContent.includes('Failed to call a function') || textContent.includes('failed_generation');
+  const isQuotaError = textContent.includes('quota') || textContent.includes('Quota') || textContent.includes('Rate limit reached') || textContent.includes('limit: 0');
 
   const imageParts = parts.filter(
     (part: any): part is ImagePart => part?.type === 'image'
@@ -195,7 +196,7 @@ export function ChatMessage({
       )}
 
       {/* Texto — collapsible when tool results are present */}
-      {isGroqSchemaError ? (
+      {isGroqSchemaError || isQuotaError ? (
         <ToolErrorCard error={textContent} />
       ) : textContent && toolParts.length > 0 ? (
         <CollapsibleLLMText text={textContent} />

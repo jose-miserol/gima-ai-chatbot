@@ -58,9 +58,13 @@
  *   Para tareas más complejas se usa Llama 3.3 70B definido en ai.ts.
  */
 export const AVAILABLE_MODELS = [
+  //{
+  //  name: 'Gemini 2.5 Flash', // Nombre mostrado en el selector de UI
+  //  value: 'google:gemini-2.5-flash', // Identificador para el manejador de modelos
+  //},
   {
-    name: 'Gemini 2.5 Flash', // Nombre mostrado en el selector de UI
-    value: 'google:gemini-2.5-flash', // Identificador para el manejador de modelos
+    name: 'Gemini 3.1 Flash-Lite',
+    value: 'google:gemini-3.1-flash-lite-preview', // Este es el identificador oficial
   },
 ] as const; // `as const` habilita inferencia de tipos literales para ModelValue
 
