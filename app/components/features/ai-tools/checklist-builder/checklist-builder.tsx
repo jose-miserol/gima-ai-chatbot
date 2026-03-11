@@ -15,9 +15,7 @@ import {
   AIToolLayout,
   AIGenerationForm,
   AIPreviewCard,
-  AIHistoryList,
   type FormField,
-  type HistoryItem,
 } from '@/app/components/features/ai-tools/shared';
 import type {
   Checklist,
@@ -83,7 +81,6 @@ export function ChecklistBuilder() {
   const [checklist, setChecklist] = useState<Checklist | null>(null);
   const [currentRequest, setCurrentRequest] = useState<ChecklistGenerationRequest | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [_usageCount, setUsageCount] = useState(0);
 
   const handleGenerate = async (data: Record<string, unknown>) => {
@@ -105,19 +102,6 @@ export function ChecklistBuilder() {
         setCurrentRequest(request);
         setUsageCount((prev) => prev + 1);
 
-        // Agregar al historial
-        const historyItem: HistoryItem = {
-          id: result.checklist.id,
-          title: result.checklist.title,
-          createdAt: result.checklist.createdAt,
-          preview: `${result.checklist.items.length} items - ${request.assetType}`,
-          metadata: {
-            ...(result.checklist.metadata || {}),
-            originalRequest: request,
-          },
-          fullData: result.checklist,
-        };
-        setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
         toast.success(
           result.cached ? 'Checklist cargado del caché' : '✅ Checklist generado',
@@ -155,26 +139,7 @@ export function ChecklistBuilder() {
     }
   };
 
-  const handleHistoryItemClick = (item: HistoryItem) => {
-    if (item.fullData) {
-      setChecklist(item.fullData as Checklist);
-      setCurrentRequest(item.metadata?.originalRequest || null);
-      toast.success('Checklist cargado', `Visualizando "${item.title}"`);
-    } else {
-      toast.error('Error al cargar', 'No se encontraron los datos completos del checklist');
-    }
-  };
 
-  const handleHistoryItemDelete = (item: HistoryItem) => {
-    setHistory((prev) => prev.filter((h) => h.id !== item.id));
-    toast.success('Item eliminado', 'El checklist ha sido eliminado del historial');
-  };
-
-  const handleBulkDelete = (items: HistoryItem[]) => {
-    const idsToDelete = new Set(items.map((i) => i.id));
-    setHistory((prev) => prev.filter((h) => !idsToDelete.has(h.id)));
-    toast.success('Items eliminados', `${items.length} checklists eliminados del historial`);
-  };
 
   return (
     <AIToolLayout
@@ -184,15 +149,11 @@ export function ChecklistBuilder() {
       helpContent={
         <div className="space-y-2 text-sm">
           <p><strong>¿Cómo funciona?</strong></p>
-          <ol className="list-decimal pl-4 space-y-1">
-            <li>Selecciona el tipo de activo</li>
-            <li>Elige el tipo de mantenimiento</li>
-            <li>Agrega instrucciones personalizadas (opcional)</li>
-            <li>Haz clic en &quot;Generar Checklist&quot;</li>
-          </ol>
-          <p className="text-muted-foreground mt-2">
-            Tip: Usa Ctrl+Enter para generar rápidamente
-          </p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Selecciona el tipo de activo.</li>
+            <li>Elige el tipo de mantenimiento.</li>
+            <li>Genera el checklist personalizado.</li>
+          </ul>
         </div>
       }
     >
@@ -205,8 +166,6 @@ export function ChecklistBuilder() {
           onSubmit={handleGenerate}
           isGenerating={isGenerating}
           submitLabel="Generar Checklist"
-          saveDrafts
-          draftId="checklist-builder"
         />
       </div>
 
@@ -252,15 +211,28 @@ export function ChecklistBuilder() {
             }}
           />
         ) : (
-          <AIHistoryList
-            title="Checklists Generados"
-            items={history}
-            onItemClick={handleHistoryItemClick}
-            onItemDelete={handleHistoryItemDelete}
-            onBulkDelete={handleBulkDelete}
-            showSearch
-            showFilters
-          />
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-gray-900">Eficiencia con IA</h3>
+            </div>
+            <ul className="space-y-4 text-sm text-gray-600">
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>Sé específico en las <strong>Instrucciones Personalizadas</strong> para obtener mejores resultados.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>Los checklists generados pueden ser revisados y ajustados antes de guardarse.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>La IA optimiza las tareas según el tipo de activo seleccionado automáticamente.</span>
+              </li>
+            </ul>
+          </div>
         )}
       </div>
     </AIToolLayout>

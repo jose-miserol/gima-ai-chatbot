@@ -96,33 +96,33 @@ export function PdfUploadTestClient() {
 
     return (
         <AIToolLayout
-            title="PDF Upload Test"
-            description="Test PDF content extraction and analysis with Gemini"
+            title="Prueba de Carga de PDF"
+            description="Prueba la extracción y análisis de contenido PDF con Gemini"
             icon={<FileText className="h-8 w-8" />}
             helpContent={
                 <div className="space-y-2 text-sm">
-                    <p><strong>Testing Guide</strong></p>
+                    <p><strong>Guía de Pruebas</strong></p>
                     <div>
-                        <p className="font-medium mb-1">✅ Valid Test:</p>
+                        <p className="font-medium mb-1">Prueba Válida:</p>
                         <ul className="list-disc pl-4 space-y-1">
-                            <li>Upload PDF &lt; 20MB</li>
-                            <li>Add custom prompt (optional)</li>
-                            <li>Click "Analyze PDF"</li>
+                            <li>Sube un PDF &lt; 20MB</li>
+                            <li>Añade un prompt personalizado (opcional)</li>
+                            <li>Haz clic en "Analizar PDF"</li>
                         </ul>
                     </div>
                     <div className="mt-2">
-                        <p className="font-medium mb-1">❌ Error Tests:</p>
+                        <p className="font-medium mb-1">Pruebas de Error:</p>
                         <ul className="list-disc pl-4 space-y-1">
-                            <li>Try file &gt; 20MB</li>
-                            <li>Try non-PDF file</li>
-                            <li>Verify error messages</li>
+                            <li>Prueba un archivo &gt; 20MB</li>
+                            <li>Prueba un archivo que no sea PDF</li>
+                            <li>Verifica los mensajes de error</li>
                         </ul>
                     </div>
                     <div className="mt-2">
-                        <p className="font-medium mb-1">💡 Custom Prompts:</p>
+                        <p className="font-medium mb-1">Prompts Personalizados:</p>
                         <ul className="list-disc pl-4 space-y-1">
-                            <li>"Summarize in 3 bullet points"</li>
-                            <li>"Extract all numerical data"</li>
+                            <li>"Resume en 3 viñetas"</li>
+                            <li>"Extrae todos los datos numéricos"</li>
                         </ul>
                     </div>
                 </div>
@@ -132,9 +132,9 @@ export function PdfUploadTestClient() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Upload PDF</CardTitle>
+                        <CardTitle>Subir PDF</CardTitle>
                         <CardDescription>
-                            Select or drag a PDF to test analysis (max {MAX_SIZE_MB}MB)
+                            Selecciona o arrastra un PDF para probar el análisis (máx {MAX_SIZE_MB}MB)
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -147,10 +147,10 @@ export function PdfUploadTestClient() {
                         >
                             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <p className="text-sm text-muted-foreground mb-2">
-                                Drag & drop or click to select
+                                Arrastra y suelta o haz clic para seleccionar
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                Accepted: PDF only
+                                Aceptados: Solo PDF
                             </p>
                         </div>
 
@@ -168,15 +168,15 @@ export function PdfUploadTestClient() {
                                 <Separator />
                                 <div className="text-sm space-y-1">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Filename:</span>
+                                        <span className="text-muted-foreground">Nombre de archivo:</span>
                                         <span className="font-medium truncate ml-2">{selectedFile.name}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Type:</span>
+                                        <span className="text-muted-foreground">Tipo:</span>
                                         <span className="font-medium">{selectedFile.type}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Size:</span>
+                                        <span className="text-muted-foreground">Tamaño:</span>
                                         <span className="font-medium">
                                             {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                                         </span>
@@ -191,18 +191,18 @@ export function PdfUploadTestClient() {
                                 <Separator />
                                 <div className="space-y-2">
                                     <Label htmlFor="custom-prompt">
-                                        Custom Prompt (Optional)
+                                        Prompt Personalizado (Opcional)
                                     </Label>
                                     <Textarea
                                         id="custom-prompt"
-                                        placeholder="e.g., Extract all dates and names from this document"
+                                        placeholder="Ej: Extrae todas las fechas y nombres de este documento"
                                         value={customPrompt}
                                         onChange={(e) => setCustomPrompt(e.target.value)}
                                         rows={3}
                                         className="resize-none"
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                        Leave empty to use default analysis prompt
+                                        Deja vacío para usar el prompt de análisis por defecto
                                     </p>
                                 </div>
                             </>
@@ -218,12 +218,12 @@ export function PdfUploadTestClient() {
                                 {isAnalyzing ? (
                                     <>
                                         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                        Analyzing...
+                                        Analizando...
                                     </>
                                 ) : (
                                     <>
                                         <FileText className="mr-2 h-4 w-4" />
-                                        Analyze PDF
+                                        Analizar PDF
                                     </>
                                 )}
                             </Button>
@@ -239,9 +239,9 @@ export function PdfUploadTestClient() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Analysis Result</CardTitle>
+                        <CardTitle>Resultado del Análisis</CardTitle>
                         <CardDescription>
-                            AI-generated analysis from Gemini
+                            Análisis generado por IA desde Gemini
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -259,7 +259,7 @@ export function PdfUploadTestClient() {
                         ) : (
                             <div className="text-center py-12 text-muted-foreground">
                                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                <p>Upload and analyze a PDF to see results</p>
+                                <p>Sube y analiza un PDF para ver los resultados</p>
                             </div>
                         )}
                     </CardContent>

@@ -90,26 +90,26 @@ export function ImageUploadTestClient() {
 
     return (
         <AIToolLayout
-            title="Image Upload Test"
-            description="Test image analysis functionality with Gemini Vision"
+            title="Prueba de Carga de Imágenes"
+            description="Prueba la funcionalidad de análisis de imágenes con Gemini Vision"
             icon={<ImageIcon className="h-8 w-8" />}
             helpContent={
                 <div className="space-y-2 text-sm">
-                    <p><strong>Testing Guide</strong></p>
+                    <p><strong>Guía de Pruebas</strong></p>
                     <div>
-                        <p className="font-medium mb-1">✅ Valid Test:</p>
+                        <p className="font-medium mb-1">✅ Prueba Válida:</p>
                         <ul className="list-disc pl-4 space-y-1">
-                            <li>Upload image &lt; 10MB</li>
-                            <li>Click "Analyze Image"</li>
-                            <li>Check result appears</li>
+                            <li>Sube una imagen &lt; 10MB</li>
+                            <li>Haz clic en "Analizar Imagen"</li>
+                            <li>Verifica que aparezca el resultado</li>
                         </ul>
                     </div>
                     <div className="mt-2">
-                        <p className="font-medium mb-1">❌ Error Tests:</p>
+                        <p className="font-medium mb-1">❌ Pruebas de Error:</p>
                         <ul className="list-disc pl-4 space-y-1">
-                            <li>Try file &gt; 10MB</li>
-                            <li>Try non-image file</li>
-                            <li>Verify error messages</li>
+                            <li>Prueba un archivo &gt; 10MB</li>
+                            <li>Prueba un archivo que no sea imagen</li>
+                            <li>Verifica los mensajes de error</li>
                         </ul>
                     </div>
                 </div>
@@ -119,9 +119,9 @@ export function ImageUploadTestClient() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Upload Image</CardTitle>
+                        <CardTitle>Subir Imagen</CardTitle>
                         <CardDescription>
-                            Select or drag an image to test analysis (max {MAX_SIZE_MB}MB)
+                            Selecciona o arrastra una imagen para probar el análisis (máx {MAX_SIZE_MB}MB)
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -134,10 +134,10 @@ export function ImageUploadTestClient() {
                         >
                             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                             <p className="text-sm text-muted-foreground mb-2">
-                                Drag & drop or click to select
+                                Arrastra y suelta o haz clic para seleccionar
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                Accepted: JPG, PNG, WebP, GIF
+                                Aceptados: JPG, PNG, WebP, GIF
                             </p>
                         </div>
 
@@ -155,15 +155,15 @@ export function ImageUploadTestClient() {
                                 <Separator />
                                 <div className="text-sm space-y-1">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Filename:</span>
+                                        <span className="text-muted-foreground">Nombre de archivo:</span>
                                         <span className="font-medium">{selectedFile.name}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Type:</span>
+                                        <span className="text-muted-foreground">Tipo:</span>
                                         <span className="font-medium">{selectedFile.type}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Size:</span>
+                                        <span className="text-muted-foreground">Tamaño:</span>
                                         <span className="font-medium">
                                             {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                                         </span>
@@ -177,7 +177,7 @@ export function ImageUploadTestClient() {
                             <>
                                 <Separator />
                                 <div>
-                                    <Label className="mb-2 block">Preview</Label>
+                                    <Label className="mb-2 block">Previsualización</Label>
                                     <div className="relative rounded-lg overflow-hidden border bg-muted/20">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
@@ -200,12 +200,12 @@ export function ImageUploadTestClient() {
                                 {isAnalyzing ? (
                                     <>
                                         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                        Analyzing...
+                                        Analizando...
                                     </>
                                 ) : (
                                     <>
                                         <ImageIcon className="mr-2 h-4 w-4" />
-                                        Analyze Image
+                                        Analizar Imagen
                                     </>
                                 )}
                             </Button>
@@ -221,9 +221,9 @@ export function ImageUploadTestClient() {
             <div className="space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Analysis Result</CardTitle>
+                        <CardTitle>Resultado del Análisis</CardTitle>
                         <CardDescription>
-                            AI-generated analysis from Gemini Vision
+                            Análisis generado por IA desde Gemini Vision
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -278,7 +278,7 @@ export function ImageUploadTestClient() {
                         ) : (
                             <div className="text-center py-12 text-muted-foreground">
                                 <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                <p>Upload and analyze an image to see results</p>
+                                <p>Sube y analiza una imagen para ver los resultados</p>
                             </div>
                         )}
                     </CardContent>

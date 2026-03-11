@@ -27,7 +27,6 @@
 import {
   CheckCircle2,
   FileText,
-  Sparkles,
   ArrowRight,
   Zap,
   ImageIcon,
@@ -69,7 +68,6 @@ const aiTools: AITool[] = [
       'Checklists personalizados por activo',
       'Múltiples tipos de mantenimiento',
       'Generación en segundos',
-      'Historial de checklists',
     ],
   },
   {
@@ -83,7 +81,6 @@ const aiTools: AITool[] = [
       '3 estilos profesionales',
       '3 niveles de detalle',
       'Resumen ejecutivo incluido',
-      'Métricas de lectura',
     ],
   },
   {
@@ -96,22 +93,7 @@ const aiTools: AITool[] = [
     features: [
       'Transformación con IA (Gemini)',
       'Vista previa antes de aplicar',
-      'Historial con rollback',
       'Múltiples formatos (JSON, CSV)',
-    ],
-  },
-  {
-    id: 'work-order-closeout',
-    title: 'Cierre de Orden de Trabajo',
-    description: 'Notas de cierre profesionales para órdenes de trabajo',
-    icon: <Sparkles className="h-8 w-8 text-gima-blue" />,
-    href: '#modal',
-    badge: 'Herramienta',
-    features: [
-      'Notas de cierre detalladas',
-      'Análisis de hallazgos',
-      'Recomendaciones automáticas',
-      'Integrado en detalle de OT',
     ],
   },
   {

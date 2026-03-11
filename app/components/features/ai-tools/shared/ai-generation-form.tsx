@@ -1,9 +1,8 @@
 'use client';
 
-import { Sparkles, Loader2, Save, RotateCcw, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
-import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 import { Checkbox } from '@/app/components/ui/checkbox';
@@ -80,7 +79,7 @@ export function AIGenerationForm<T = Record<string, unknown>>({
     return initial;
   })();
 
-  const { data: formData, setData: setFormData, isDirty, lastSaved, save, clear } = useDraft(
+  const { data: formData, setData: setFormData, clear } = useDraft(
     draftId,
     saveDrafts,
     initialData as T
@@ -118,15 +117,6 @@ export function AIGenerationForm<T = Record<string, unknown>>({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isGenerating]);
 
-  // Guardar draft manualmente
-  const handleSaveDraft = () => {
-    save();
-  };
-
-  // Limpiar formulario
-  const handleClear = () => {
-    clear();
-  };
 
   return (
     <Card className={cn('', className)}>
@@ -136,19 +126,6 @@ export function AIGenerationForm<T = Record<string, unknown>>({
             <CardTitle className="text-xl">{title}</CardTitle>
             {description && (
               <p className="text-sm text-muted-foreground mt-1">{description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {isDirty && (
-              <Badge variant="outline" className="gap-1 text-amber-600">
-                <AlertCircle className="h-3 w-3" />
-                Sin guardar
-              </Badge>
-            )}
-            {lastSaved && !isDirty && (
-              <span className="text-xs text-muted-foreground">
-                Guardado: {lastSaved.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-              </span>
             )}
           </div>
         </div>
@@ -274,39 +251,6 @@ export function AIGenerationForm<T = Record<string, unknown>>({
               )}
             </Button>
 
-            <div className="flex gap-2">
-              {saveDrafts && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSaveDraft}
-                  disabled={isGenerating || !isDirty}
-                  className="flex-1"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar borrador
-                </Button>
-              )}
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleClear}
-                disabled={isGenerating}
-                className={saveDrafts ? 'flex-1' : 'w-full'}
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Limpiar
-              </Button>
-            </div>
-
-            {/* Keyboard shortcut hint */}
-            <p className="text-xs text-muted-foreground text-center">
-              Tip: Presiona <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Ctrl</kbd>
-              +<kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Enter</kbd> para generar
-            </p>
           </div>
         </form>
       </CardContent>

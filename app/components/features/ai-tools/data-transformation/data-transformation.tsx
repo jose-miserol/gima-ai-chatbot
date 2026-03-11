@@ -12,15 +12,14 @@
 'use client';
 
 import { Database } from 'lucide-react';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
-import { AIToolLayout, AIHistoryList, type HistoryItem } from '@/app/components/features/ai-tools/shared';
+import { AIToolLayout } from '@/app/components/features/ai-tools/shared';
 import { DataTransformationForm } from '@/app/components/features/ai-tools/data-transformation/data-transformation-form';
 import { DataTransformationPreview } from '@/app/components/features/ai-tools/data-transformation/data-transformation-preview';
-import { useDataSnapshots } from '@/app/components/features/ai-tools/data-transformation/hooks/use-data-snapshots';
 import { useDataTransformation } from '@/app/components/features/ai-tools/data-transformation/hooks/use-data-transformation';
 
-import type { TransformationRequest, DataSnapshot } from '@/app/components/features/ai-tools/data-transformation/types';
+import type { TransformationRequest } from '@/app/components/features/ai-tools/data-transformation/types';
 
 /**
  * Main Data Transformation Client Component
@@ -35,9 +34,6 @@ export function DataTransformation() {
     const { status, result, processTransformation, applyTransformation, reset } =
         useDataTransformation();
 
-    const { snapshots, createSnapshot, deleteSnapshot } =
-        useDataSnapshots();
-
     const handleAnalyze = useCallback(
         async (data: TransformationRequest) => {
             setOriginalData(data.sourceData);
@@ -48,47 +44,19 @@ export function DataTransformation() {
     );
 
     const handleApply = useCallback(async () => {
-        // Crear snapshot ANTES de aplicar (preserva estado previo)
-        if (originalData) {
-            await createSnapshot(originalData);
-        }
-
         await applyTransformation();
 
         setTimeout(() => {
             setOriginalData('');
             reset();
         }, 1500);
-    }, [originalData, createSnapshot, applyTransformation, reset]);
+    }, [applyTransformation, reset]);
 
     const handleReject = useCallback(() => {
         reset();
     }, [reset]);
 
-    const historyItems: HistoryItem[] = useMemo(() => {
-        return snapshots.map((snap: DataSnapshot) => ({
-            id: snap.id,
-            title: snap.name || 'Transformación sin nombre',
-            createdAt: new Date(snap.timestamp),
-            preview: snap.originalData.length > 100 ? `${snap.originalData.substring(0, 100)}...` : snap.originalData,
-            fullData: snap
-        }));
-    }, [snapshots]);
 
-    const handleHistoryItemClick = useCallback((item: HistoryItem) => {
-        if (item.fullData) {
-            setRestoredData(item.fullData.originalData);
-            reset();
-        }
-    }, [reset]);
-
-    const handleHistoryItemDelete = useCallback((item: HistoryItem) => {
-        deleteSnapshot(item.id);
-    }, [deleteSnapshot]);
-
-    const handleBulkDelete = useCallback((items: HistoryItem[]) => {
-        items.forEach((item) => deleteSnapshot(item.id));
-    }, [deleteSnapshot]);
 
     return (
         <AIToolLayout
@@ -127,26 +95,28 @@ export function DataTransformation() {
             {/* Right Column - Info/Tips OR Preview */}
             <div className="space-y-6">
                 {(status === 'idle' || status === 'analyzing' || status === 'error') ? (
-                    <AIHistoryList
-                        title="Historial de Transformaciones"
-                        items={historyItems}
-                        onItemClick={handleHistoryItemClick}
-                        onItemDelete={handleHistoryItemDelete}
-                        onBulkDelete={handleBulkDelete}
-                        showSearch
-                        showFilters
-                        emptyState={
-                            <div className="bg-muted/50 rounded-lg p-6">
-                                <h3 className="font-semibold mb-2">Consejos</h3>
-                                <ul className="text-sm text-muted-foreground space-y-2">
-                                    <li>✅ Funciona con CSV, JSON, y texto plano</li>
-                                    <li>✅ Soporta transformaciones complejas</li>
-                                    <li>✅ Historial automático de cambios</li>
-                                    <li>✅ Vista previa antes de aplicar</li>
-                                </ul>
+                    <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                <Database className="h-5 w-5" />
                             </div>
-                        }
-                    />
+                            <h3 className="font-semibold text-gray-900">Consejos de Uso</h3>
+                        </div>
+                        <ul className="space-y-4 text-sm text-gray-600">
+                            <li className="flex gap-3">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <span>Funciona con <strong>CSV, JSON</strong> y texto plano sin formato.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <span>Soporta transformaciones complejas como limpieza de duplicados y re-formateo.</span>
+                            </li>
+                            <li className="flex gap-3">
+                                <span className="text-blue-500 font-bold">•</span>
+                                <span>Siempre previsualiza los cambios antes de aplicarlos definitivamente.</span>
+                            </li>
+                        </ul>
+                    </div>
                 ) : (
                     <>
                         {(status === 'previewing' || status === 'uploading' || status === 'completed') && result && (

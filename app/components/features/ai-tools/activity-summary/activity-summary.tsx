@@ -22,9 +22,7 @@ import {
   AIToolLayout,
   AIGenerationForm,
   AIPreviewCard,
-  AIHistoryList,
   type FormField,
-  type HistoryItem,
 } from '@/app/components/features/ai-tools/shared';
 import { ASSET_TYPES, TASK_TYPES, type AssetType, type TaskType } from '@/app/constants/ai';
 import { useToast } from '@/app/components/ui/toast';
@@ -116,7 +114,6 @@ export function ActivitySummary() {
   const [summary, setSummary] = useState<ActivitySummary | null>(null);
   const [currentRequest, setCurrentRequest] = useState<ActivitySummaryRequest | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
 
 
 
@@ -142,21 +139,6 @@ export function ActivitySummary() {
         setCurrentRequest(request);
 
 
-        // Agregar al historial
-        const historyItem: HistoryItem = {
-          id: result.summary.id,
-          title: result.summary.title,
-          createdAt: result.summary.createdAt,
-          preview: result.summary.executive.substring(0, 120) + '...',
-          metadata: {
-            style: result.summary.style,
-            detailLevel: result.summary.detailLevel,
-            wordCount: result.summary.metadata?.wordCount,
-            originalRequest: request,
-          },
-          fullData: result.summary,
-        };
-        setHistory((prev) => [historyItem, ...prev].slice(0, 20));
 
         toast.success(
           result.cached ? '✨ Resumen cargado del caché' : '✅ Resumen generado',
@@ -193,26 +175,7 @@ export function ActivitySummary() {
     }
   };
 
-  const handleHistoryItemClick = (item: HistoryItem) => {
-    if (item.fullData) {
-      setSummary(item.fullData as ActivitySummary);
-      setCurrentRequest(item.metadata?.originalRequest || null);
-      toast.success('Resumen cargado', `Visualizando "${item.title}"`);
-    } else {
-      toast.error('Error al cargar', 'No se encontraron los datos completos del resumen');
-    }
-  };
 
-  const handleHistoryItemDelete = (item: HistoryItem) => {
-    setHistory((prev) => prev.filter((h) => h.id !== item.id));
-    toast.success('Item eliminado', 'El resumen ha sido eliminado del historial');
-  };
-
-  const handleBulkDelete = (items: HistoryItem[]) => {
-    const idsToDelete = new Set(items.map((i) => i.id));
-    setHistory((prev) => prev.filter((h) => !idsToDelete.has(h.id)));
-    toast.success('Items eliminados', `${items.length} resúmenes eliminados del historial`);
-  };
 
   return (
     <AIToolLayout
@@ -228,15 +191,11 @@ export function ActivitySummary() {
       helpContent={
         <div className="space-y-2 text-sm">
           <p><strong>¿Cómo funciona?</strong></p>
-          <ol className="list-decimal pl-4 space-y-1">
-            <li>Selecciona el tipo de activo y tarea</li>
-            <li>Describe las actividades realizadas</li>
-            <li>Elige el estilo y nivel de detalle</li>
-            <li>Haz clic en &quot;Generar Resumen&quot;</li>
-          </ol>
-          <p className="text-muted-foreground mt-2">
-            Tip: Usa Ctrl+Enter para generar rápidamente
-          </p>
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Selecciona el activo y tipo de tarea.</li>
+            <li>Describe las actividades realizadas.</li>
+            <li>Genera el resumen profesional.</li>
+          </ul>
         </div>
       }
     >
@@ -249,8 +208,6 @@ export function ActivitySummary() {
           onSubmit={handleGenerate}
           isGenerating={isGenerating}
           submitLabel="Generar Resumen"
-          saveDrafts
-          draftId="activity-summaries"
         />
 
 
@@ -301,15 +258,28 @@ export function ActivitySummary() {
             }}
           />
         ) : (
-          <AIHistoryList
-            title="Resúmenes Generados"
-            items={history}
-            onItemClick={handleHistoryItemClick}
-            onItemDelete={handleHistoryItemDelete}
-            onBulkDelete={handleBulkDelete}
-            showSearch
-            showFilters
-          />
+          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <FileText className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-gray-900">Consejos de Uso</h3>
+            </div>
+            <ul className="space-y-4 text-sm text-gray-600">
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>Usa el estilo <strong>Técnico</strong> para reportes que requieran especificaciones exactas.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>El estilo <strong>Ejecutivo</strong> es ideal para resúmenes rápidos de fin de jornada.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-500 font-bold">•</span>
+                <span>Proporciona detalles sobre el estado final del equipo en el campo de actividades.</span>
+              </li>
+            </ul>
+          </div>
         )}
       </div>
     </AIToolLayout>
