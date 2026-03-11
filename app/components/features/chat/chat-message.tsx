@@ -118,7 +118,7 @@ const DATA_TABLE_TOOLS = new Set([
  * Collapsed by default — the user can expand if they want to read the LLM commentary.
  */
 function CollapsibleLLMText({ text }: { text: string }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <div className="mb-1">
